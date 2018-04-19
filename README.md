@@ -1,18 +1,18 @@
-##Add Module
+## Add Module
 ```
 git submodule add git@github.com:ninazu/framework.git ./vendor/ninazu/framework
 git commit -m "#addSubModule"
 git push
 ```
 
-##FirstUpdateModule
+## FirstUpdateModule
 ```
 cd ./vendor/ninazu/framework
 git submodule update --init --recursive
 git submodule update --recursive --remote
 ```
 
-#PHPStorm Config
+### PHPStorm Config
 Add submodule directory
 ```
 File -> Settings -> Version Control -> Add -> Directory
