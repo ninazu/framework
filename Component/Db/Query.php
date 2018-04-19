@@ -14,6 +14,9 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	protected $query = '';
 
 	/**@var array[] $debugLog */
+	protected $bindsIntegers = [];
+
+	/**@var array[] $debugLog */
 	protected $binds = [];
 
 	/**@var array[] $debugLog */
@@ -56,6 +59,16 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
+	public function bindIntegers(array $binds) {
+		if (array_keys($binds) !== range(0, count($binds) - 1)) {
+			throw new ErrorException('bindIntegers allowed only sequential array');
+		}
+
+		$this->bindsIntegers = $binds;
+
+		return $this;
+	}
+
 	/**
 	 * @inheritdoc
 	 */
@@ -74,7 +87,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 */
 	public function execute() {
 		$this->injectBindArray($sql, $binds, true);
-		$this->statement = $this->connection->execute(static::class, $sql, $binds);
+		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsIntegers);
 
 		return $this;
 	}

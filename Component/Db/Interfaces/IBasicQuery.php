@@ -12,6 +12,13 @@ interface IBasicQuery {
 	public function binds(array $binds);
 
 	/**
+	 * @param array $binds
+	 *
+	 * @return $this
+	 */
+	public function bindIntegers(array $binds);
+
+	/**
 	 * @param string $placeholder
 	 * @param array $values
 	 *

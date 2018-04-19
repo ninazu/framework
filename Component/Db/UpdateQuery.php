@@ -39,6 +39,10 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @inheritdoc
 	 */
 	public function orderBy(array $sequence) {
+//		foreach ($sequence){
+//
+//		}
+
 		$this->orderBy = $sequence;
 
 		return $this;
@@ -76,7 +80,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @inheritdoc
 	 */
 	public function execute() {
-		$this->query = "";
+		$this->query = "UPDATE{$this->priority}{$this->onError} {$this->table}\nSET {$this->values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
 
 		return parent::execute();
 	}

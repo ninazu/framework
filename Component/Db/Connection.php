@@ -221,21 +221,34 @@ class Connection extends Configurator implements IConnection, ITransaction {
 	 * @param string $instance
 	 * @param string $query
 	 * @param array $binds
+	 * @param array $bindsInteger
 	 *
 	 * @return bool|null|\PDOStatement
 	 *
 	 * @throws MySQLException
 	 */
-	public function execute($instance, $query, array $binds) {
+	public function execute($instance, $query, array $binds, array $bindsInteger = []) {
 		try {
 			/**@var $startTime */
 			if ($this->debugEnabled) {
 				$startTime = microtime(true);
 			}
 
+			$bindsOffset = count($binds) + 1;
+
 			// execute query
 			if (empty($binds)) {
-				$statement = $this->adapter->query($query);
+				if (!empty($bindsInteger)) {
+					$statement = $this->adapter->prepare($query);
+
+					foreach ($bindsInteger as $index => $value) {
+						$statement->bindValue($index + $bindsOffset, $value, PDO::PARAM_INT);
+					}
+
+					$statement->execute();
+				} else {
+					$statement = $this->adapter->query($query);
+				}
 			} else {
 				foreach ($binds as &$bind) {
 					if ($bind instanceof DateTime) {
@@ -244,6 +257,11 @@ class Connection extends Configurator implements IConnection, ITransaction {
 				}
 
 				$statement = $this->adapter->prepare($query);
+
+				foreach ($bindsInteger as $index => $value) {
+					$statement->bindValue($index + $bindsOffset, $value, PDO::PARAM_INT);
+				}
+
 				$statement->execute($binds);
 			}
 
