@@ -82,10 +82,19 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
+	//TODO Dirty restriction
+	protected function checkQueryBeforePlaceholders() {
+		if (preg_match('/[\?:]/', $this->query)) {
+			throw new ErrorException('Unsupported symbol in query');
+		}
+	}
+
 	/**
 	 * @inheritdoc
 	 */
 	public function execute() {
+		self::checkQueryBeforePlaceholders();
+
 		$this->injectBindArray($sql, $binds, true);
 		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsIntegers);
 
