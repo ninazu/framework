@@ -37,7 +37,7 @@ interface IInsert extends IBasicQuery {
 	/**
 	 * @internal
 	 *
-	 * Сan contain SQL injection
+	 * USE ONLY FOR DEBUG. Сan contain SQL injection or wrong replaced value
 	 *
 	 * @param string $sql
 	 * @param bool $withPlaceholders

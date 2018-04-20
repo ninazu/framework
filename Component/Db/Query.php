@@ -99,6 +99,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$sql = $this->query;
 
 		if (!$withPlaceholders) {
+			foreach ($this->bindsIntegers as $index => $integer) {
+				self::replaceIntegerPlaceholder($index, (int)$integer, $sql);
+			}
+
 			$this->injectBindArray($sql, $binds);
 
 			foreach ($binds as $placeholder => $value) {
@@ -167,6 +171,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->statement = null;
 	}
 
+	//TODO Incomplete
+	protected static function replaceIntegerPlaceholder($index, $value, &$sql) {
+		//$sql = preg_replace("/\\{$placeholder}([^a-z0-9_]+)|\\{$placeholder}$/i", "{$value}$1", $sql);
+	}
+
+	//TODO Incomplete
 	protected static function replacePlaceholder($placeholder, $value, &$sql) {
 		$sql = preg_replace("/\\{$placeholder}([^a-z0-9_]+)|\\{$placeholder}$/i", "{$value}$1", $sql);
 	}
