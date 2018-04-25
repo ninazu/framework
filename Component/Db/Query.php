@@ -7,6 +7,7 @@ use vendor\ninazu\framework\Component\Db\Interfaces\IBasicQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryPrepare;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryResult;
+use vendor\ninazu\framework\Component\Db\SQLParser\Tokenizer;
 
 class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
@@ -84,9 +85,11 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 	//TODO Dirty restriction
 	protected function checkQueryBeforePlaceholders() {
-		if (preg_match('/[\?:]/', $this->query)) {
-			throw new ErrorException('Unsupported symbol in query');
-		}
+//		if (preg_match('/[\?:]/', $this->query)) {
+//			throw new ErrorException('Unsupported symbol in query');
+//		}
+
+		$parser = Tokenizer::parse($this->query);
 	}
 
 	/**
