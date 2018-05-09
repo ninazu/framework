@@ -91,6 +91,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
 
 		$this->injectBindArray($sql, $binds, $placeholders, true);
+
+		foreach ($this->bindsIntegers as $index => $value) {
+			$autoPlaceholder = ":autoInt_{$index}";
+			self::replaceIntegerPlaceholder($index, $autoPlaceholder, $sql, $placeholders);
+		}
+
 		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsIntegers);
 
 		return $this;
@@ -104,15 +110,13 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 		if (!$withPlaceholders) {
 			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
-			$this->injectBindArray($sql, $binds, $placeholders, true);
-
-			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
+			$this->injectBindArray($sql, $binds, $placeholders, false);
 
 			foreach ($this->bindsIntegers as $index => $integer) {
 				self::replaceIntegerPlaceholder($index, $integer, $sql, $placeholders);
 			}
 
-			foreach ($binds as $placeholder => $value) {
+			foreach ($this->binds as $placeholder => $value) {
 				$value = $this->connection->quote(stripslashes($value));
 				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
 			}
@@ -145,7 +149,6 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	protected function injectBindArray(&$sql, &$binds, array &$placeholders, $executeScenario) {
 		$binds = $this->binds;
 		$sql = $this->query;
-		$delimiter = $executeScenario ? '_' : '';
 
 		foreach ($this->bindsArray as $placeholder => $values) {
 			$newBinds = [];
@@ -153,13 +156,18 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 			foreach ($values as $index => $value) {
 				$autoPlaceholder = "{$placeholder}_{$index}";
 
-				self::validatePlaceholderAndFormat($autoPlaceholder, $value, $delimiter);
+				self::validatePlaceholderAndFormat($autoPlaceholder, $value, '_');
 
 				if (isset($binds[$autoPlaceholder])) {
 					$this->connection->error("Placeholder collision '{$autoPlaceholder}'", $sql, $binds);
 				}
 
 				$binds[$autoPlaceholder] = $value;
+
+				if (!$executeScenario) {
+					$autoPlaceholder = $this->connection->quote(stripslashes($value));
+				}
+
 				$newBinds[] = $autoPlaceholder;
 			}
 
@@ -178,7 +186,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected static function replaceIntegerPlaceholder($index, $value, &$sql, array &$placeholders) {
-		$value = (int)$value;
+		$value = (string)$value;
 		$strValueLen = strlen((string)$value);
 		$placeholderLen = 1;
 		$currentPosition = $placeholders['?'][$index];

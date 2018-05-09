@@ -234,8 +234,6 @@ class Connection extends Configurator implements IConnection, ITransaction {
 				$startTime = microtime(true);
 			}
 
-			$bindsOffset = count($binds) + 1;
-
 			// execute query
 			if (empty($binds)) {
 				if (!empty($bindsInteger)) {
@@ -259,10 +257,14 @@ class Connection extends Configurator implements IConnection, ITransaction {
 				$statement = $this->adapter->prepare($query);
 
 				foreach ($bindsInteger as $index => $value) {
-					$statement->bindValue($index + $bindsOffset, $value, PDO::PARAM_INT);
+					$statement->bindValue(":autoInt_{$index}", $value, PDO::PARAM_INT);
 				}
 
-				$statement->execute($binds);
+				foreach ($binds as $key => $value) {
+					$statement->bindValue($key, $value, PDO::PARAM_STR);
+				}
+
+				$statement->execute();
 			}
 
 			if ($this->debugEnabled) {
