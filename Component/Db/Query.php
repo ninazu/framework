@@ -104,24 +104,18 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 		if (!$withPlaceholders) {
 			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
+			$this->injectBindArray($sql, $binds, $placeholders, true);
 
-//			foreach ($this->binds as $placeholder => $value) {
-//				$value = $this->connection->quote(stripslashes($value));
-//
-//				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
-//			}
+			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
 
 			foreach ($this->bindsIntegers as $index => $integer) {
 				self::replaceIntegerPlaceholder($index, $integer, $sql, $placeholders);
 			}
 
-			$this->injectBindArray($sql, $binds, $placeholders, true);
-//
-//			foreach ($binds as $placeholder => $value) {
-//
-//
-//				self::replacePlaceholder($placeholder, $value, $sql);
-//			}
+			foreach ($binds as $placeholder => $value) {
+				$value = $this->connection->quote(stripslashes($value));
+				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
+			}
 		}
 
 		return $this;
