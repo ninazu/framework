@@ -38,7 +38,7 @@ class Processor {
 				} while ($token != $tokenAfter);
 
 				$placeholders[$token][] = [
-					'pos' => $position + $recursiveOffsetLeft,
+					'pos' => $position + $recursiveOffsetLeft - 1,
 					'offset' => $recursiveOffsetRight,
 				];
 			}

@@ -228,8 +228,6 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 			$sql = substr_replace($sql, $value, $currentPosition['pos'] + $tmpOffset, $placeholderLen);
 			$tmpOffset += $offset;
 		}
-
-		return;
 	}
 
 	/**
