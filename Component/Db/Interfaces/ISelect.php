@@ -18,6 +18,8 @@ interface ISelect extends IBasicQuery {
 	 * @param bool $withPlaceholders
 	 *
 	 * @return ISelectPrepare
+	 *
+	 * @see \vendor\ninazu\framework\Component\Db\Query
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true);
+	public function getSQL(&$sql, $withPlaceholders);
 }

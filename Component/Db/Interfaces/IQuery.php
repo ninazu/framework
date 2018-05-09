@@ -19,5 +19,5 @@ interface IQuery extends IBasicQuery {
 	 *
 	 * @return IQueryPrepare
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true);
+	public function getSQL(&$sql, $withPlaceholders);
 }

@@ -43,5 +43,5 @@ interface IUpdate extends IBasicQuery {
 	 *
 	 * @return IUpdatePrepare
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true);
+	public function getSQL(&$sql, $withPlaceholders);
 }

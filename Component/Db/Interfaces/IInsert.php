@@ -44,5 +44,5 @@ interface IInsert extends IBasicQuery {
 	 *
 	 * @return IInsertPrepare
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true);
+	public function getSQL(&$sql, $withPlaceholders);
 }

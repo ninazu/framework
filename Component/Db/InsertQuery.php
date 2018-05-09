@@ -5,6 +5,8 @@ namespace vendor\ninazu\framework\Component\Db;
 use ErrorException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IInsert;
 use vendor\ninazu\framework\Component\Db\Interfaces\IInsertResult;
+use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
+use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
 
 class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
@@ -15,7 +17,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true) {
+	public function getSQL(&$sql, $withPlaceholders) {
 		$parts = $this->prepareSql();
 		$tmpBinds = $this->binds;
 		$tmpQuery = $this->query;
@@ -28,13 +30,15 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 			$this->binds = $part['binds'];
 
 			if (!$withPlaceholders) {
-				$this->injectBindArray($query, $binds);
+//				$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
+//
+//				$this->injectBindArray($query, $binds, $placeholders, true);
 
-				foreach ($binds as $placeholder => $value) {
-					$value = $this->connection->quote(stripslashes($value));
-
-					self::replacePlaceholder($placeholder, $value, $this->query);
-				}
+//				foreach ($binds as $placeholder => $value) {
+//					$value = $this->connection->quote(stripslashes($value));
+//
+//					self::replacePlaceholder($placeholder, $value, $this->query);
+//				}
 			}
 
 			$sql .= "{$this->query};\n";

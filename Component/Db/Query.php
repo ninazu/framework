@@ -7,7 +7,8 @@ use vendor\ninazu\framework\Component\Db\Interfaces\IBasicQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryPrepare;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryResult;
-use vendor\ninazu\framework\Component\Db\SQLParser\Tokenizer;
+use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
+use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
 
 class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
@@ -17,10 +18,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**@var array[] $debugLog */
 	protected $bindsIntegers = [];
 
-	/**@var array[] $debugLog */
+	/**@var string[] $binds */
 	protected $binds = [];
 
-	/**@var array[] $debugLog */
+	/**@var array[] $bindsArray */
 	protected $bindsArray = [];
 
 	/**@var \PDOStatement $statement */
@@ -83,22 +84,13 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
-	//TODO Dirty restriction
-	protected function checkQueryBeforePlaceholders() {
-//		if (preg_match('/[\?:]/', $this->query)) {
-//			throw new ErrorException('Unsupported symbol in query');
-//		}
-
-		$parser = Tokenizer::parse($this->query);
-	}
-
 	/**
 	 * @inheritdoc
 	 */
 	public function execute() {
-		self::checkQueryBeforePlaceholders();
+		$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
 
-		$this->injectBindArray($sql, $binds, true);
+		$this->injectBindArray($sql, $binds, $placeholders, true);
 		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsIntegers);
 
 		return $this;
@@ -107,21 +99,29 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function getSQL(&$sql, $withPlaceholders = true) {
+	public function getSQL(&$sql, $withPlaceholders) {
 		$sql = $this->query;
 
 		if (!$withPlaceholders) {
+			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
+
+//			foreach ($this->binds as $placeholder => $value) {
+//				$value = $this->connection->quote(stripslashes($value));
+//
+//				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
+//			}
+
 			foreach ($this->bindsIntegers as $index => $integer) {
-				self::replaceIntegerPlaceholder($index, (int)$integer, $sql);
+				self::replaceIntegerPlaceholder($index, $integer, $sql, $placeholders);
 			}
 
-			$this->injectBindArray($sql, $binds);
-
-			foreach ($binds as $placeholder => $value) {
-				$value = $this->connection->quote(stripslashes($value));
-
-				self::replacePlaceholder($placeholder, $value, $sql);
-			}
+			$this->injectBindArray($sql, $binds, $placeholders, true);
+//
+//			foreach ($binds as $placeholder => $value) {
+//
+//
+//				self::replacePlaceholder($placeholder, $value, $sql);
+//			}
 		}
 
 		return $this;
@@ -148,7 +148,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this->statement->getColumnMeta($columnIndex);
 	}
 
-	protected function injectBindArray(&$sql, &$binds, $executeScenario = true) {
+	protected function injectBindArray(&$sql, &$binds, array &$placeholders, $executeScenario) {
 		$binds = $this->binds;
 		$sql = $this->query;
 		$delimiter = $executeScenario ? '_' : '';
@@ -169,7 +169,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 				$newBinds[] = $autoPlaceholder;
 			}
 
-			self::replacePlaceholder($placeholder, implode(',', $newBinds), $sql);
+			self::replacePlaceholder($placeholder, implode(',', $newBinds), $sql, $placeholders);
 		}
 
 		if (count($binds) > Mysql::MAX_BINDS_COUNT) {
@@ -183,14 +183,53 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->statement = null;
 	}
 
-	//TODO Incomplete
-	protected static function replaceIntegerPlaceholder($index, $value, &$sql) {
-		//$sql = preg_replace("/\\{$placeholder}([^a-z0-9_]+)|\\{$placeholder}$/i", "{$value}$1", $sql);
+	protected static function replaceIntegerPlaceholder($index, $value, &$sql, array &$placeholders) {
+		$value = (int)$value;
+		$strValueLen = strlen((string)$value);
+		$placeholderLen = 1;
+		$currentPosition = $placeholders['?'][$index];
+		$offset = ($strValueLen - $placeholderLen);
+
+		unset($placeholders['?'][$index]);
+
+		foreach ($placeholders as $name => $null) {
+			foreach ($placeholders[$name] as $key => $position) {
+				if ($position['pos'] < $currentPosition['pos']) {
+					continue;
+				}
+
+				$placeholders[$name][$key]['pos'] = $position['pos'] + $offset;
+			}
+		}
+
+		$sql = substr_replace($sql, $value, $currentPosition['pos'], $placeholderLen);
 	}
 
-	//TODO Incomplete
-	protected static function replacePlaceholder($placeholder, $value, &$sql) {
-		$sql = preg_replace("/\\{$placeholder}([^a-z0-9_]+)|\\{$placeholder}$/i", "{$value}$1", $sql);
+	protected static function replacePlaceholder($placeholder, $value, &$sql, array &$placeholders) {
+		$strValueLen = strlen($value);
+		$placeholderLen = strlen($placeholder);
+		$currentPositions = $placeholders[$placeholder];
+		$offset = ($strValueLen - $placeholderLen);
+		$tmpOffset = 0;
+
+		foreach ($currentPositions as $index => $currentPosition) {
+			unset($placeholders[$placeholder][$index]);
+
+			foreach ($placeholders as $name => $null) {
+				foreach ($placeholders[$name] as $key => $position) {
+					if ($position['pos'] < $currentPosition['pos']) {
+						continue;
+					}
+
+					$placeholders[$name][$key]['pos'] = $position['pos'] + $offset;
+				}
+			}
+
+			$sql = substr_replace($sql, $value, $currentPosition['pos'] + $tmpOffset, $placeholderLen);
+			$tmpOffset += $offset;
+		}
+
+		return;
 	}
 
 	/**
