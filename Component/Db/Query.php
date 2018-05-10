@@ -93,6 +93,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function binds(array $binds) {
+		if (empty($binds)) {
+			return $this;
+		}
+
 		foreach ($binds as $placeholder => $value) {
 			$this->checkPlaceholder($placeholder, $value, false);
 			$this->bindsString[$placeholder] = $value;
@@ -107,6 +111,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function bindIntegers(array $binds) {
+		if (empty($binds)) {
+			return $this;
+		}
+
 		foreach ($binds as $placeholder => $value) {
 			$this->checkPlaceholder($placeholder, $value, false);
 			$this->bindsInteger[$placeholder] = (int)$value;
@@ -120,10 +128,14 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function bindArray($placeholder, array $values) {
+	public function bindArray($placeholder, array $binds) {
+		if (empty($binds)) {
+			throw new ErrorException('bindArray empty array given');
+		}
+
 		$dummy = '';
 		$this->checkPlaceholder($placeholder, $dummy, false);
-		$this->bindsArray[$placeholder] = $values;
+		$this->bindsArray[$placeholder] = $binds;
 
 		$this->checkBindsCount();
 

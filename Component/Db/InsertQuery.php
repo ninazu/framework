@@ -12,16 +12,19 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 	use WritableValues;
 
-	private $columnsUpdate = [];
+	private $columnsUpdate = '';
 
 	/**
 	 * @inheritdoc
 	 */
 	public function getSQL(&$sql, $withPlaceholders) {
 		$parts = $this->prepareSql();
-		$tmpBinds = $this->bindsString;
+
 		$tmpQuery = $this->query;
-		$tmpBindArray = $this->bindsArray;
+
+		$tmpBindsString = $this->bindsString;
+		$tmpBindsArray = $this->bindsArray;
+		$tmpBindsInteger = $this->bindsInteger;
 
 		$this->bindsArray = [];
 
@@ -44,9 +47,10 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 			$sql .= "{$this->query};\n";
 		}
 
-		$this->bindsString = $tmpBinds;
 		$this->query = $tmpQuery;
-		$this->bindsArray = $tmpBindArray;
+		$this->bindsString = $tmpBindsString;
+		$this->bindsArray = $tmpBindsArray;
+		$this->bindsInteger = $tmpBindsInteger;
 
 		return $this;
 	}
@@ -88,7 +92,31 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		}
 
 		$this->onError = $scenario;
-		$this->columnsUpdate = $columnUpdate;
+
+		if ($scenario === self::ON_DUPLICATE_UPDATE) {
+			if (empty($columnUpdate)) {
+				throw new ErrorException('Empty values for update');
+			}
+
+			$valuesForUpdate = [];
+			$binds = [];
+
+			foreach ($columnUpdate as $columnsUpdateName => $columnsUpdateValue) {
+				$columnsUpdateValue = trim($columnsUpdateValue);
+
+				if ($columnsUpdateValue instanceof Expression) {
+					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$columnsUpdateValue}\n";
+				} else {
+					$autoPlaceholder = ":{$columnsUpdateName}_forUpdate";
+					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$autoPlaceholder}\n";
+					$binds[$autoPlaceholder] = $columnsUpdateValue;
+				}
+			}
+
+			$this->binds($binds);
+
+			$this->columnsUpdate = implode(", ", $valuesForUpdate);
+		}
 
 		return $this;
 	}
@@ -107,7 +135,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$this->values = null;
 		$this->table = null;
 		$this->onError = null;
-		$this->columnsUpdate = [];
+		$this->columnsUpdate = '';
 	}
 
 	/**
@@ -135,6 +163,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		$columnNames = array_keys($firstRow);
 
+		foreach ($columnNames as $column) {
+			if (preg_match('/[^a-z0-9_-]/i', $column)) {
+				throw new ErrorException("Column name '{$column}' contains invalid characters.");
+			}
+		}
+
 		foreach ($values as $index => $row) {
 			if (array_diff($columnNames, array_keys($row))) {
 				throw new ErrorException("Keys of Values are different for index #{$index}");
@@ -144,6 +178,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		return true;
 	}
 
+	/**
+	 * Split a query
+	 *
+	 * @return array
+	 * @throws MySQLException
+	 */
 	private function prepareSql() {
 		$ignore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
 		$update = '';
@@ -152,39 +192,18 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		if ($this->onError == self::ON_DUPLICATE_UPDATE) {
 			$update = "\n" . self::ON_DUPLICATE_UPDATE . "\n";
-			$valuesForUpdate = [];
-
-			foreach ($this->columnsUpdate as $columnsUpdateName => $columnsUpdateValue) {
-				$autoPlaceholder = ":{$columnsUpdateName}_forUpdate";
-				$columnsUpdateValue = trim($columnsUpdateValue);
-
-				if ($columnsUpdateValue instanceof Expression) {
-					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$columnsUpdateValue}\n";
-				} else {
-					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$autoPlaceholder}\n";
-					$binds[$autoPlaceholder] = $columnsUpdateValue;
-				}
-			}
-
-			$update .= implode(", ", $valuesForUpdate);
+			$update .= $this->columnsUpdate;
 		}
 
 		$columns = array_keys(reset($this->values));
-
-		foreach ($columns as $column) {
-			if (preg_match('/[^a-z0-9_-]/i', $column)) {
-				throw new ErrorException("Column name '{$column}' contains invalid characters.");
-			}
-		}
-
 		$columnNames = implode("`,\n`", $columns);
 		$headerQuery = "INSERT{$priority}{$ignore}\nINTO {$this->table}\n(`{$columnNames}`)\nVALUES\n";
-
 		$allowedLength = ($this->connection->getMaxQueryLength() - strlen($headerQuery)) * 0.95;
 		$parts = [];
 		$currentPart = [];
 		$partLength = 0;
 
+		//Calculate row len
 		foreach ($this->values as $row) {
 			$values = implode("', '", $row);
 			$rowLength = strlen("('{$values}'),\n");
@@ -210,6 +229,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$parts[] = $currentPart;
 		$result = [];
 
+		//TODO STOP
 		foreach ($parts as $index => $part) {
 			list($partialQuery, $partialBinds) = $this->partialSQL($index, $binds, $headerQuery, $part, $columns, $update);
 			$result[$index] = [
