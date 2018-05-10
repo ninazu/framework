@@ -16,10 +16,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	protected $query = '';
 
 	/**@var array[] $debugLog */
-	protected $bindsIntegers = [];
+	protected $bindsInteger = [];
 
-	/**@var string[] $binds */
-	protected $binds = [];
+	/**@var string[] $bindsString */
+	protected $bindsString = [];
 
 	/**@var array[] $bindsArray */
 	protected $bindsArray = [];
@@ -46,27 +46,73 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
+	private function checkPlaceholder(&$placeholder, &$value, $autoPlaceholder) {
+		if (isset($this->bindArrays[$placeholder]) || isset($this->bindsString[$placeholder]) || isset($this->bindsInteger[$placeholder])) {
+			$this->connection->error("Placeholder collision '{$placeholder}'", $this->query, $this->bindsString);
+		}
+
+		if (empty($placeholder)) {
+			throw new ErrorException('Empty string passed as placeholder');
+		}
+
+		if ($placeholder[0] !== ':') {
+			$placeholder = ':' . $placeholder;
+		}
+
+		$autoDelimiter = $autoPlaceholder ? '_' : '';
+
+		if (preg_match("/[^:a-z0-9{$autoDelimiter}]/i", $placeholder)) {
+			throw new ErrorException("Wrong placeholder name '{$placeholder}'");
+		}
+
+		if (!is_scalar($value)) {
+			if (is_array($value)) {
+				throw new ErrorException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
+			} else if ($value instanceof \DateTime) {
+				$value = $value->format(Mysql::FORMAT_DATETIME);
+			} else {
+				throw new ErrorException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
+			}
+		}
+	}
+
+	private function checkBindsCount() {
+		$flatCount = count($this->bindsString) + count($this->bindsInteger);
+		$arrayCount = 0;
+
+		foreach ($this->bindsArray as $values) {
+			$arrayCount += count($values);
+		}
+
+		if (($flatCount + $arrayCount) > Mysql::MAX_BINDS_COUNT) {
+			$this->connection->error('Too many binds');
+		}
+	}
+
 	/**
 	 * @inheritdoc
 	 */
 	public function binds(array $binds) {
 		foreach ($binds as $placeholder => $value) {
-			$this->bind($placeholder, $value);
+			$this->checkPlaceholder($placeholder, $value, false);
+			$this->bindsString[$placeholder] = $value;
 		}
 
-		if (count($this->binds) > Mysql::MAX_BINDS_COUNT) {
-			$this->connection->error('Too many binds');
-		}
+		$this->checkBindsCount();
 
 		return $this;
 	}
 
+	/**
+	 * @inheritdoc
+	 */
 	public function bindIntegers(array $binds) {
-		if (array_keys($binds) !== range(0, count($binds) - 1)) {
-			throw new ErrorException('bindIntegers allowed only sequential array');
+		foreach ($binds as $placeholder => $value) {
+			$this->checkPlaceholder($placeholder, $value, false);
+			$this->bindsInteger[$placeholder] = (int)$value;
 		}
 
-		$this->bindsIntegers = $binds;
+		$this->checkBindsCount();
 
 		return $this;
 	}
@@ -75,11 +121,11 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function bindArray($placeholder, array $values) {
-		if (isset($this->bindArrays[$placeholder]) || isset($this->binds[$placeholder])) {
-			$this->connection->error("Placeholder collision '{$placeholder}'", $this->query, $this->binds);
-		}
-
+		$dummy = '';
+		$this->checkPlaceholder($placeholder, $dummy, false);
 		$this->bindsArray[$placeholder] = $values;
+
+		$this->checkBindsCount();
 
 		return $this;
 	}
@@ -89,15 +135,8 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 */
 	public function execute() {
 		$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
-
 		$this->injectBindArray($sql, $binds, $placeholders, true);
-
-		foreach ($this->bindsIntegers as $index => $value) {
-			$autoPlaceholder = ":autoInt_{$index}";
-			self::replaceIntegerPlaceholder($index, $autoPlaceholder, $sql, $placeholders);
-		}
-
-		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsIntegers);
+		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsInteger);
 
 		return $this;
 	}
@@ -112,11 +151,11 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
 			$this->injectBindArray($sql, $binds, $placeholders, false);
 
-			foreach ($this->bindsIntegers as $index => $integer) {
-				self::replaceIntegerPlaceholder($index, $integer, $sql, $placeholders);
+			foreach ($this->bindsInteger as $placeholder => $value) {
+				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
 			}
 
-			foreach ($this->binds as $placeholder => $value) {
+			foreach ($this->bindsString as $placeholder => $value) {
 				$value = $this->connection->quote(stripslashes($value));
 				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
 			}
@@ -147,7 +186,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected function injectBindArray(&$sql, &$binds, array &$placeholders, $executeScenario) {
-		$binds = $this->binds;
+		$binds = $this->bindsString;
 		$sql = $this->query;
 
 		foreach ($this->bindsArray as $placeholder => $values) {
@@ -155,13 +194,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 			foreach ($values as $index => $value) {
 				$autoPlaceholder = "{$placeholder}_{$index}";
-
-				self::validatePlaceholderAndFormat($autoPlaceholder, $value, '_');
-
-				if (isset($binds[$autoPlaceholder])) {
-					$this->connection->error("Placeholder collision '{$autoPlaceholder}'", $sql, $binds);
-				}
-
+				$this->checkPlaceholder($autoPlaceholder, $value, true);
 				$binds[$autoPlaceholder] = $value;
 
 				if (!$executeScenario) {
@@ -171,17 +204,17 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 				$newBinds[] = $autoPlaceholder;
 			}
 
-			self::replacePlaceholder($placeholder, implode(',', $newBinds), $sql, $placeholders);
+			$value = implode(',', $newBinds);
+			self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
 		}
 
-		if (count($binds) > Mysql::MAX_BINDS_COUNT) {
-			$this->connection->error('Too many binds');
-		}
+		$this->checkBindsCount();
 	}
 
 	protected function reset() {
-		$this->binds = [];
+		$this->bindsString = [];
 		$this->bindsArray = [];
+		$this->bindsInteger = [];
 		$this->statement = null;
 	}
 
@@ -229,50 +262,6 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 			$sql = substr_replace($sql, $value, $currentPosition['pos'] + $tmpOffset, $placeholderLen);
 			$tmpOffset += $offset;
-		}
-	}
-
-	/**
-	 * @param string $placeholder
-	 * @param string|int|float|\DateTime
-	 *
-	 * @return $this
-	 *
-	 * @throws ErrorException
-	 */
-	private function bind($placeholder, $value) {
-		self::validatePlaceholderAndFormat($placeholder, $value);
-
-		if (isset($this->binds[$placeholder])) {
-			throw new ErrorException("Placeholder collision '{$placeholder}'");
-		}
-
-		$this->binds[$placeholder] = $value;
-
-		return $this;
-	}
-
-	private static function validatePlaceholderAndFormat(&$placeholder, &$value, $autoDelimiter = '') {
-		if (empty($placeholder)) {
-			throw new ErrorException('Empty string passed as placeholder');
-		}
-
-		if ($placeholder[0] !== ':') {
-			$placeholder = ':' . $placeholder;
-		}
-
-		if (preg_match("/[^:a-z0-9{$autoDelimiter}]/i", $placeholder)) {
-			throw new ErrorException("Wrong placeholder name '{$placeholder}'");
-		}
-
-		if (!is_scalar($value)) {
-			if (is_array($value)) {
-				throw new ErrorException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
-			} else if ($value instanceof \DateTime) {
-				$value = $value->format(Mysql::FORMAT_DATETIME);
-			} else {
-				throw new ErrorException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
-			}
 		}
 	}
 }

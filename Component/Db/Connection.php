@@ -227,7 +227,7 @@ class Connection extends Configurator implements IConnection, ITransaction {
 	 *
 	 * @throws MySQLException
 	 */
-	public function execute($instance, $query, array $binds, array $bindsInteger = []) {
+	public function execute($instance, $query, array $binds, array $bindsInteger) {
 		try {
 			/**@var $startTime */
 			if ($this->debugEnabled) {
@@ -235,29 +235,13 @@ class Connection extends Configurator implements IConnection, ITransaction {
 			}
 
 			// execute query
-			if (empty($binds)) {
-				if (!empty($bindsInteger)) {
-					$statement = $this->adapter->prepare($query);
-
-					foreach ($bindsInteger as $index => $value) {
-						$statement->bindValue($index + $bindsOffset, $value, PDO::PARAM_INT);
-					}
-
-					$statement->execute();
-				} else {
-					$statement = $this->adapter->query($query);
-				}
+			if (empty($binds) && empty($bindsInteger)) {
+				$statement = $this->adapter->query($query);
 			} else {
-				foreach ($binds as &$bind) {
-					if ($bind instanceof DateTime) {
-						$bind = $bind->format(Mysql::FORMAT_DATETIME);
-					}
-				}
-
 				$statement = $this->adapter->prepare($query);
 
-				foreach ($bindsInteger as $index => $value) {
-					$statement->bindValue(":autoInt_{$index}", $value, PDO::PARAM_INT);
+				foreach ($bindsInteger as $key => $value) {
+					$statement->bindValue($key, $value, PDO::PARAM_INT);
 				}
 
 				foreach ($binds as $key => $value) {
@@ -272,6 +256,7 @@ class Connection extends Configurator implements IConnection, ITransaction {
 				$instance = strtoupper($match[1]);
 
 				if (!empty($binds) && in_array($instance, ['INSERT', 'REPLACE'])) {
+					$binds = array_slice($binds, 0, 20);
 					$binds = array_slice($binds, 0, 20);
 				}
 
