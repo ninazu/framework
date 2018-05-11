@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Component\Db;
 
 use ErrorException;
+use PDO;
 use ReflectionFunction;
 use vendor\ninazu\framework\Component\Db\Interfaces\ISelect;
 use vendor\ninazu\framework\Component\Db\Interfaces\ISelectResult;
@@ -107,7 +108,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 			throw new ErrorException('The execute() method must be called before fetchAll()');
 		}
 
-		$result = $this->statement->fetchAll(\PDO::FETCH_ASSOC);
+		$result = $this->statement->fetchAll(PDO::FETCH_ASSOC);
 		$callBack = $this->callBack;
 
 		if (is_null($this->columnName) && is_null($this->callBack)) {
@@ -153,7 +154,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	 * @inheritdoc
 	 */
 	public function queryOne() {
-		$result = $this->statement->fetch(\PDO::FETCH_ASSOC);
+		$result = $this->statement->fetch(PDO::FETCH_ASSOC);
 		$this->reset();
 
 		return $result;

@@ -92,7 +92,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function binds(array $binds) {
+	public function bindsString(array $binds) {
 		if (empty($binds)) {
 			return $this;
 		}
@@ -110,7 +110,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function bindIntegers(array $binds) {
+	public function bindInteger(array $binds) {
 		if (empty($binds)) {
 			return $this;
 		}

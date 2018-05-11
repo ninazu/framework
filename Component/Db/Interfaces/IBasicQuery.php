@@ -9,14 +9,14 @@ interface IBasicQuery {
 	 *
 	 * @return $this
 	 */
-	public function binds(array $binds);
+	public function bindsString(array $binds);
 
 	/**
 	 * @param array $binds
 	 *
 	 * @return $this
 	 */
-	public function bindIntegers(array $binds);
+	public function bindInteger(array $binds);
 
 	/**
 	 * @param string $placeholder

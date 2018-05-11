@@ -113,7 +113,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				}
 			}
 
-			$this->binds($binds);
+			$this->bindsString($binds);
 
 			$this->columnsUpdate = implode(", ", $valuesForUpdate);
 		}
@@ -173,6 +173,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 			if (array_diff($columnNames, array_keys($row))) {
 				throw new ErrorException("Keys of Values are different for index #{$index}");
 			}
+
+			foreach ($columnNames as $column) {
+				if (!isset($row[$column])) {
+					throw new ErrorException("One of the rows does not contain value for the column '{$column}'.");
+				}
+			}
 		}
 
 		return true;
@@ -196,8 +202,8 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		}
 
 		$columns = array_keys(reset($this->values));
-		$columnNames = implode("`,\n`", $columns);
-		$headerQuery = "INSERT{$priority}{$ignore}\nINTO {$this->table}\n(`{$columnNames}`)\nVALUES\n";
+		$columnNames = implode("`,\n\t`", $columns);
+		$headerQuery = "INSERT{$priority}{$ignore}\nINTO {$this->table}\n(\n\t`{$columnNames}`\n)\nVALUES\n\t";
 		$allowedLength = ($this->connection->getMaxQueryLength() - strlen($headerQuery)) * 0.95;
 		$parts = [];
 		$currentPart = [];
@@ -229,7 +235,6 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$parts[] = $currentPart;
 		$result = [];
 
-		//TODO STOP
 		foreach ($parts as $index => $part) {
 			list($partialQuery, $partialBinds) = $this->partialSQL($index, $binds, $headerQuery, $part, $columns, $update);
 			$result[$index] = [
@@ -248,15 +253,10 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 			$placeholders = [];
 
 			foreach ($columns as $column) {
-				if (!isset($row[$column])) {
-					throw new \InvalidArgumentException("One of the rows does not contain value for the column '{$column}'.");
-				}
-
 				$value = $row[$column];
 
 				if ($value instanceof Expression) {
 					$placeholders[] = (string)$value;
-					$binds += $this->bindsString;
 				} else {
 					$name = ":{$column}_{$index}_{$i}";
 					$binds[$name] = $value;
@@ -264,10 +264,11 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				}
 			}
 
-			$lines[] = '(' . implode(', ', $placeholders) . '),';
+			$placeholders = implode(', ', $placeholders);
+			$lines[] = "({$placeholders}),";
 		}
 
-		$query = $headerQuery . implode("\n", $lines);
+		$query = $headerQuery . implode("\n\t", $lines);
 		$query = rtrim($query, ',') . $update;
 
 		return [
