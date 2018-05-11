@@ -4,8 +4,9 @@ namespace vendor\ninazu\framework\Core;
 
 use ErrorException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
+use vendor\ninazu\framework\Component\Db\Mysql;
 use vendor\ninazu\framework\Component\Request;
-use vendor\ninazu\framework\Component\Response;
+use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\Router;
 use vendor\ninazu\framework\Component\User\User;
 use vendor\ninazu\framework\Core\Handler\DefaultHandler;
@@ -34,8 +35,9 @@ abstract class Application {
 	 * Core constructor.
 	 *
 	 * @param array $autoLoaders
-	 *
 	 * @param IHandler|null $handler
+	 *
+	 * @throws \Exception
 	 */
 	public function __construct(array $autoLoaders, IHandler $handler = null) {
 		//Prevent error printing
@@ -136,11 +138,11 @@ abstract class Application {
 
 	protected function setDefaultComponents() {
 		$components = [
-			'response' => 'vendor\ninazu\framework\Component\Response',
-			'router' => 'vendor\ninazu\framework\Component\Router',
-			'request' => 'vendor\ninazu\framework\Component\Request',
-			'user' => 'vendor\ninazu\framework\Component\User\User',
-			'db' => 'vendor\ninazu\framework\Component\Db\Mysql',
+			'response' => Response::class,
+			'router' => Router::class,
+			'request' => Request::class,
+			'user' => User::class,
+			'db' => Mysql::class,
 		];
 
 		foreach ($components as $name => $class) {

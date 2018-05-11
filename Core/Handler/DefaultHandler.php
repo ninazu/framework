@@ -4,7 +4,7 @@ namespace vendor\ninazu\framework\Core\Handler;
 
 use ErrorException;
 use Exception;
-use vendor\ninazu\framework\Component\Response;
+use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Core\Application;
 use vendor\ninazu\framework\Core\Environment;
 
