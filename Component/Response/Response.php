@@ -7,6 +7,7 @@ use Exception;
 use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\JsonSerializer;
 use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Helper\Reflector;
 
 class Response extends Component implements IResponse {
 
@@ -123,6 +124,10 @@ class Response extends Component implements IResponse {
 
 		if (isset($serializer['config'])) {
 			$config = $serializer['config'];
+		}
+
+		if (!Reflector::isInstanceOf($className, Serializer::class)) {
+			throw new ErrorException("{$className} must be implemented of " . Serializer::class);
 		}
 
 		/**@var Serializer $serializer */

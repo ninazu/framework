@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Helper;
 
 use ReflectionClass;
+use vendor\ninazu\framework\Component\Response\Response;
 
 class Reflector {
 
@@ -113,5 +114,16 @@ class Reflector {
 		}
 
 		return new self(self::$constantGroup[$className][$needle]);
+	}
+
+	public static function isInstanceOf($className, $instanceName) {
+		$instance = new ReflectionClass($instanceName);
+		$class = new ReflectionClass($className);
+
+		if ($instance->isInterface()) {
+			return $class->implementsInterface($instance);
+		} else {
+			return $class->isSubclassOf($instance);
+		}
 	}
 }
