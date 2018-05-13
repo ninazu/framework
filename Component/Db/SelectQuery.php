@@ -160,7 +160,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		return $result;
 	}
 
-	public function reset() {
+	protected function reset() {
 		parent::reset();
 		$this->columnName = null;
 		$this->callBack = null;

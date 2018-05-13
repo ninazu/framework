@@ -37,10 +37,26 @@ class Processor {
 					$recursiveOffsetRight = $offset['right'];
 				} while ($token != $tokenAfter);
 
-				$placeholders[$token][] = [
-					'pos' => $position + $recursiveOffsetLeft,
-					'offset' => $recursiveOffsetRight,
-				];
+				$subQuery = Lexer::parse($token);
+
+				if (count($subQuery) == 1) {
+					$placeholders[$token][] = [
+						'pos' => $position + $recursiveOffsetLeft,
+						'offset' => $recursiveOffsetRight,
+					];
+				} else {
+					$tmp = (new self($subQuery))->getPlaceholders();
+
+					//TODO STOP
+					foreach ($tmp as $subQueryToken => $subQueryPositions) {
+						foreach ($subQueryPositions as $subQueryPosition) {
+							$placeholders[$subQueryToken][] = [
+								'pos' => $position + $recursiveOffsetLeft + $subQueryPosition['pos'],
+								'offset' => $recursiveOffsetRight + $subQueryPosition['offset'],
+							];
+						}
+					}
+				}
 			}
 
 			$position += strlen($token) + $recursiveOffsetRight + $recursiveOffsetLeft;

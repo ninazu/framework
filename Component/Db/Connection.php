@@ -159,10 +159,11 @@ class Connection extends Configurator implements IConnection, ITransaction {
 	/**
 	 * @inheritdoc
 	 */
-	public function insert($table, array $values) {
+	public function insert($table, $values, $columns = []) {
 		return (new InsertQuery($this))
 			->setTable($table)
-			->setValues($values);
+			->setValues($values, is_array($values))
+			->setColumns($columns);
 	}
 
 	/**

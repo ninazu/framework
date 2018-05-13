@@ -2,6 +2,8 @@
 
 namespace vendor\ninazu\framework\Component\Db\Interfaces;
 
+use vendor\ninazu\framework\Component\Db\Expression;
+
 interface IBasicConnection {
 
 	/**
@@ -23,11 +25,11 @@ interface IBasicConnection {
 
 	/**
 	 * @param string $table
-	 * @param array $values
+	 * @param array|Expression $values
 	 *
 	 * @return IInsert
 	 */
-	public function insert($table, array $values);
+	public function insert($table, $values);
 
 	/**
 	 * @param string $table

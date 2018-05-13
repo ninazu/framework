@@ -71,12 +71,16 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function bindsString(array $binds) {
+		return $this->bindsStringAndValidate($binds, false);
+	}
+
+	protected function bindsStringAndValidate(array $binds, $autoPlaceholder) {
 		if (empty($binds)) {
 			return $this;
 		}
 
 		foreach ($binds as $placeholder => $value) {
-			$this->checkPlaceholder($placeholder, $value, false);
+			$this->checkPlaceholder($placeholder, $value, $autoPlaceholder);
 			$this->bindsString[$placeholder] = $value;
 		}
 
@@ -112,7 +116,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		}
 
 		$dummy = '';
-		//TODO Dummy
+		//Value not processed
 		$this->checkPlaceholder($placeholder, $dummy, false);
 		$this->bindsArray[$placeholder] = $binds;
 
@@ -163,8 +167,6 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 				$value = $this->connection->quote(stripslashes($value));
 				self::replacePlaceholder($placeholder, $value, $query, $placeholders);
 			}
-
-			$this->checkBindsCount();
 		}
 
 		return $this;

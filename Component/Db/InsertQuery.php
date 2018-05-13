@@ -14,43 +14,61 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 	private $columnsUpdate = '';
 
+	private $columns;
+
+	/**
+	 * @internal
+	 *
+	 * @param string[] $columns
+	 *
+	 * @return InsertQuery
+	 *
+	 * @throws ErrorException
+	 */
+	public function setColumns(array $columns) {
+		$unique = [];
+
+		foreach ($columns as $index => $column) {
+			if (!is_string($column)) {
+				throw new ErrorException("Column {$index} must be string");
+			}
+
+			$unique[$column] = null;
+		}
+
+		$this->columns = array_keys($unique);
+
+		return $this;
+	}
+
 	/**
 	 * @inheritdoc
 	 */
 	public function getSQL(&$query, $withPlaceholders) {
 		$parts = $this->prepareSql();
 
-		$tmpQuery = $this->query;
-
-		$tmpBindsString = $this->bindsString;
-		$tmpBindsArray = $this->bindsArray;
-		$tmpBindsInteger = $this->bindsInteger;
-
-		$this->bindsArray = [];
-
 		foreach ($parts as $part) {
-			$this->query = $part['query'];
-			$this->bindsString = $part['binds'];
-
 			if (!$withPlaceholders) {
-//				$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
-//
-//				$this->injectBindArray($query, $binds, $placeholders, true);
+				$placeholders = (new Processor(Lexer::parse($part['query'])))->getPlaceholders();
 
-//				foreach ($binds as $placeholder => $value) {
-//					$value = $this->connection->quote(stripslashes($value));
-//
-//					self::replacePlaceholder($placeholder, $value, $this->query);
-//				}
+				foreach ($this->bindsArray as $placeholder => $values) {
+					$this->replaceArrayPlaceholder($placeholder, $values, $part['query'], $placeholders, $part['bindsString'], false);
+				}
+
+				foreach ($this->bindsInteger as $placeholder => $value) {
+					self::replacePlaceholder($placeholder, $value, $query, $placeholders);
+				}
+
+				foreach ($part['bindsString'] as $placeholder => $value) {
+					$value = $this->connection->quote(stripslashes($value));
+					self::replacePlaceholder($placeholder, $value, $query, $placeholders);
+				}
 			}
 
-			$query .= "{$this->query};\n\n";
+			$query .= "{$part['query']};\n\n";
 		}
 
-		$this->query = $tmpQuery;
-		$this->bindsString = $tmpBindsString;
-		$this->bindsArray = $tmpBindsArray;
-		$this->bindsInteger = $tmpBindsInteger;
+		$query = trim($query, "\n");
 
 		return $this;
 	}
@@ -59,6 +77,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * @inheritdoc
 	 */
 	public function execute() {
+		//TODO Stop
 		$parts = $this->prepareSql();
 
 		$transaction = $this->connection->beginTransaction();
@@ -66,7 +85,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		try {
 			foreach ($parts as $part) {
-				$this->bindsString = $part['binds'];
+				$this->bindsString = $part['bindsString'];
 				$this->query = $part['query'];
 				parent::execute();
 
@@ -98,24 +117,29 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				throw new ErrorException('Empty values for update');
 			}
 
-			$valuesForUpdate = [];
-			$binds = [];
-
-			foreach ($columnUpdate as $columnsUpdateName => $columnsUpdateValue) {
-				$columnsUpdateValue = trim($columnsUpdateValue);
-
-				if ($columnsUpdateValue instanceof Expression) {
-					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$columnsUpdateValue}\n";
-				} else {
-					$autoPlaceholder = ":{$columnsUpdateName}_forUpdate";
-					$valuesForUpdate[] = "`{$columnsUpdateName}` = {$autoPlaceholder}\n";
-					$binds[$autoPlaceholder] = $columnsUpdateValue;
-				}
+			if (!empty($this->columnsUpdate)) {
+				throw new ErrorException('Column for update already set');
 			}
 
-			$this->bindsString($binds);
+			$placeholders = [];
+			$bindsString = [];
 
-			$this->columnsUpdate = implode(", ", $valuesForUpdate);
+			foreach ($columnUpdate as $column => $value) {
+				if ($value instanceof Expression) {
+					//Use as is
+					$value = "`{$column}` = {$value}\n";
+				} else {
+					//Append AutoPlaceholders
+					$autoPlaceholder = ":{$column}_forUpdate";
+					$bindsString[$autoPlaceholder] = $value;
+					$value = "`{$column}` = {$autoPlaceholder}\n";
+				}
+
+				$placeholders[] = $value;
+			}
+
+			$this->bindsStringAndValidate($bindsString, true);
+			$this->columnsUpdate = "\t" . implode(",\t", $placeholders);
 		}
 
 		return $this;
@@ -128,7 +152,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		return $this->connection->lastInsertedId();
 	}
 
-	public function reset() {
+	protected function reset() {
 		parent::reset();
 		$this->affectedRows = 0;
 		$this->priority = null;
@@ -136,6 +160,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$this->table = null;
 		$this->onError = null;
 		$this->columnsUpdate = '';
+		$this->columns = [];
 	}
 
 	/**
@@ -191,19 +216,39 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * @throws MySQLException
 	 */
 	private function prepareSql() {
-		$ignore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
-		$update = '';
+		$onErrorIgnore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
+		$onDuplicateUpdate = '';
 		$priority = ($this->priority) ? $this->priority : '';
-		$binds = $this->bindsString;
+		$bindsString = $this->bindsString;
+		$headerQuery = "INSERT{$priority}{$onErrorIgnore}\nINTO {$this->table}\n";
 
 		if ($this->onError == self::ON_DUPLICATE_UPDATE) {
-			$update = "\n" . self::ON_DUPLICATE_UPDATE . "\n";
-			$update .= $this->columnsUpdate;
+			$onDuplicateUpdate = "\n" . self::ON_DUPLICATE_UPDATE . "\n";
+			$onDuplicateUpdate .= $this->columnsUpdate;
+		}
+
+		if ($this->values instanceof Expression) {
+			$columnNames = "";
+			$expression = (string)$this->values;
+
+			if (!empty($this->columns)) {
+				$columnNames = implode("`,\n\t`", $this->columns);
+				$columnNames = "(\n\t`{$columnNames}`\n)\n";
+			}
+
+			$partialQuery = "{$headerQuery}{$columnNames}({$expression}){$onDuplicateUpdate}";
+
+			return [
+				[
+					'bindsString' => $bindsString,
+					'query' => $partialQuery,
+				],
+			];
 		}
 
 		$columns = array_keys(reset($this->values));
 		$columnNames = implode("`,\n\t`", $columns);
-		$headerQuery = "INSERT{$priority}{$ignore}\nINTO {$this->table}\n(\n\t`{$columnNames}`\n)\nVALUES\n\t";
+		$headerQuery .= "(\n\t`{$columnNames}`\n)\nVALUES\n\t";
 		$allowedLength = ($this->connection->getMaxQueryLength() - strlen($headerQuery)) * 0.95;
 		$parts = [];
 		$currentPart = [];
@@ -236,9 +281,9 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$result = [];
 
 		foreach ($parts as $index => $part) {
-			list($partialQuery, $partialBinds) = $this->partialSQL($index, $binds, $headerQuery, $part, $columns, $update);
+			list($partialQuery, $partialBinds) = $this->partialSQL($index, $bindsString, $headerQuery, $part, $columns, $onDuplicateUpdate);
 			$result[$index] = [
-				'binds' => array_replace_recursive($binds, $partialBinds),
+				'bindsString' => array_replace_recursive($bindsString, $partialBinds),
 				'query' => $partialQuery,
 			];
 		}
@@ -246,7 +291,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		return $result;
 	}
 
-	private function partialSQL($index, $binds, $headerQuery, $values, $columns, $update) {
+	private function partialSQL($index, $bindsString, $headerQuery, $values, $columns, $onDuplicateUpdate) {
 		$lines = [];
 
 		foreach ($values as $i => $row) {
@@ -256,12 +301,16 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				$value = $row[$column];
 
 				if ($value instanceof Expression) {
-					$placeholders[] = (string)$value;
+					//Use as is
+					$value = (string)$value;
 				} else {
-					$name = ":{$column}_{$index}_{$i}";
-					$binds[$name] = $value;
-					$placeholders[] = $name;
+					//Append AutoPlaceholders
+					$autoPlaceholder = ":{$column}_{$index}_{$i}";
+					$bindsString[$autoPlaceholder] = $value;
+					$value = $autoPlaceholder;
 				}
+
+				$placeholders[] = $value;
 			}
 
 			$placeholders = implode(', ', $placeholders);
@@ -269,11 +318,11 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		}
 
 		$query = $headerQuery . implode("\n\t", $lines);
-		$query = rtrim($query, ',') . $update;
+		$query = rtrim($query, ',') . "\n{$onDuplicateUpdate}";
 
 		return [
 			$query,
-			$binds,
+			$bindsString,
 		];
 	}
 }
