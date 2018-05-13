@@ -14,10 +14,10 @@ interface IQuery extends IBasicQuery {
 	 *
 	 * USE ONLY FOR DEBUG. Сan contain SQL injection or wrong replaced value
 	 *
-	 * @param string $sql
+	 * @param string $query
 	 * @param bool $withPlaceholders
 	 *
 	 * @return IQueryPrepare
 	 */
-	public function getSQL(&$sql, $withPlaceholders);
+	public function getSQL(&$query, $withPlaceholders);
 }

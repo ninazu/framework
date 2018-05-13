@@ -46,47 +46,25 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
-	private function checkPlaceholder(&$placeholder, &$value, $autoPlaceholder) {
-		if (isset($this->bindArrays[$placeholder]) || isset($this->bindsString[$placeholder]) || isset($this->bindsInteger[$placeholder])) {
-			$this->connection->error("Placeholder collision '{$placeholder}'", $this->query, $this->bindsString);
-		}
-
-		if (empty($placeholder)) {
-			throw new ErrorException('Empty string passed as placeholder');
-		}
-
-		if ($placeholder[0] !== ':') {
-			$placeholder = ':' . $placeholder;
-		}
-
-		$autoDelimiter = $autoPlaceholder ? '_' : '';
-
-		if (preg_match("/[^:a-z0-9{$autoDelimiter}]/i", $placeholder)) {
-			throw new ErrorException("Wrong placeholder name '{$placeholder}'");
-		}
-
-		if (!is_scalar($value)) {
-			if (is_array($value)) {
-				throw new ErrorException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
-			} else if ($value instanceof \DateTime) {
-				$value = $value->format(Mysql::FORMAT_DATETIME);
-			} else {
-				throw new ErrorException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
-			}
-		}
+	/**
+	 * @inheritdoc
+	 */
+	public function columnCount() {
+		return $this->statement->columnCount();
 	}
 
-	private function checkBindsCount() {
-		$flatCount = count($this->bindsString) + count($this->bindsInteger);
-		$arrayCount = 0;
+	/**
+	 * @inheritdoc
+	 */
+	public function rowCount() {
+		return $this->statement->rowCount();
+	}
 
-		foreach ($this->bindsArray as $values) {
-			$arrayCount += count($values);
-		}
-
-		if (($flatCount + $arrayCount) > Mysql::MAX_BINDS_COUNT) {
-			$this->connection->error('Too many binds');
-		}
+	/**
+	 * @inheritdoc
+	 */
+	public function columnMeta($columnIndex) {
+		return $this->statement->getColumnMeta($columnIndex);
 	}
 
 	/**
@@ -110,7 +88,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function bindInteger(array $binds) {
+	public function bindsInteger(array $binds) {
 		if (empty($binds)) {
 			return $this;
 		}
@@ -128,12 +106,13 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function bindArray($placeholder, array $binds) {
+	public function bindsArray($placeholder, array $binds) {
 		if (empty($binds)) {
 			throw new ErrorException('bindArray empty array given');
 		}
 
 		$dummy = '';
+		//TODO Dummy
 		$this->checkPlaceholder($placeholder, $dummy, false);
 		$this->bindsArray[$placeholder] = $binds;
 
@@ -147,80 +126,70 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 */
 	public function execute() {
 		$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
-		$this->injectBindArray($sql, $binds, $placeholders, true);
-		$this->statement = $this->connection->execute(static::class, $sql, $binds, $this->bindsInteger);
+		//ByRef
+		$query = $this->query;
+		$bindsString = $this->bindsString;
+
+		foreach ($this->bindsArray as $placeholder => $values) {
+			$this->replaceArrayPlaceholder($placeholder, $values, $query, $placeholders, $bindsString, true);
+		}
+
+		$this->statement = $this->connection->execute(static::class, $query, $bindsString, $this->bindsInteger);
 
 		return $this;
 	}
 
 	/**
+	 * @internal
 	 * @inheritdoc
 	 */
-	public function getSQL(&$sql, $withPlaceholders) {
-		$sql = $this->query;
+	public function getSQL(&$query, $withPlaceholders) {
+		$query = $this->query;
 
 		if (!$withPlaceholders) {
-			$placeholders = (new Processor(Lexer::parse($sql)))->getPlaceholders();
-			$this->injectBindArray($sql, $binds, $placeholders, false);
+			$placeholders = (new Processor(Lexer::parse($query)))->getPlaceholders();
+			//ByRef
+			$bindsString = $this->bindsString;
+
+			foreach ($this->bindsArray as $placeholder => $values) {
+				$this->replaceArrayPlaceholder($placeholder, $values, $query, $placeholders, $bindsString, false);
+			}
 
 			foreach ($this->bindsInteger as $placeholder => $value) {
-				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
+				self::replacePlaceholder($placeholder, $value, $query, $placeholders);
 			}
 
 			foreach ($this->bindsString as $placeholder => $value) {
 				$value = $this->connection->quote(stripslashes($value));
-				self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
+				self::replacePlaceholder($placeholder, $value, $query, $placeholders);
 			}
+
+			$this->checkBindsCount();
 		}
 
 		return $this;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
-	public function columnCount() {
-		return $this->statement->columnCount();
-	}
+	protected function replaceArrayPlaceholder($placeholder, $values, &$query, array &$placeholders, &$bindsString, $executeScenario) {
+		$newBinds = [];
 
-	/**
-	 * @inheritdoc
-	 */
-	public function rowCount() {
-		return $this->statement->rowCount();
-	}
+		foreach ($values as $index => $value) {
+			$autoPlaceholder = "{$placeholder}_{$index}";
+			$this->checkPlaceholder($autoPlaceholder, $value, true);
 
-	/**
-	 * @inheritdoc
-	 */
-	public function columnMeta($columnIndex) {
-		return $this->statement->getColumnMeta($columnIndex);
-	}
-
-	protected function injectBindArray(&$sql, &$binds, array &$placeholders, $executeScenario) {
-		$binds = $this->bindsString;
-		$sql = $this->query;
-
-		foreach ($this->bindsArray as $placeholder => $values) {
-			$newBinds = [];
-
-			foreach ($values as $index => $value) {
-				$autoPlaceholder = "{$placeholder}_{$index}";
-				$this->checkPlaceholder($autoPlaceholder, $value, true);
-				$binds[$autoPlaceholder] = $value;
-
-				if (!$executeScenario) {
-					$autoPlaceholder = $this->connection->quote(stripslashes($value));
-				}
-
-				$newBinds[] = $autoPlaceholder;
+			if ($executeScenario) {
+				//Append AutoPlaceholder
+				$bindsString[$autoPlaceholder] = $value;
+			} else {
+				//Replace Placeholder with QuotedValue
+				$autoPlaceholder = $this->connection->quote(stripslashes($value));
 			}
 
-			$value = implode(',', $newBinds);
-			self::replacePlaceholder($placeholder, $value, $sql, $placeholders);
+			$newBinds[] = $autoPlaceholder;
 		}
 
-		$this->checkBindsCount();
+		$value = implode(',', $newBinds);
+		self::replacePlaceholder($placeholder, $value, $query, $placeholders);
 	}
 
 	protected function reset() {
@@ -230,6 +199,14 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->statement = null;
 	}
 
+	/**
+	 * @deprecated
+	 *
+	 * @param int $index
+	 * @param int $value
+	 * @param string $sql
+	 * @param array $placeholders
+	 */
 	protected static function replaceIntegerPlaceholder($index, $value, &$sql, array &$placeholders) {
 		$value = (string)$value;
 		$strValueLen = strlen((string)$value);
@@ -274,6 +251,49 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 			$sql = substr_replace($sql, $value, $currentPosition['pos'] + $tmpOffset, $placeholderLen);
 			$tmpOffset += $offset;
+		}
+	}
+
+	protected function checkPlaceholder(&$placeholder, &$value, $autoPlaceholder) {
+		if (isset($this->bindArrays[$placeholder]) || isset($this->bindsString[$placeholder]) || isset($this->bindsInteger[$placeholder])) {
+			$this->connection->error("Placeholder collision '{$placeholder}'", $this->query, $this->bindsString);
+		}
+
+		if (empty($placeholder)) {
+			throw new ErrorException('Empty string passed as placeholder');
+		}
+
+		if ($placeholder[0] !== ':') {
+			$placeholder = ':' . $placeholder;
+		}
+
+		$autoDelimiter = $autoPlaceholder ? '_' : '';
+
+		if (preg_match("/[^:a-z0-9{$autoDelimiter}]/i", $placeholder)) {
+			throw new ErrorException("Wrong placeholder name '{$placeholder}'");
+		}
+
+		if (!is_scalar($value)) {
+			if (is_array($value)) {
+				throw new ErrorException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
+			} else if ($value instanceof \DateTime) {
+				$value = $value->format(Mysql::FORMAT_DATETIME);
+			} else {
+				throw new ErrorException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
+			}
+		}
+	}
+
+	protected function checkBindsCount() {
+		$flatCount = count($this->bindsString) + count($this->bindsInteger);
+		$arrayCount = 0;
+
+		foreach ($this->bindsArray as $values) {
+			$arrayCount += count($values);
+		}
+
+		if (($flatCount + $arrayCount) > Mysql::MAX_BINDS_COUNT) {
+			$this->connection->error('Too many binds');
 		}
 	}
 }

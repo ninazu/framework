@@ -17,7 +17,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function getSQL(&$sql, $withPlaceholders) {
+	public function getSQL(&$query, $withPlaceholders) {
 		$parts = $this->prepareSql();
 
 		$tmpQuery = $this->query;
@@ -44,7 +44,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 //				}
 			}
 
-			$sql .= "{$this->query};\n";
+			$query .= "{$this->query};\n\n";
 		}
 
 		$this->query = $tmpQuery;

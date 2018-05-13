@@ -16,7 +16,7 @@ interface IBasicQuery {
 	 *
 	 * @return $this
 	 */
-	public function bindInteger(array $binds);
+	public function bindsInteger(array $binds);
 
 	/**
 	 * @param string $placeholder
@@ -24,5 +24,5 @@ interface IBasicQuery {
 	 *
 	 * @return $this
 	 */
-	public function bindArray($placeholder, array $values);
+	public function bindsArray($placeholder, array $values);
 }
