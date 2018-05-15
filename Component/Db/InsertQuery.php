@@ -56,12 +56,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				}
 
 				foreach ($this->bindsInteger as $placeholder => $value) {
-					self::replacePlaceholder($placeholder, $value, $query, $placeholders);
+					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
 				}
 
 				foreach ($part['bindsString'] as $placeholder => $value) {
 					$value = $this->connection->quote(stripslashes($value));
-					self::replacePlaceholder($placeholder, $value, $query, $placeholders);
+					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
 				}
 			}
 
@@ -81,7 +81,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$parts = $this->prepareSql();
 
 		$transaction = $this->connection->beginTransaction();
-		$this->bindsArray = [];
+		//$this->bindsArray = [];
 
 		try {
 			foreach ($parts as $part) {
