@@ -43,47 +43,46 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		return $this;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
-	public function getSQL(&$query, $withPlaceholders) {
-		$parts = $this->prepareSql();
-
-		foreach ($parts as $part) {
-			if (!$withPlaceholders) {
-				$placeholders = (new Processor(Lexer::parse($part['query'])))->getPlaceholders();
-
-				foreach ($this->bindsArray as $placeholder => $values) {
-					$this->replaceArrayPlaceholder($placeholder, $values, $part['query'], $placeholders, $part['bindsString'], false);
-				}
-
-				foreach ($this->bindsInteger as $placeholder => $value) {
-					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
-				}
-
-				foreach ($part['bindsString'] as $placeholder => $value) {
-					$value = $this->connection->quote(stripslashes($value));
-					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
-				}
-			}
-
-			$query .= "{$part['query']};\n\n";
-		}
-
-		$query = trim($query, "\n");
-
-		return $this;
-	}
+//	/**
+//	 * @inheritdoc
+//	 */
+//	public function getSQL(&$query, $withPlaceholders) {
+//		$parts = $this->prepareSql();
+//		$query = '';
+//
+//		foreach ($parts as $part) {
+//			if (!$withPlaceholders) {
+//				$placeholders = (new Processor(Lexer::parse($part['query'])))->getPlaceholders();
+//
+//				foreach ($this->bindsArray as $placeholder => $values) {
+//					$this->replaceArrayPlaceholder($placeholder, $values, $part['query'], $placeholders, $part['bindsString'], false);
+//				}
+//
+//				foreach ($this->bindsInteger as $placeholder => $value) {
+//					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
+//				}
+//
+//				foreach ($part['bindsString'] as $placeholder => $value) {
+//					$value = $this->connection->quote(stripslashes($value));
+//					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
+//				}
+//			}
+//
+//			$query .= "{$part['query']};\n\n";
+//		}
+//
+//		$query = trim($query, "\n");
+//
+//		return $this;
+//	}
 
 	/**
 	 * @inheritdoc
 	 */
 	public function execute() {
-		//TODO Stop
 		$parts = $this->prepareSql();
 
 		$transaction = $this->connection->beginTransaction();
-		//$this->bindsArray = [];
 
 		try {
 			foreach ($parts as $part) {
@@ -131,19 +130,19 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 				if ($value instanceof Expression) {
 					//Use as is
-					$value = "`{$column}` = {$value}\n";
+					$value = "`{$column}` = {$value}";
 				} else {
 					//Append AutoPlaceholders
 					$autoPlaceholder = ":{$column}_forUpdate";
 					$bindsString[$autoPlaceholder] = $value;
-					$value = "`{$column}` = {$autoPlaceholder}\n";
+					$value = "`{$column}` = {$autoPlaceholder}";
 				}
 
 				$placeholders[] = $value;
 			}
 
 			$this->bindsStringAndValidate($bindsString, true);
-			$this->columnsUpdate = "\t" . implode(",\t", $placeholders);
+			$this->columnsUpdate = "\t" . implode(",\n\t", $placeholders);
 		}
 
 		return $this;
@@ -231,7 +230,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		if ($this->values instanceof Expression) {
 			$columnNames = "";
-			$expression = (string)$this->values;
+			$expression = "\n{$this->values}\n";
 
 			if (!empty($this->columns)) {
 				$columnNames = implode("`,\n\t`", $this->columns);

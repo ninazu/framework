@@ -2,6 +2,8 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
+use vendor\ninazu\framework\Helper\Formatter;
+
 class Expression {
 
 	protected $expression;
@@ -15,6 +17,6 @@ class Expression {
 	}
 
 	public function __toString() {
-		return $this->expression;
+		return Formatter::removeLeftTabs($this->expression);
 	}
 }

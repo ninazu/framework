@@ -9,6 +9,7 @@ use vendor\ninazu\framework\Component\Db\Interfaces\IQueryPrepare;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryResult;
 use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
 use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
+use vendor\ninazu\framework\Helper\Formatter;
 
 class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
@@ -144,7 +145,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected function prepareSql() {
-		return $this->query;
+		return [
+			[
+				'bindsString' => $this->bindsString,
+				'query' => $this->query,
+			],
+		];
 	}
 
 	/**
@@ -152,26 +158,32 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function getSQL(&$query, $withPlaceholders) {
-		$query = $this->prepareSql();
+		$parts = $this->prepareSql();
+		$query = '';
 
-		if (!$withPlaceholders) {
-			$placeholders = (new Processor(Lexer::parse($query)))->getPlaceholders();
-			//ByRef
-			$bindsString = $this->bindsString;
+		foreach ($parts as $part) {
+			if (!$withPlaceholders) {
+				$placeholders = (new Processor(Lexer::parse($part['query'])))->getPlaceholders();
 
-			foreach ($this->bindsArray as $placeholder => $values) {
-				$this->replaceArrayPlaceholder($placeholder, $values, $query, $placeholders, $bindsString, false);
+				foreach ($this->bindsArray as $placeholder => $values) {
+					$this->replaceArrayPlaceholder($placeholder, $values, $part['query'], $placeholders, $part['bindsString'], false);
+				}
+
+				foreach ($this->bindsInteger as $placeholder => $value) {
+					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
+				}
+
+				foreach ($part['bindsString'] as $placeholder => $value) {
+					$value = $this->connection->quote(stripslashes($value));
+					self::replacePlaceholder($placeholder, $value, $part['query'], $placeholders);
+				}
 			}
 
-			foreach ($this->bindsInteger as $placeholder => $value) {
-				self::replacePlaceholder($placeholder, $value, $query, $placeholders);
-			}
-
-			foreach ($this->bindsString as $placeholder => $value) {
-				$value = $this->connection->quote(stripslashes($value));
-				self::replacePlaceholder($placeholder, $value, $query, $placeholders);
-			}
+			$query .= "{$part['query']};\n\n";
 		}
+
+		$query = trim($query, "\n");
+		$query = Formatter::removeLeftTabs($query);
 
 		return $this;
 	}

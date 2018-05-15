@@ -3,7 +3,6 @@
 namespace vendor\ninazu\framework\Helper;
 
 use ReflectionClass;
-use vendor\ninazu\framework\Component\Response\Response;
 
 class Reflector {
 
@@ -49,7 +48,9 @@ class Reflector {
 	 * @return $this
 	 */
 	public function convertValuesToLower() {
-		$this->data = array_map('strtolower', $this->data);
+		$this->data = array_map(function ($value) {
+			return strtolower($value);
+		}, $this->data);
 
 		return $this;
 	}

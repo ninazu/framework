@@ -81,15 +81,6 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	}
 
 	/**
-	 * @inheritdoc
-	 */
-	public function execute() {
-
-
-		return parent::execute();
-	}
-
-	/**
 	 * @param array $values
 	 *
 	 * @return bool
@@ -101,11 +92,11 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 				throw new ErrorException('Values must be a associative array');
 			}
 
+			self::checkColumnName($key);
+
 			if (!is_scalar($value) && !$value instanceof Expression) {
 				throw new ErrorException('Value must be a scalar');
 			}
-
-			self::checkColumnName($key);
 		}
 
 		return true;
@@ -116,12 +107,19 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
 		foreach ($this->values as $key => $value) {
 			if ($value instanceof Expression) {
-				$values .= "{$key} = ";
+				$values .= "`{$key}` = ";
+			} else {
+
 			}
 		}
 
 		$this->query = "UPDATE{$this->priority}{$this->onError} {$this->table}\nSET {$values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
 
-		return $this->query;
+//		$result[] = [
+//			'bindsString' => array_replace_recursive($bindsString, $partialBinds),
+//			'query' => $partialQuery,
+//		];
+
+		return $result;
 	}
 }
