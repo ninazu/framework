@@ -127,6 +127,8 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 			$bindsString = [];
 
 			foreach ($columnUpdate as $column => $value) {
+				self::checkColumnName($column);
+
 				if ($value instanceof Expression) {
 					//Use as is
 					$value = "`{$column}` = {$value}\n";
