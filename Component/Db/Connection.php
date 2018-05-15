@@ -172,7 +172,7 @@ class Connection extends Configurator implements IConnection, ITransaction {
 	public function update($table, array $values, $where) {
 		return (new UpdateQuery($this))
 			->setTable($table)
-			->setValues($values)
+			->setValues($values, is_array($values))
 			->setWhere($where);
 	}
 

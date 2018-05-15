@@ -5,6 +5,8 @@ namespace vendor\ninazu\framework\Component\Db;
 use ErrorException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IUpdate;
 use vendor\ninazu\framework\Component\Db\Interfaces\IUpdateResult;
+use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
+use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
 
 class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
@@ -39,11 +41,13 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @inheritdoc
 	 */
 	public function orderBy(array $sequence) {
-//		foreach ($sequence){
-//
-//		}
+		foreach ($sequence as $expression) {
+			if (!$expression instanceof Expression) {
+				throw new ErrorException('Order by must be array of expressions');
+			}
+		}
 
-		$this->orderBy = $sequence;
+		$this->orderBy = implode(', ', $sequence);
 
 		return $this;
 	}
@@ -52,7 +56,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @inheritdoc
 	 */
 	public function limit($count) {
-		if (!is_int($count)) {
+		if (!is_int($count) && !is_numeric($count)) {
 			throw new ErrorException('Wrong value for limit');
 		}
 
@@ -80,15 +84,44 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @inheritdoc
 	 */
 	public function execute() {
-		$this->query = "UPDATE{$this->priority}{$this->onError} {$this->table}\nSET {$this->values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
+
 
 		return parent::execute();
 	}
 
 	/**
-	 * @inheritdoc
+	 * @param array $values
+	 *
+	 * @return bool
+	 * @throws ErrorException
 	 */
 	public function validateValues(array $values) {
-		// TODO: Implement validateValues() method.
+		foreach ($values as $key => $value) {
+			if (is_numeric($key)) {
+				throw new ErrorException('Values must be a associative array');
+			}
+
+			if (!is_scalar($value) && !$value instanceof Expression) {
+				throw new ErrorException('Value must be a scalar');
+			}
+
+			self::checkColumnName($key);
+		}
+
+		return true;
+	}
+
+	protected function prepareSql() {
+		$values = '';
+
+		foreach ($this->values as $key => $value) {
+			if ($value instanceof Expression) {
+				$values .= "{$key} = ";
+			}
+		}
+
+		$this->query = "UPDATE{$this->priority}{$this->onError} {$this->table}\nSET {$values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
+
+		return $this->query;
 	}
 }

@@ -143,12 +143,16 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		return $this;
 	}
 
+	protected function prepareSql() {
+		return $this->query;
+	}
+
 	/**
 	 * @internal
 	 * @inheritdoc
 	 */
 	public function getSQL(&$query, $withPlaceholders) {
-		$query = $this->query;
+		$query = $this->prepareSql();
 
 		if (!$withPlaceholders) {
 			$placeholders = (new Processor(Lexer::parse($query)))->getPlaceholders();
@@ -199,6 +203,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->bindsArray = [];
 		$this->bindsInteger = [];
 		$this->statement = null;
+	}
+
+	public static function checkColumnName($name) {
+		if (!preg_match('/[0-9,a-z,A-Z_]/', $name)) {
+			throw new ErrorException('Unsupported character in columnName');
+		}
 	}
 
 	/**

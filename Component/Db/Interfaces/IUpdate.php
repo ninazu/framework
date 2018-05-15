@@ -2,6 +2,8 @@
 
 namespace vendor\ninazu\framework\Component\Db\Interfaces;
 
+use vendor\ninazu\framework\Component\Db\Expression;
+
 interface IUpdate extends IBasicQuery {
 
 	/**
@@ -15,7 +17,7 @@ interface IUpdate extends IBasicQuery {
 	public function ignoreError();
 
 	/**
-	 * @param array $sequence
+	 * @param Expression[] $sequence
 	 *
 	 * @return $this
 	 */

@@ -33,6 +33,8 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 				throw new ErrorException("Column {$index} must be string");
 			}
 
+			self::checkColumnName($column);
+
 			$unique[$column] = null;
 		}
 
@@ -189,9 +191,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$columnNames = array_keys($firstRow);
 
 		foreach ($columnNames as $column) {
-			if (preg_match('/[^a-z0-9_-]/i', $column)) {
-				throw new ErrorException("Column name '{$column}' contains invalid characters.");
-			}
+			self::checkColumnName($column);
 		}
 
 		foreach ($values as $index => $row) {
@@ -215,7 +215,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * @return array
 	 * @throws MySQLException
 	 */
-	private function prepareSql() {
+	protected function prepareSql() {
 		$onErrorIgnore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
 		$onDuplicateUpdate = '';
 		$priority = ($this->priority) ? $this->priority : '';
