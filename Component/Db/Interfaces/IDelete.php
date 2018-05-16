@@ -17,4 +17,21 @@ interface IDelete extends IBasicQuery {
 	 * @return $this
 	 */
 	public function ignoreErrors();
+
+	/**
+	 * @return IDeleteResult
+	 */
+	public function execute();
+
+	/**
+	 * USE ONLY FOR DEBUG. Сan contain SQL injection or wrong replaced value
+	 *
+	 * @internal
+	 *
+	 * @param string $sql
+	 * @param bool $withPlaceholders
+	 *
+	 * @return IDeletePrepare
+	 */
+	public function getSQL(&$sql, $withPlaceholders);
 }

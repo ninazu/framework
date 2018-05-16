@@ -156,8 +156,9 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	/**
-	 * @internal
 	 * @inheritdoc
+	 *
+	 * @internal
 	 */
 	public function getSQL(&$query, $withPlaceholders) {
 		$parts = $this->prepareSql();

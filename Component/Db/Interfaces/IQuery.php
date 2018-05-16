@@ -10,9 +10,9 @@ interface IQuery extends IBasicQuery {
 	public function execute();
 
 	/**
-	 * @internal
-	 *
 	 * USE ONLY FOR DEBUG. Сan contain SQL injection or wrong replaced value
+	 *
+	 * @internal
 	 *
 	 * @param string $query
 	 * @param bool $withPlaceholders
