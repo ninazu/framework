@@ -255,6 +255,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected static function replacePlaceholder($placeholder, $value, &$sql, array &$placeholders) {
+		if (!array_key_exists($placeholder, $placeholders)) {
+			throw new ErrorException("Placeholder '{$placeholder}' missing in query");
+		}
+
 		$strValueLen = strlen($value);
 		$placeholderLen = strlen($placeholder);
 		$currentPositions = $placeholders[$placeholder];

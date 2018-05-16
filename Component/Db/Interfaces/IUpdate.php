@@ -14,7 +14,7 @@ interface IUpdate extends IBasicQuery {
 	/**
 	 * @return $this
 	 */
-	public function ignoreError();
+	public function ignoreErrors();
 
 	/**
 	 * @param Expression[] $sequence

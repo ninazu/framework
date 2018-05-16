@@ -32,7 +32,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function ignoreError() {
+	public function ignoreErrors() {
 		$this->onError = self::ON_ERROR_IGNORE;
 
 		return $this;
@@ -105,13 +105,12 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
 	protected function prepareSql() {
 		$lines = [];
-		$bindsString = $this->bindsString;
 
 		foreach ($this->values as $key => $value) {
 			if (!$value instanceof Expression) {
 				//Append AutoPlaceholders
 				$autoPlaceholder = ":{$key}_auto";
-				$bindsString[$autoPlaceholder] = $value;
+				$this->bindsString[$autoPlaceholder] = $value;
 				$value = $autoPlaceholder;
 			}
 
@@ -123,7 +122,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 		$this->query = Formatter::removeLeftTabs($query);
 
 		$result[] = [
-			'bindsString' => $bindsString,
+			'bindsString' => $this->bindsString,
 			'query' => $this->query,
 		];
 
