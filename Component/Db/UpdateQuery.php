@@ -7,6 +7,7 @@ use vendor\ninazu\framework\Component\Db\Interfaces\IUpdate;
 use vendor\ninazu\framework\Component\Db\Interfaces\IUpdateResult;
 use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
 use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
+use vendor\ninazu\framework\Helper\Formatter;
 
 class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
@@ -47,7 +48,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 			}
 		}
 
-		$this->orderBy = implode(', ', $sequence);
+		$this->orderBy = "ORDER BY " . implode(', ', $sequence);
 
 		return $this;
 	}
@@ -60,7 +61,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 			throw new ErrorException('Wrong value for limit');
 		}
 
-		$this->limit = $count;
+		$this->limit = "LIMIT {$count}";
 
 		return $this;
 	}
@@ -103,22 +104,28 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	}
 
 	protected function prepareSql() {
-		$values = '';
+		$lines = [];
+		$bindsString = $this->bindsString;
 
 		foreach ($this->values as $key => $value) {
-			if ($value instanceof Expression) {
-				$values .= "`{$key}` = ";
-			} else {
-
+			if (!$value instanceof Expression) {
+				//Append AutoPlaceholders
+				$autoPlaceholder = ":{$key}_auto";
+				$bindsString[$autoPlaceholder] = $value;
+				$value = $autoPlaceholder;
 			}
+
+			$lines[] = "`{$key}` = {$value}";
 		}
 
-		$this->query = "UPDATE{$this->priority}{$this->onError} {$this->table}\nSET {$values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
+		$values = Formatter::addLeftTabs(implode(",\n", $lines), 1);
+		$query = "UPDATE{$this->priority}{$this->onError}{$this->table}\nSET\n{$values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
+		$this->query = Formatter::removeLeftTabs($query);
 
-//		$result[] = [
-//			'bindsString' => array_replace_recursive($bindsString, $partialBinds),
-//			'query' => $partialQuery,
-//		];
+		$result[] = [
+			'bindsString' => $bindsString,
+			'query' => $this->query,
+		];
 
 		return $result;
 	}

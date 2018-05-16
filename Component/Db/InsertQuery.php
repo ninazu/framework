@@ -7,6 +7,7 @@ use vendor\ninazu\framework\Component\Db\Interfaces\IInsert;
 use vendor\ninazu\framework\Component\Db\Interfaces\IInsertResult;
 use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
 use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
+use vendor\ninazu\framework\Helper\Formatter;
 
 class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
@@ -221,7 +222,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$onDuplicateUpdate = '';
 		$priority = ($this->priority) ? $this->priority : '';
 		$bindsString = $this->bindsString;
-		$headerQuery = "INSERT{$priority}{$onErrorIgnore}\nINTO {$this->table}\n";
+		$headerQuery = "INSERT{$priority}{$onErrorIgnore} INTO{$this->table}\n";
 
 		if ($this->onError == self::ON_DUPLICATE_UPDATE) {
 			$onDuplicateUpdate = "\n" . self::ON_DUPLICATE_UPDATE . "\n";
@@ -230,7 +231,8 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		if ($this->values instanceof Expression) {
 			$columnNames = "";
-			$expression = "\n{$this->values}\n";
+			$formattedValues = Formatter::addLeftTabs($this->values, 1);
+			$expression = "\n{$formattedValues}\n";
 
 			if (!empty($this->columns)) {
 				$columnNames = implode("`,\n\t`", $this->columns);

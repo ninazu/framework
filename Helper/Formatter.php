@@ -26,14 +26,16 @@ class Formatter {
 			$counts[$index] = $count;
 		}
 
-		foreach ($lines as $index => $line) {
-			$count = $min2;
+		if ($min1 != 0 && $min2 != 1) {
+			foreach ($lines as $index => $line) {
+				$count = $min2;
 
-			if ($counts[$index] == $min1) {
-				$count = $min1;
+				if ($counts[$index] == $min1) {
+					$count = $min1;
+				}
+
+				$lines[$index] = preg_replace("/^\\t{{$count}}/", '', $line);
 			}
-
-			$lines[$index] = preg_replace("/^\\t{{$count}}/", '', $line);
 		}
 
 		$text = implode($delimiter, $lines);

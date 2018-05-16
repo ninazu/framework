@@ -27,7 +27,7 @@ abstract class WritableQuery extends Query {
 			throw new ErrorException('Wrong value of tableName');
 		}
 
-		$this->table = $tableName;
+		$this->table = " {$tableName}";
 
 		return $this;
 	}

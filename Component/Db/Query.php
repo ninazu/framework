@@ -145,10 +145,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected function prepareSql() {
+		$query = Formatter::removeLeftTabs($this->query);
+
 		return [
 			[
 				'bindsString' => $this->bindsString,
-				'query' => $this->query,
+				'query' => $query,
 			],
 		];
 	}
@@ -183,7 +185,6 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		}
 
 		$query = trim($query, "\n");
-		$query = Formatter::removeLeftTabs($query);
 
 		return $this;
 	}
