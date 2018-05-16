@@ -18,6 +18,12 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
 	private $orderBy;
 
+	private $from;
+
+	public function setFrom($string) {
+		$this->from = $string;
+	}
+
 	/**
 	 * @inheritdoc
 	 */
@@ -114,7 +120,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 		}
 
 		$values = Formatter::addLeftTabs(implode(",\n", $lines), 1);
-		$query = "UPDATE{$this->priority}{$this->onError}{$this->table}\nSET\n{$values}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
+		$query = "UPDATE{$this->priority}{$this->onError}{$this->table}\nSET\n{$values}\n{$this->from}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
 		$this->query = Formatter::removeLeftTabs($query);
 
 		$result[] = [

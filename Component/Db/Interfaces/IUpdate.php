@@ -10,6 +10,8 @@ interface IUpdate extends IBasicQuery {
 
 	const PRIORITY_LOW = ' LOW_PRIORITY';
 
+	public function setFrom($string);
+
 	/**
 	 * @return $this
 	 */
