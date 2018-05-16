@@ -6,6 +6,10 @@ use vendor\ninazu\framework\Component\Db\Expression;
 
 interface IUpdate extends IBasicQuery {
 
+	const ON_ERROR_IGNORE = ' IGNORE';
+
+	const PRIORITY_LOW = ' LOW_PRIORITY';
+
 	/**
 	 * @return $this
 	 */

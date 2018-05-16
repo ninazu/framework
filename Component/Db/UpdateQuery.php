@@ -14,10 +14,6 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	use WritableValues;
 	use WritableWhere;
 
-	const ON_ERROR_IGNORE = ' IGNORE';
-
-	const PRIORITY_LOW = ' LOW_PRIORITY';
-
 	private $limit;
 
 	private $orderBy;

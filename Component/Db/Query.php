@@ -219,6 +219,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	public static function checkColumnName($name) {
+		//TODO Database.Schema.Table.Column
 		if (!preg_match('/[0-9,a-z,A-Z_]/', $name)) {
 			throw new ErrorException('Unsupported character in columnName');
 		}

@@ -42,10 +42,11 @@ interface IBasicConnection {
 
 	/**
 	 * @param string $table
+	 * @param string $where
 	 *
 	 * @return IDelete
 	 */
-	public function delete($table);
+	public function delete($table, $where);
 
 	/**
 	 * @param string $table
