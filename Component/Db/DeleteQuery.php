@@ -9,6 +9,11 @@ use vendor\ninazu\framework\Helper\Formatter;
 
 class DeleteQuery extends WritableQuery implements IDelete, IDeleteResult {
 
+	use WritableWhere;
+	use OrderAndLimit;
+
+	private $partitions = [];
+
 	/**
 	 * @inheritdoc
 	 */
@@ -43,7 +48,9 @@ class DeleteQuery extends WritableQuery implements IDelete, IDeleteResult {
 	}
 
 	protected function prepareSql() {
-		$this->query = Formatter::removeLeftTabs($this->query);
+		$query = "DELETE{$this->priority}{$this->onError} FROM {$this->table}\n{$this->where}{$this->orderBy}{$this->limit}";
+
+		$this->query = Formatter::removeLeftTabs($query);
 
 		return [
 			[
@@ -51,5 +58,14 @@ class DeleteQuery extends WritableQuery implements IDelete, IDeleteResult {
 				'query' => $this->query,
 			],
 		];
+	}
+
+	/**
+	 * @inheritdoc
+	 */
+	public function partitions(array $partitions) {
+		$this->partitions = implode(',', $partitions);
+
+		return $this;
 	}
 }

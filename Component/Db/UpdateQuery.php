@@ -13,15 +13,12 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 
 	use WritableValues;
 	use WritableWhere;
+	use OrderAndLimit;
 
-	private $limit;
+	public function where($string) {
+		$this->setWhere($string);
 
-	private $orderBy;
-
-	private $from;
-
-	public function setFrom($string) {
-		$this->from = $string;
+		return $this;
 	}
 
 	/**
@@ -36,34 +33,6 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 */
 	public function ignoreErrors() {
 		$this->onError = self::ON_ERROR_IGNORE;
-
-		return $this;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function orderBy(array $sequence) {
-		foreach ($sequence as $expression) {
-			if (!$expression instanceof Expression) {
-				throw new ErrorException('Order by must be array of expressions');
-			}
-		}
-
-		$this->orderBy = "ORDER BY " . implode(', ', $sequence);
-
-		return $this;
-	}
-
-	/**
-	 * @inheritdoc
-	 */
-	public function limit($count) {
-		if (!is_int($count) && !is_numeric($count)) {
-			throw new ErrorException('Wrong value for limit');
-		}
-
-		$this->limit = "LIMIT {$count}";
 
 		return $this;
 	}
@@ -120,8 +89,8 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 		}
 
 		$values = Formatter::addLeftTabs(implode(",\n", $lines), 1);
-		$query = "UPDATE{$this->priority}{$this->onError}{$this->table}\nSET\n{$values}\n{$this->from}\n{$this->where}\n{$this->orderBy}\n{$this->limit}";
-		$this->query = Formatter::removeLeftTabs($query);
+		$this->query = "UPDATE{$this->priority}{$this->onError}{$this->table}\nSET\n{$values}\n{$this->where}{$this->orderBy}{$this->limit}";
+		$this->query = Formatter::removeLeftTabs($this->query);
 
 		$result[] = [
 			'bindsString' => $this->bindsString,

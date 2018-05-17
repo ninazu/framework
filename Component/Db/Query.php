@@ -130,6 +130,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @inheritdoc
 	 */
 	public function execute() {
+		if (empty($this->query)) {
+			$this->prepareSql();
+		}
+
 		$placeholders = (new Processor(Lexer::parse($this->query)))->getPlaceholders();
 		//ByRef
 		$query = $this->query;
@@ -145,12 +149,12 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	}
 
 	protected function prepareSql() {
-		$query = Formatter::removeLeftTabs($this->query);
+		$this->query = Formatter::removeLeftTabs($this->query);
 
 		return [
 			[
 				'bindsString' => $this->bindsString,
-				'query' => $query,
+				'query' => $this->query,
 			],
 		];
 	}

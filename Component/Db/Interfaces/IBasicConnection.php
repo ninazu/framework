@@ -34,11 +34,10 @@ interface IBasicConnection {
 	/**
 	 * @param string $table
 	 * @param array $values
-	 * @param string $where
 	 *
 	 * @return IUpdate
 	 */
-	public function update($table, array $values, $where);
+	public function update($table, array $values);
 
 	/**
 	 * @param string $table

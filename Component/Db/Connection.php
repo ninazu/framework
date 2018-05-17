@@ -169,18 +169,19 @@ class Connection extends Configurator implements IConnection, ITransaction {
 	/**
 	 * @inheritdoc
 	 */
-	public function update($table, array $values, $where) {
+	public function update($table, array $values) {
 		return (new UpdateQuery($this))
 			->setTable($table)
-			->setValues($values, is_array($values))
-			->setWhere($where);
+			->setValues($values, is_array($values));
 	}
 
 	/**
 	 * @inheritdoc
 	 */
-	public function delete($table) {
-		// TODO: Implement delete() method.
+	public function delete($table, $where) {
+		return (new DeleteQuery($this))
+			->setTable($table)
+			->setWhere($where);
 	}
 
 	/**
