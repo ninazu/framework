@@ -5,6 +5,7 @@ namespace vendor\ninazu\framework\Component;
 use Exception;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
+use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Core\Component;
 
 /**

@@ -16,7 +16,7 @@ abstract class Controller extends Component {
 
 	public function runAction($action, $params) {
 		$this->action = $action;
-		$this->params = $params;
+		$this->params = array_replace_recursive($_REQUEST, $params); //TODO Request
 
 		$this->checkAccess();
 
