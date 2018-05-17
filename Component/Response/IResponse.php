@@ -10,6 +10,8 @@ interface IResponse {
 
 	const STATUS_CODE_FORBIDDEN = 403;
 
+	const STATUS_CODE_BAD_REQUEST = 400;
+
 	const STATUS_CODE_LOGOUT = 401;
 
 	const STATUS_CODE_SERVER_ERROR = 500;

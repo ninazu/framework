@@ -2,14 +2,15 @@
 
 namespace vendor\ninazu\framework\Component;
 
+use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Core\Component;
 
-class Controller extends Component {
+abstract class Controller extends Component {
+
+	protected $params;
 
 	private $action;
-
-	private $params;
 
 	private $response;
 
