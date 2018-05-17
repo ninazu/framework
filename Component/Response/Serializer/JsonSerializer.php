@@ -27,6 +27,7 @@ class JsonSerializer extends Serializer {
 				]);
 				break;
 
+			case IResponse::STATUS_CODE_BAD_REQUEST:
 			case IResponse::STATUS_CODE_VALIDATION:
 				$result = [
 					'status' => false,
@@ -52,7 +53,7 @@ class JsonSerializer extends Serializer {
 			default:
 				$result = [
 					'status' => false,
-					'message' => $response->getData(),
+					'unexpected' => true,
 				];
 		}
 
