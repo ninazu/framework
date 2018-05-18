@@ -2,11 +2,11 @@
 
 namespace vendor\ninazu\framework\Component\User;
 
+use ErrorException;
 use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class User extends Component implements IUser {
-
-	const ROLE_USER = 1;
 
 	const STATUS_ENABLED = 1;
 
@@ -14,9 +14,21 @@ abstract class User extends Component implements IUser {
 
 	const STATUS_BANNED = 3;
 
+	private $role;
+
 	public function getRole() {
-		//return self::ROLE_USER;
-		//return self::ROLE_AUTHORIZED;
+		return $this->role;
+	}
+
+	public function setRole($role) {
+		$extendedClass = static::class;
+		$roles = Reflector::getConstantGroup($extendedClass, 'ROLE_')->getData();
+
+		if (!array_key_exists($role, $roles)) {
+			throw new ErrorException("Invalid role. Use {$extendedClass}::ROLE_*");
+		}
+
+		$this->role = $role;
 	}
 
 	private static function generateSalt() {
