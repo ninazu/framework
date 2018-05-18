@@ -17,6 +17,50 @@ abstract class BaseForm {
 
 	protected $errors = [];
 
+	#region Response
+
+	public function load(array $data) {
+		$this->responseData = $data;
+
+		$fields = $this->response();
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function emptyResponse() {
+		return empty($this->responseData);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function formatResponse() {
+		return $this->responseData;
+	}
+
+	/**
+	 * @param $name
+	 * @return mixed|null
+	 */
+	public function getResponse($name) {
+		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
+	}
+
+	/**
+	 * @param $name
+	 * @param $value
+	 */
+	public function setResponse($name, $value) {
+		$this->requestData[$name] = $value;
+	}
+
+	#endregion
+
+	#region Request
+
 	/**
 	 * @param array $data
 	 *
@@ -29,45 +73,9 @@ abstract class BaseForm {
 		return $this->processRequest();
 	}
 
-	public function getResponse($name) {
-		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
-	}
-
-	public function setResponse($name, $value) {
-		$this->requestData[$name] = $value;
-	}
-
-	public function getRequest($name) {
-		return isset($this->requestData[$name]) ? $this->requestData[$name] : null;
-	}
-
 	/**
-	 * @return array
+	 * @return bool
 	 */
-	public function requiredFields() {
-		return $this->required;
-	}
-
-	public function load(array $data) {
-		$this->responseData = $data;
-
-		$fields = $this->response();
-
-		return $this;
-	}
-
-	#region Response
-
-	public function emptyResponse() {
-		return false;
-	}
-
-	public function formatResponse() {
-		return [];
-	}
-
-	#endregion
-
 	protected function processRequest() {
 		if (is_null($this->valid)) {
 			$required = [];
@@ -108,6 +116,24 @@ abstract class BaseForm {
 
 		return !$this->valid;
 	}
+
+	/**
+	 * @param $name
+	 *
+	 * @return mixed|null
+	 */
+	public function getRequest($name) {
+		return isset($this->requestData[$name]) ? $this->requestData[$name] : null;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function requiredFields() {
+		return $this->required;
+	}
+
+	#endregion
 
 	abstract protected function rules();
 
