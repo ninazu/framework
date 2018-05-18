@@ -10,9 +10,9 @@ abstract class Controller extends Component {
 
 	protected $params;
 
-	private $action;
+	protected $action;
 
-	private $response;
+	protected $response;
 
 	public function runAction($action, $params) {
 		$this->action = $action;

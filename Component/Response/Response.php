@@ -42,6 +42,7 @@ class Response extends Component implements IResponse {
 	 * @param $errorCode
 	 * @param $data
 	 *
+	 * @return bool
 	 * @throws Exception
 	 */
 	public function sendError($errorCode, $data) {
@@ -49,10 +50,14 @@ class Response extends Component implements IResponse {
 		$this->setData($data);
 		echo $this->render();
 		$this->end(self::EXIT_CODE_WITH_ERROR);
+
+		return false;
 	}
 
 	/**
 	 * @param $data
+	 *
+	 * @return bool
 	 * @throws Exception
 	 */
 	public function sendOk($data) {
@@ -60,6 +65,8 @@ class Response extends Component implements IResponse {
 		$this->setData($data);
 		$this->render();
 		$this->end(self::EXIT_CODE_OK);
+
+		return true;
 	}
 
 	public function setContentType($type) {

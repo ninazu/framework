@@ -3,6 +3,8 @@
 namespace vendor\ninazu\framework\Core;
 
 use ErrorException;
+use ReflectionClass;
+use ReflectionException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
 use vendor\ninazu\framework\Component\Db\Mysql;
 use vendor\ninazu\framework\Component\Request;
@@ -66,6 +68,9 @@ abstract class Application {
 	 * @param $name
 	 *
 	 * @return null
+	 *
+	 * @throws ErrorException
+	 * @throws ReflectionException
 	 */
 	public function __get($name) {
 		if (!isset($this->components[$name])) {
@@ -75,6 +80,11 @@ abstract class Application {
 		//Assign component to application
 		if (!$this->components[$name]['initialized']) {
 			$className = $this->components[$name]['class'];
+
+			if ((new ReflectionClass($className))->isAbstract()) {
+				throw new ErrorException("Component '{$name}' must be extend");
+			}
+
 			$this->$name = new $className($this, $this->components[$name]['config']);
 			$this->components[$name]['initialized'] = true;
 		}
