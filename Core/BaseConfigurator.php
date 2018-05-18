@@ -5,7 +5,7 @@ namespace vendor\ninazu\framework\Core;
 use ReflectionClass;
 use ReflectionProperty;
 
-abstract class Configurator {
+abstract class BaseConfigurator {
 
 	/**
 	 * @param array $config

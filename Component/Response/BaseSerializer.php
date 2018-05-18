@@ -2,9 +2,9 @@
 
 namespace vendor\ninazu\framework\Component\Response;
 
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 
-abstract class Serializer extends Component {
+abstract class BaseSerializer extends BaseComponent {
 
 	abstract public function serialize();
 }

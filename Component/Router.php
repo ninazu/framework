@@ -6,12 +6,12 @@ use Exception;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 
 /**
  * @inheritdoc
  */
-class Router extends Component {
+class Router extends BaseComponent {
 
 	protected $rules = [];
 
@@ -199,7 +199,7 @@ class Router extends Component {
 		/**
 		 * Create ControllerComponent without assigning
 		 *
-		 * @var Controller $controller
+		 * @var BaseController $controller
 		 */
 		$controller = new $controllerName($this->getApplication(), []);
 		$actionMethodName = 'action' . self::convertToCamelCase($actionName);

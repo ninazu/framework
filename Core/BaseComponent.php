@@ -2,17 +2,17 @@
 
 namespace vendor\ninazu\framework\Core;
 
-abstract class Component extends Configurator {
+abstract class BaseComponent extends BaseConfigurator {
 
 	private $application;
 
 	/**
-	 * @param Application $application
+	 * @param BaseApplication $application
 	 * @param array $config
 	 *
 	 * @throws \ReflectionException
 	 */
-	public function __construct(Application $application, array $config) {
+	public function __construct(BaseApplication $application, array $config) {
 		$this->fillFromConfig($config);
 		$this->application = $application;
 
@@ -27,7 +27,7 @@ abstract class Component extends Configurator {
 	}
 
 	/**
-	 * @return Application
+	 * @return BaseApplication
 	 */
 	protected function getApplication() {
 		return $this->application;

@@ -4,9 +4,9 @@ namespace vendor\ninazu\framework\Component;
 
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 
-abstract class Controller extends Component {
+abstract class BaseController extends BaseComponent {
 
 	protected $params;
 

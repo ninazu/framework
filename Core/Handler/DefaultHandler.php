@@ -5,20 +5,20 @@ namespace vendor\ninazu\framework\Core\Handler;
 use ErrorException;
 use Exception;
 use vendor\ninazu\framework\Component\Response\Response;
-use vendor\ninazu\framework\Core\Application;
+use vendor\ninazu\framework\Core\BaseApplication;
 use vendor\ninazu\framework\Core\Environment;
 
 require_once __DIR__ . '/IHandler.php';
 require_once __DIR__ . '/AutoLoader.php';
 
 /**
- * @property Application $application
+ * @property BaseApplication $application
  */
 class DefaultHandler implements IHandler {
 
 	private $application;
 
-	public function __construct(Application $application) {
+	public function __construct(BaseApplication $application) {
 		$this->application = $application;
 	}
 

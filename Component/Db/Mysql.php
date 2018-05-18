@@ -4,9 +4,9 @@ namespace vendor\ninazu\framework\Component\Db;
 
 use ErrorException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 
-class Mysql extends Component implements IMysql {
+class Mysql extends BaseComponent implements IMysql {
 
 	const FORMAT_DATE = 'Y-m-d';
 

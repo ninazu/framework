@@ -3,10 +3,10 @@
 namespace vendor\ninazu\framework\Component\Response\Serializer;
 
 use vendor\ninazu\framework\Component\Response\IResponse;
-use vendor\ninazu\framework\Component\Response\Serializer;
+use vendor\ninazu\framework\Component\Response\BaseSerializer;
 use vendor\ninazu\framework\Core\Environment;
 
-class JsonSerializer extends Serializer {
+class JsonSerializer extends BaseSerializer {
 
 	public function serialize() {
 		$response = $this->getApplication()->response;

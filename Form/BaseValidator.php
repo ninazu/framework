@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Form;
 
-abstract class Validator {
+abstract class BaseValidator {
 
 	abstract public function validate($value);
 }

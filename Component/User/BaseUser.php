@@ -3,10 +3,10 @@
 namespace vendor\ninazu\framework\Component\User;
 
 use ErrorException;
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Reflector;
 
-abstract class User extends Component implements IUser {
+abstract class BaseUser extends BaseComponent implements IUser {
 
 	const STATUS_ENABLED = 1;
 

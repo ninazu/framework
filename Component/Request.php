@@ -2,10 +2,10 @@
 
 namespace vendor\ninazu\framework\Component;
 
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Core\Environment;
 
-class Request extends Component {
+class Request extends BaseComponent {
 
 	const METHOD_GET = 'GET';
 

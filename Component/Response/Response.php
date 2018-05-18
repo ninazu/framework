@@ -6,10 +6,10 @@ use ErrorException;
 use Exception;
 use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\JsonSerializer;
-use vendor\ninazu\framework\Core\Component;
+use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Reflector;
 
-class Response extends Component implements IResponse {
+class Response extends BaseComponent implements IResponse {
 
 	const EXIT_CODE_OK = 0;
 
@@ -133,11 +133,11 @@ class Response extends Component implements IResponse {
 			$config = $serializer['config'];
 		}
 
-		if (!Reflector::isInstanceOf($className, Serializer::class)) {
-			throw new ErrorException("{$className} must be implemented of " . Serializer::class);
+		if (!Reflector::isInstanceOf($className, BaseSerializer::class)) {
+			throw new ErrorException("{$className} must be implemented of " . BaseSerializer::class);
 		}
 
-		/**@var Serializer $serializer */
+		/**@var BaseSerializer $serializer */
 		$serializer = new $className($this->getApplication(), $config);
 
 		return $serializer->serialize();

@@ -8,9 +8,9 @@ use PDO;
 use PDOException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
-use vendor\ninazu\framework\Core\Configurator;
+use vendor\ninazu\framework\Core\BaseConfigurator;
 
-class Connection extends Configurator implements IConnection, ITransaction {
+class Connection extends BaseConfigurator implements IConnection, ITransaction {
 
 	#region  Configurator
 

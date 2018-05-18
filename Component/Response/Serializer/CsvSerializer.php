@@ -2,9 +2,9 @@
 
 namespace vendor\ninazu\framework\Component\Response\Serializer;
 
-use vendor\ninazu\framework\Component\Response\Serializer;
+use vendor\ninazu\framework\Component\Response\BaseSerializer;
 
-class CsvSerializer extends Serializer {
+class CsvSerializer extends BaseSerializer {
 
 	protected $title;
 
