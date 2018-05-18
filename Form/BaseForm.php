@@ -7,40 +7,52 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
 
-	protected $data;
+	private $requestData = [];
 
-	protected $valid;
+	private $responseData = [];
 
-	protected $required;
+	private $valid = null;
+
+	private $required = [];
+
+	protected $errors = [];
 
 	/**
 	 * @param array $data
 	 *
-	 * @return $this
+	 * @return bool
 	 */
-	public function setRequest(array $data) {
-		$this->data = $data;
+	public function validate(array $data) {
 		$this->valid = null;
+		$this->requestData = $data;
 
-		return $this;
+		return $this->processRequest();
 	}
 
-	public function wrongRequest() {
-		$this->validate();
+	public function getResponse($name) {
+		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
+	}
 
-		return false;
+	public function setResponse($name, $value) {
+		$this->requestData[$name] = $value;
+	}
+
+	public function getRequest($name) {
+		return isset($this->requestData[$name]) ? $this->requestData[$name] : null;
 	}
 
 	/**
 	 * @return array
 	 */
 	public function requiredFields() {
-		$this->validate();
-
 		return $this->required;
 	}
 
-	public function setResponse(array $data) {
+	public function load(array $data) {
+		$this->responseData = $data;
+
+		$fields = $this->response();
+
 		return $this;
 	}
 
@@ -56,28 +68,45 @@ abstract class BaseForm {
 
 	#endregion
 
-	protected function validate() {
+	protected function processRequest() {
 		if (is_null($this->valid)) {
 			$required = [];
-			$valid = true;
+			$validators = [];
 
 			foreach ($this->rules() as $rule) {
-				list($fields, $validator) = $rule;
+				list($fields, $validator, $params) = array_pad($rule, 3, []);
 
 				if (Reflector::isInstanceOf($validator, Required::class)) {
 					$required = array_merge($required, $fields);
 				}
 
-				if ($valid) {
-					$valid = false;
+				foreach ($fields as $field) {
+					$validators[$field][$validator] = $params;
+				}
+			}
+
+			foreach ($this->requestData as $field => $value) {
+				if (!isset($validators[$field])) {
+					continue;
+				}
+
+				foreach ($validators[$field] as $class => $params) {
+					/**@var BaseValidator $validator */
+					$validator = new $class($field, $params);
+
+					if (!$validator->validate($value)) {
+						$this->errors[$field] = $validator->getMessage();
+
+						continue;
+					}
 				}
 			}
 
 			$this->required = array_unique($required);
-			$this->valid = $valid;
+			$this->valid = empty($this->errors);
 		}
 
-		return $this->valid;
+		return !$this->valid;
 	}
 
 	abstract protected function rules();

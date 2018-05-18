@@ -118,6 +118,10 @@ class Reflector {
 	}
 
 	public static function isInstanceOf($className, $instanceName) {
+		if ($className === $instanceName) {
+			return true;
+		}
+
 		$instance = new ReflectionClass($instanceName);
 		$class = new ReflectionClass($className);
 
