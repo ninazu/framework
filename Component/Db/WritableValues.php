@@ -41,5 +41,5 @@ trait WritableValues {
 	 *
 	 * @return bool
 	 */
-	abstract function validateValues(array $values);
+	abstract protected function validateValues(array $values);
 }
