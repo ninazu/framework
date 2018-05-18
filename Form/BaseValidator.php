@@ -2,15 +2,19 @@
 
 namespace vendor\ninazu\framework\Form;
 
-abstract class BaseValidator {
+use vendor\ninazu\framework\Core\BaseConfigurator;
+
+abstract class BaseValidator extends BaseConfigurator {
 
 	protected $field;
 
-	protected $params;
-
 	public function __construct($field, $params) {
 		$this->field = $field;
-		$this->params = $params;
+		$this->fillFromConfig($params);
+		$this->init();
+	}
+
+	public function init() {
 	}
 
 	abstract public function validate($value);

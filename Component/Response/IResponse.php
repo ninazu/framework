@@ -27,4 +27,8 @@ interface IResponse {
 	public function forceHttpStatus();
 
 	public function setHeaders(array $data);
+
+	public function sendError($errorCode, $data);
+
+	public function sendOk($data);
 }

@@ -2,7 +2,10 @@
 
 namespace vendor\ninazu\framework\Form;
 
-use vendor\ninazu\framework\Form\Validators\Required;
+use ErrorException;
+use vendor\ninazu\framework\Component\Response\IResponse;
+use vendor\ninazu\framework\Component\Response\Response;
+use vendor\ninazu\framework\Form\Validators\RequiredValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
@@ -17,14 +20,36 @@ abstract class BaseForm {
 
 	protected $errors = [];
 
+	/**
+	 * @param IResponse $response
+	 * @param $data
+	 *
+	 * @return $this;
+	 */
+	public static function basic(IResponse $response, $data) {
+		$form = new static();
+
+		if ($form->validate($data)) {
+			return $response->sendError(Response::STATUS_CODE_BAD_REQUEST, $form->requiredFields());
+		}
+
+		if (!$form->isValid()) {
+			return $response->sendError(Response::STATUS_CODE_VALIDATION, $form->getErrors());
+		}
+
+		return $form;
+	}
+
 	#region Response
 
-	public function load(array $data) {
+	public function load($data) {
+		if (!is_array($data)) {
+			return;
+		}
+
 		$this->responseData = $data;
 
 		$fields = $this->response();
-
-		return $this;
 	}
 
 	/**
@@ -65,6 +90,7 @@ abstract class BaseForm {
 	 * @param array $data
 	 *
 	 * @return bool
+	 * @throws ErrorException
 	 */
 	public function validate(array $data) {
 		$this->valid = null;
@@ -75,6 +101,7 @@ abstract class BaseForm {
 
 	/**
 	 * @return bool
+	 * @throws ErrorException
 	 */
 	protected function processRequest() {
 		if (is_null($this->valid)) {
@@ -84,7 +111,11 @@ abstract class BaseForm {
 			foreach ($this->rules() as $rule) {
 				list($fields, $validator, $params) = array_pad($rule, 3, []);
 
-				if (Reflector::isInstanceOf($validator, Required::class)) {
+				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
+					throw new ErrorException("Invalid validator '{$validator}'");
+				}
+
+				if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
 					$required = array_merge($required, $fields);
 				}
 
@@ -114,7 +145,13 @@ abstract class BaseForm {
 			$this->valid = empty($this->errors);
 		}
 
-		return !$this->valid;
+		$missingRequired = array_diff($this->required, array_keys($this->requestData));
+
+		return empty($missingRequired);
+	}
+
+	public function isValid() {
+		return $this->valid;
 	}
 
 	/**
@@ -134,6 +171,14 @@ abstract class BaseForm {
 	}
 
 	#endregion
+
+	public function getErrors() {
+		return $this->errors;
+	}
+
+	public function addError($field, $message) {
+		$this->errors[$field] = $message;
+	}
 
 	abstract protected function rules();
 
