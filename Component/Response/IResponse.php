@@ -18,6 +18,8 @@ interface IResponse {
 
 	const STATUS_CODE_VALIDATION = 422;
 
+	const STATUS_PRECONDITION_FAILED = 412;
+
 	public function getData();
 
 	public function getStatusCode();

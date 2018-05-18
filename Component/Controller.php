@@ -18,11 +18,12 @@ abstract class Controller extends Component {
 		$this->action = $action;
 		$this->params = array_replace_recursive($_REQUEST, $params); //TODO Request
 
-		$this->checkAccess();
-
 		if ($this->beforeAction()) {
+			$this->checkAccess();
 			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $params);
 			$this->afterAction($response);
+		} else {
+			$this->getApplication()->response->sendError(Response::STATUS_PRECONDITION_FAILED, null);
 		}
 	}
 

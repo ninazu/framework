@@ -22,6 +22,7 @@ class JsonSerializer extends Serializer {
 			case IResponse::STATUS_CODE_NOT_FOUND:
 			case IResponse::STATUS_CODE_FORBIDDEN:
 			case IResponse::STATUS_CODE_LOGOUT:
+			case IResponse::STATUS_PRECONDITION_FAILED:
 				$result = ([
 					'status' => false,
 				]);
