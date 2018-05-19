@@ -38,16 +38,19 @@ class Response extends BaseComponent implements IResponse {
 
 	private $data;
 
+	private $extra;
+
 	/**
 	 * @param $errorCode
 	 * @param $data
-	 *
+	 * @param array $extra
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendError($errorCode, $data) {
+	public function sendError($errorCode, $data, $extra = []) {
 		$this->setStatusCode($errorCode);
 		$this->setData($data);
+		$this->extra = $extra;
 		echo $this->render();
 		$this->end(self::EXIT_CODE_WITH_ERROR);
 
@@ -165,6 +168,10 @@ class Response extends BaseComponent implements IResponse {
 
 	protected function end($exitCode) {
 		exit($exitCode);
+	}
+
+	public function getExtra() {
+		return $this->extra;
 	}
 
 	public function getData() {

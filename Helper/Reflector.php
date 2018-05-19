@@ -2,7 +2,9 @@
 
 namespace vendor\ninazu\framework\Helper;
 
+use ErrorException;
 use ReflectionClass;
+use ReflectionException;
 
 class Reflector {
 
@@ -96,7 +98,8 @@ class Reflector {
 	 *
 	 * @return $this
 	 *
-	 * @throws \ReflectionException
+	 * @throws ErrorException
+	 * @throws ReflectionException
 	 */
 	public static function getConstantGroup($className, $needle) {
 		if (!isset(self::$constantGroup[$className][$needle])) {
@@ -109,6 +112,10 @@ class Reflector {
 				if (strpos($constant, $needle) === 0) {
 					$results[$value] = substr($constant, $needleLen);
 				}
+			}
+
+			if (empty($results)) {
+				throw new ErrorException('Constant group not found');
 			}
 
 			self::$constantGroup[$className][$needle] = $results;
@@ -130,5 +137,11 @@ class Reflector {
 		} else {
 			return $class->isSubclassOf($instance);
 		}
+	}
+
+	public static function getClassShortName($className) {
+		$class = new ReflectionClass($className);
+
+		return $class->getShortName();
 	}
 }

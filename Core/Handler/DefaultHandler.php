@@ -67,25 +67,21 @@ class DefaultHandler implements IHandler {
 		try {
 			Environment::getEnvironment();
 		} catch (Exception $exception) {
-			$data = [
-				'message' => $exception->getMessage(),
-			];
+			$data = $exception->getMessage();
 		}
+
+		$extra = [];
 
 		if (isset($data)) {
 			//EnvironmentException
 		} elseif (Environment::isProduction()) {
-			$data = [
-				'message' => "Unexpected server error " . md5($exception->getMessage()),
-			];
+			$data = "Unexpected server error " . md5($exception->getMessage());
 		} else {
-			$data = [
-				'message' => $exception->getMessage(),
-				'location' => "{$exception->getFile()}:{$exception->getLine()}",
-			];
+			$data = $exception->getMessage();
+			$extra = "{$exception->getFile()}:{$exception->getLine()}";
 		}
 
-		$this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data);
+		$this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data, $extra);
 	}
 
 	/**

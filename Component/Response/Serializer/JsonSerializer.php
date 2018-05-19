@@ -29,10 +29,17 @@ class JsonSerializer extends BaseSerializer {
 				break;
 
 			case IResponse::STATUS_CODE_BAD_REQUEST:
+				$result = [
+					'status' => false,
+					'fields' => $response->getData(),
+				];
+				break;
+
 			case IResponse::STATUS_CODE_VALIDATION:
 				$result = [
 					'status' => false,
 					'fields' => $response->getData(),
+					'extra' => $response->getExtra(),
 				];
 				break;
 
@@ -40,13 +47,14 @@ class JsonSerializer extends BaseSerializer {
 				if (!Environment::isInitialized() || Environment::isProduction()) {
 					$result = [
 						'status' => false,
-						'message' => $response->getData()['message'],
+						'message' => $response->getData(),
+						'extra' => [],
 					];
 				} else {
 					$result = [
 						'status' => false,
-						'message' => $response->getData()['message'],
-						'location' => $response->getData()['location'],
+						'message' => $response->getData(),
+						'extra' => $response->getExtra(),
 					];
 				}
 				break;

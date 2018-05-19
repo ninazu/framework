@@ -20,6 +20,8 @@ abstract class BaseForm {
 
 	protected $errors = [];
 
+	protected $extra = [];
+
 	/**
 	 * @param IResponse $response
 	 * @param $data
@@ -135,6 +137,7 @@ abstract class BaseForm {
 
 					if (!$validator->validate($value)) {
 						$this->errors[$field] = $validator->getMessage();
+						$this->extra[$field] = $validator->getExtra();
 
 						continue;
 					}
@@ -171,6 +174,10 @@ abstract class BaseForm {
 	}
 
 	#endregion
+
+	public function getExtra($field) {
+		return !empty($this->extra[$field]) ? $this->extra[$field] : null;
+	}
 
 	public function getErrors() {
 		return $this->errors;

@@ -38,6 +38,13 @@ abstract class BaseController extends BaseComponent {
 	 * @throws \Exception
 	 */
 	protected function checkAccess() {
+		$permissions = $this->access();
+
+		//Allow from All if permissions not set
+		if (empty($permissions)) {
+			return;
+		}
+
 		$user = $this->getApplication()->user;
 		$userRole = null;
 
@@ -49,7 +56,6 @@ abstract class BaseController extends BaseComponent {
 			$userRole = IUser::ROLE_GUEST;
 		}
 
-		$permissions = $this->access();
 		$actionList = [];
 
 		foreach ($permissions as $permission => $actions) {

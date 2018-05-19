@@ -22,13 +22,15 @@ interface IResponse {
 
 	public function getData();
 
+	public function getExtra();
+
 	public function getStatusCode();
 
 	public function forceHttpStatus();
 
 	public function setHeaders(array $data);
 
-	public function sendError($errorCode, $data);
+	public function sendError($errorCode, $data, $extra = []);
 
 	public function sendOk($data);
 }
