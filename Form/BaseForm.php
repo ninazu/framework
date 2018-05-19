@@ -31,8 +31,8 @@ abstract class BaseForm {
 	public static function basic(IResponse $response, $data) {
 		$form = new static();
 
-		if ($form->validate($data)) {
-			return $response->sendError(Response::STATUS_CODE_BAD_REQUEST, $form->requiredFields());
+		if ($missing = $form->getMissingFieldsAndValidate($data)) {
+			return $response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
 		}
 
 		if (!$form->isValid()) {
@@ -91,10 +91,10 @@ abstract class BaseForm {
 	/**
 	 * @param array $data
 	 *
-	 * @return bool
+	 * @return array
 	 * @throws ErrorException
 	 */
-	public function validate(array $data) {
+	public function getMissingFieldsAndValidate(array $data) {
 		$this->valid = null;
 		$this->requestData = $data;
 
@@ -102,7 +102,7 @@ abstract class BaseForm {
 	}
 
 	/**
-	 * @return bool
+	 * @return array
 	 * @throws ErrorException
 	 */
 	protected function processRequest() {
@@ -148,9 +148,7 @@ abstract class BaseForm {
 			$this->valid = empty($this->errors);
 		}
 
-		$missingRequired = array_diff($this->required, array_keys($this->requestData));
-
-		return empty($missingRequired);
+		return array_diff($this->required, array_keys($this->requestData));
 	}
 
 	public function isValid() {

@@ -8,6 +8,10 @@ class UniqueValidator extends BaseValidator {
 
 	protected $callback;
 
+	protected $message;
+
+	protected $target;
+
 	public function validate($value) {
 		$callback = $this->callback;
 
@@ -15,6 +19,10 @@ class UniqueValidator extends BaseValidator {
 	}
 
 	public function getMessage() {
+		if ($this->message) {
+			return $this->message;
+		}
+
 		return "Field '{$this->field}' must be unique";
 	}
 }
