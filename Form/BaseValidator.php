@@ -15,7 +15,7 @@ abstract class BaseValidator extends BaseConfigurator {
 	}
 
 	public function init() {
-		//TODO Validate Validator
+		return;
 	}
 
 	public function getExtra() {

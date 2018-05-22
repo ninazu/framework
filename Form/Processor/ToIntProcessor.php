@@ -6,7 +6,7 @@ use vendor\ninazu\framework\Form\BaseProcessor;
 
 class ToIntProcessor extends BaseProcessor {
 
-	public function execute(array &$data, $field) {
-		$data[$field] = (int)$data[$field];
+	public function execute(array &$data) {
+		$data[$this->field] = (int)$data[$this->field];
 	}
 }

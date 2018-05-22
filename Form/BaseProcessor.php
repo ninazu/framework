@@ -2,7 +2,21 @@
 
 namespace vendor\ninazu\framework\Form;
 
-abstract class BaseProcessor {
+use vendor\ninazu\framework\Core\BaseConfigurator;
 
-	abstract public function execute(array &$data, $field);
+abstract class BaseProcessor extends BaseConfigurator {
+
+	protected $field;
+
+	public function __construct($field, $params) {
+		$this->field = $field;
+		$this->fillFromConfig($params);
+		$this->init();
+	}
+
+	public function init() {
+		return;
+	}
+
+	abstract public function execute(array &$data);
 }

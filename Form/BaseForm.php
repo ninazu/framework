@@ -54,27 +54,16 @@ abstract class BaseForm {
 		$processors = [];
 
 		foreach ($this->postProcessors() as $rule) {
-			list($fields, $processor, $params) = array_pad($rule, 3, []);;
+			list($fields, $class, $params) = array_pad($rule, 3, []);;
 
 			foreach ($fields as $field) {
-				if (!is_string($processor) || !Reflector::isInstanceOf($processor, BaseProcessor::class)) {
-					throw new ErrorException("Invalid PostProcessor '{$processor}'");
+				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+					throw new ErrorException("Invalid PostProcessor '{$class}'");
 				}
 
-				$processors[$field][$processor] = $params;
-			}
-		}
-
-		foreach ($data as $field => $value) {
-			if (!isset($processors[$field])) {
-				continue;
-			}
-
-			foreach ($processors[$field] as $class => $params) {
 				/**@var BaseProcessor $processor */
 				$processor = new $class($field, $params);
-
-				$processor->execute($data, $field);
+				$processor->execute($data);
 			}
 		}
 

@@ -109,6 +109,13 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		}
 
 		$result = $this->statement->fetchAll(PDO::FETCH_ASSOC);
+
+		if (empty($result)) {
+			$this->reset();
+
+			return $result;
+		}
+
 		$callBack = $this->callBack;
 
 		if (is_null($this->columnName) && is_null($this->callBack)) {
@@ -155,9 +162,53 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	 */
 	public function queryOne() {
 		$result = $this->statement->fetch(PDO::FETCH_ASSOC);
+
+		if (empty($result)) {
+			$this->reset();
+
+			return $result;
+		}
+
+		$result = [$result];
+		$callBack = $this->callBack;
+
+		if (is_null($this->columnName) && is_null($this->callBack)) {
+			$this->reset();
+
+			return $result;
+		}
+
+		if (!is_null($this->columnName) && !empty($result) && !isset($result[0][$this->columnName])) {
+			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");
+		}
+
+		$keyedResult = [];
+
+		foreach ($result as $index => $row) {
+			$index = !is_null($this->columnName) ? $row[$this->columnName] : $index;
+
+			switch ($this->callBackParamsCount) {
+				case 0:
+					$keyedResult[$index] = $row;
+					break;
+
+				case 1:
+					$keyedResult[$index] = $callBack($row);
+					break;
+
+				case 2:
+					$keyedResult[$index] = $callBack($row, isset($keyedResult[$index]) ? $keyedResult[$index] : []);
+					break;
+
+				case 3:
+					$keyedResult[$index] = $callBack($row, isset($keyedResult[$index]) ? $keyedResult[$index] : [], $this->columnMeta);
+					break;
+			}
+		}
+
 		$this->reset();
 
-		return $result;
+		return $keyedResult[0];
 	}
 
 	protected function reset() {
