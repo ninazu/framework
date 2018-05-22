@@ -197,7 +197,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	 *    ])
 	 *    ->execute()
 	 *    ->handler(function ($row, $prevValue, $meta) {
-	 *        //\vendor\ninazu\framework_\BaseComponent\Db\Meta $meta
+	 *        //var \vendor\ninazu\framework\Component\Db\Meta $meta
 	 *        return array_replace_recursive($prevValue, [
 	 *            'client_id' => $meta->convert('client_id', $row),
 	 *            'name' => $row['name'],

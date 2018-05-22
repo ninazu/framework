@@ -1,8 +1,6 @@
 <?php
 
-
-namespace vendor\ninazu\framework\Form\Validators;
-
+namespace vendor\ninazu\framework\Form\Validator;
 
 use vendor\ninazu\framework\Form\BaseValidator;
 

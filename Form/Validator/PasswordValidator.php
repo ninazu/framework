@@ -1,6 +1,6 @@
 <?php
 
-namespace vendor\ninazu\framework\Form\Validators;
+namespace vendor\ninazu\framework\Form\Validator;
 
 class PasswordValidator extends StringValidator {
 

@@ -81,7 +81,9 @@ class DefaultHandler implements IHandler {
 			$extra = "{$exception->getFile()}:{$exception->getLine()}";
 		}
 
-		$this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data, $extra);
+		if (!headers_sent()) {
+			$this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data, $extra);
+		}
 	}
 
 	/**

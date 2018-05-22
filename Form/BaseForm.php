@@ -5,7 +5,7 @@ namespace vendor\ninazu\framework\Form;
 use ErrorException;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
-use vendor\ninazu\framework\Form\Validators\RequiredValidator;
+use vendor\ninazu\framework\Form\Validator\RequiredValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
@@ -17,6 +17,8 @@ abstract class BaseForm {
 	private $valid = null;
 
 	private $required = [];
+
+	protected $attributes = [];
 
 	protected $errors = [];
 
@@ -42,16 +44,41 @@ abstract class BaseForm {
 		return $form;
 	}
 
-	#region Response
+	#region Processor
 
 	public function load($data) {
 		if (!is_array($data)) {
 			return;
 		}
 
-		$this->responseData = $data;
+		$processors = [];
 
-		$fields = $this->response();
+		foreach ($this->postProcessors() as $rule) {
+			list($fields, $processor, $params) = array_pad($rule, 3, []);;
+
+			foreach ($fields as $field) {
+				if (!is_string($processor) || !Reflector::isInstanceOf($processor, BaseProcessor::class)) {
+					throw new ErrorException("Invalid PostProcessor '{$processor}'");
+				}
+
+				$processors[$field][$processor] = $params;
+			}
+		}
+
+		foreach ($data as $field => $value) {
+			if (!isset($processors[$field])) {
+				continue;
+			}
+
+			foreach ($processors[$field] as $class => $params) {
+				/**@var BaseProcessor $processor */
+				$processor = new $class($field, $params);
+
+				$processor->execute($data, $field);
+			}
+		}
+
+		$this->responseData = $data; //TODO
 	}
 
 	/**
@@ -141,14 +168,25 @@ abstract class BaseForm {
 
 						continue;
 					}
+
+					$this->attributes[$field] = $value;
 				}
 			}
 
 			$this->required = array_unique($required);
 			$this->valid = empty($this->errors);
+			$this->afterValidate();
 		}
 
 		return array_diff($this->required, array_keys($this->requestData));
+	}
+
+	protected function afterValidate() {
+		return;
+	}
+
+	public function getAttributes() {
+		return $this->attributes;
 	}
 
 	public function isValid() {
@@ -187,5 +225,5 @@ abstract class BaseForm {
 
 	abstract protected function rules();
 
-	abstract protected function response();
+	abstract protected function postProcessors();
 }

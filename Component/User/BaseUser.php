@@ -31,7 +31,7 @@ abstract class BaseUser extends BaseComponent implements IUser {
 		$this->role = $role;
 	}
 
-	private static function generateSalt() {
+	public static function generateSalt() {
 		return md5(openssl_random_pseudo_bytes(16));
 	}
 
