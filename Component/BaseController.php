@@ -45,7 +45,7 @@ abstract class BaseController extends BaseComponent {
 			return;
 		}
 
-		$user = $this->getApplication()->user;
+		$user = $this->getApplication()->user->getIdentity();
 		$userRole = null;
 
 		if (!is_null($user)) {
