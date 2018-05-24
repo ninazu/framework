@@ -47,6 +47,8 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	/**@var int $transactionCounter */
 	private $transactionCounter = 0;
 
+	private $rollBackMessage;
+
 	/**@var bool $debugEnabled */
 	private $debugEnabled = false;
 
@@ -126,7 +128,7 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	/**
 	 * @inheritdoc
 	 */
-	public function rollback() {
+	public function rollback($rollBackMessage = null) {
 		if ($this->debugEnabled) {
 			$this->debugLog['transactions']['rollback'] = array_slice(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), 0, 4);
 		}
@@ -135,9 +137,17 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 			$this->error('Failed to rollback a transaction');
 		}
 
+		if (!is_null($rollBackMessage)) {
+			$this->rollBackMessage = $rollBackMessage;
+		}
+
 		$this->transactionCounter = 0;
 
 		return $this;
+	}
+
+	public function getRollBackMessage() {
+		return $this->rollBackMessage;
 	}
 
 	/**

@@ -47,7 +47,6 @@ class Processor {
 				} else {
 					$tmp = (new self($subQuery))->getPlaceholders();
 
-					//TODO STOP
 					foreach ($tmp as $subQueryToken => $subQueryPositions) {
 						foreach ($subQueryPositions as $subQueryPosition) {
 							$placeholders[$subQueryToken][] = [

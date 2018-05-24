@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Form\Validator;
 
+use ErrorException;
 use vendor\ninazu\framework\Form\BaseValidator;
 
 class UniqueValidator extends BaseValidator {
@@ -10,9 +11,11 @@ class UniqueValidator extends BaseValidator {
 
 	protected $message;
 
-	protected $target;
-
 	public function validate($value) {
+		if (!is_callable($this->callback)) {
+			throw new ErrorException('Callback must be callable');
+		}
+
 		$callback = $this->callback;
 
 		return $callback($this->field);

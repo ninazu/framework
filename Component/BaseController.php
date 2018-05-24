@@ -16,7 +16,10 @@ abstract class BaseController extends BaseComponent {
 
 	public function runAction($action, $params) {
 		$this->action = $action;
-		$this->params = array_replace_recursive($_REQUEST, $params); //TODO Request
+		$this->params = array_replace_recursive(
+			json_decode(file_get_contents('php://input'), true), //TODO $_REQUEST
+			$params
+		);
 
 		if ($this->beforeAction()) {
 			$this->checkAccess();

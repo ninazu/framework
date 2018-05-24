@@ -11,6 +11,13 @@ interface ITransaction extends IBasicConnection {
 
 	/**
 	 * Rolls back a transaction.
+	 *
+	 * @param null|string $message
 	 */
-	public function rollback();
+	public function rollback($message = null);
+
+	/**
+	 * @return string
+	 */
+	public function getRollBackMessage();
 }

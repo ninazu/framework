@@ -4,14 +4,11 @@ namespace vendor\ninazu\framework\Form;
 
 use ErrorException;
 use Exception;
-use vendor\ninazu\framework\Component\Db\Interfaces\IBasicConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
-use vendor\ninazu\framework\Component\Db\Mysql;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Form\Validator\RequiredValidator;
 use vendor\ninazu\framework\Helper\Reflector;
-use vendor\ninazu\framework\Model\BaseModel;
 
 abstract class BaseForm {
 
@@ -23,6 +20,9 @@ abstract class BaseForm {
 
 	private $required = [];
 
+	private $validators = [];
+
+	/**@var Response $response */
 	private $response;
 
 	private $transaction;
@@ -35,12 +35,6 @@ abstract class BaseForm {
 
 	public function getTransaction() {
 		return $this->transaction;
-	}
-
-	public function saveModel(BaseModel $model, $field = null, $data = null) {
-		if (!$model->save()) {
-			throw new Exception("Model can't save");
-		}
 	}
 
 	public function trySave(IConnection $connection, callable $function) {
@@ -59,25 +53,95 @@ abstract class BaseForm {
 
 			return true;
 		} catch (Exception $exception) {
-			$this->transaction->rollback();
+			$rollBackMessage = null;
 
-			if (!$this->hasErrors()) {
+			if (!$this->hasErrors() && is_null($this->transaction->getRollBackMessage())) {
 				$this->addError(null, $exception->getMessage());
+				$rollBackMessage = $exception->getMessage();
 			}
+
+			$this->transaction->rollback($rollBackMessage);
 
 			return false;
 		}
 	}
 
-	protected function validate() {
-		return true;
+	public function getAttributes() {
+		return $this->attributes;
+	}
+
+	public function getRequired() {
+		return $this->required;
+	}
+
+	public function __construct() {
+		$required = [];
+		$validators = [];
+
+		if ($rules = $this->rules()) {
+			foreach ($this->rules() as $rule) {
+				list($fields, $validator, $params) = array_pad($rule, 3, []);
+
+				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
+					throw new ErrorException("Invalid validator '{$validator}'");
+				}
+
+				if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
+					$required = array_merge($required, $fields);
+				}
+
+				foreach ($fields as $field) {
+					$validators[$field][$validator] = $params;
+				}
+			}
+		}
+
+		$this->validators = $validators;
+		$this->required = array_unique($required);
+	}
+
+	public function validate() {
+		if (is_null($this->valid)) {
+
+
+			foreach ($this->requestData as $field => $value) {
+				if (!isset($this->validators[$field])) {
+					continue;
+				}
+
+				foreach ($this->validators[$field] as $class => $params) {
+					/**@var BaseValidator $validator */
+					$validator = new $class($field, $params, $this->response);
+
+					if (!$validator->validate($value)) {
+						$this->errors[$field] = $validator->getMessage();
+						$this->extra[$field] = $validator->getExtra();
+
+						continue;
+					}
+
+					$this->attributes[$field] = $value;
+				}
+			}
+
+			$missing = array_diff($this->required, array_keys($this->requestData));
+			$this->valid = empty($this->errors) && empty($missing);
+
+			//TODO Force send response
+			if ($missing) {
+				$this->response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
+			}
+
+			//TODO Force send response
+			if (!$this->valid) {
+				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->errors);
+			}
+		}
+
+		return $this->valid;
 	}
 
 	public function formatResponse() {
-//		if($this->hasErrors()){
-//			return $response->sendError(Response::STATUS_CODE_VALIDATION, $form->getErrors());
-//		}
-
 		return $this->responseData;
 	}
 
@@ -90,21 +154,23 @@ abstract class BaseForm {
 	}
 
 	public function createResponse($data) {
-		if (!is_array($data)) {
+		if (!is_array($data) || empty($data)) {
 			return true;
 		}
 
-		foreach ($this->postProcessors() as $rule) {
-			list($fields, $class, $params) = array_pad($rule, 3, []);;
+		if ($processors = $this->postProcessors()) {
+			foreach ($processors as $rule) {
+				list($fields, $class, $params) = array_pad($rule, 3, []);;
 
-			foreach ($fields as $field) {
-				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
-					throw new ErrorException("Invalid PostProcessor '{$class}'");
+				foreach ($fields as $field) {
+					if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+						throw new ErrorException("Invalid PostProcessor '{$class}'");
+					}
+
+					/**@var BaseProcessor $processor */
+					$processor = new $class($field, $params);
+					$processor->execute($data);
 				}
-
-				/**@var BaseProcessor $processor */
-				$processor = new $class($field, $params);
-				$processor->execute($data);
 			}
 		}
 
@@ -113,9 +179,10 @@ abstract class BaseForm {
 		return true;
 	}
 
-	public function load(IResponse $response, $requestData) {
+	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
 		$this->requestData = $requestData;
+		$this->valid = null;
 	}
 //
 //	/**
