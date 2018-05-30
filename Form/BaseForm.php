@@ -7,7 +7,7 @@ use Exception;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
-use vendor\ninazu\framework\Form\Validator\RequiredValidator;
+use vendor\ninazu\framework\Form\Validator\ChildFormValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
@@ -22,16 +22,18 @@ abstract class BaseForm {
 
 	private $validators = [];
 
+	private $childValidators = [];
+
 	/**@var Response $response */
 	private $response;
 
 	private $transaction;
 
+	public $namespace;
+
 	protected $attributes = [];
 
-	protected $errors = [];
-
-	protected $extra = [];
+	private $errors = [];
 
 	public function getTransaction() {
 		return $this->transaction;
@@ -75,67 +77,95 @@ abstract class BaseForm {
 	}
 
 	public function __construct() {
-		$required = [];
-		$validators = [];
-
 		if ($rules = $this->rules()) {
-			foreach ($this->rules() as $rule) {
+			foreach ($rules as $rule) {
 				list($fields, $validator, $params) = array_pad($rule, 3, []);
 
 				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
-					throw new ErrorException("Invalid validator '{$validator}'");
+					throw new ErrorException("Invalid class of validator '{$validator}'");
 				}
 
-				if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
-					$required = array_merge($required, $fields);
-				}
-
-				foreach ($fields as $field) {
-					$validators[$field][$validator] = $params;
+				if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
+					foreach ($fields as $field) {
+						$this->childValidators[$validator][$field] = $params;
+					}
+				} else {
+					foreach ($fields as $field) {
+						$this->validators[$validator][$field] = $params;
+					}
 				}
 			}
 		}
-
-		$this->validators = $validators;
-		$this->required = array_unique($required);
+		//if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
+		//	$required = array_merge($required, $fields);
+		//}
+		//$this->required = array_unique($required);
 	}
 
 	public function validate() {
 		if (is_null($this->valid)) {
+			/**@var BaseValidator $validator */
 
+			foreach ($this->validators as $class => $fields) {
+				foreach ($fields as $field => $params) {
+					if (!array_key_exists($field, $this->requestData[$field]) && isset($this->errors[$field])) {
+						continue;
+					}
 
-			foreach ($this->requestData as $field => $value) {
-				if (!isset($this->validators[$field])) {
-					continue;
-				}
+					$value = $this->requestData[$field];
+					//"{$this->namespace}{$field}"
 
-				foreach ($this->validators[$field] as $class => $params) {
-					/**@var BaseValidator $validator */
 					$validator = new $class($field, $params, $this->response);
 
-					if (!$validator->validate($value)) {
-						$this->errors[$field] = $validator->getMessage();
-						$this->extra[$field] = $validator->getExtra();
+					if ($validator->hasDependency()) {
+						$delayedValidator[] = [
+							'validator' => $validator,
+							'value' => $value,
+						];
 
 						continue;
 					}
 
-					$this->attributes[$field] = $value;
+					$validator->validate($value);
 				}
 			}
 
-			$missing = array_diff($this->required, array_keys($this->requestData));
-			$this->valid = empty($this->errors) && empty($missing);
-
-			//TODO Force send response
-			if ($missing) {
-				$this->response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
+			foreach ($delayedValidator as $job) {
+				$validator = $job['validator'];
+				$validator->validate($job['value']);
 			}
 
-			//TODO Force send response
-			if (!$this->valid) {
-				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->errors);
-			}
+//			foreach ($this->requestData as $field => $value) {
+//				if (!isset($this->validators[$field])) {
+//					continue;
+//				}
+//
+//				foreach ($this->validators[$field] as $class => $params) {
+//					/**@var BaseValidator $validator */
+//					$validator = new $class($field, $params, $this->response);
+//
+//					if (!$validator->validate($value)) {
+//						$this->addError($field, $validator->getMessage(), $validator->getExtra());
+//
+//						continue;
+//					}
+//
+//					$this->attributes[$field] = $value;
+//				}
+//			}
+//
+//			$missing = array_diff($this->required, array_keys($this->requestData));
+//			$this->valid = empty($this->errors) && empty($missing);
+//
+//			//TODO Force send response
+//			if ($missing) {
+//				$this->response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
+//			}
+//
+//			//TODO Force send response
+//			if (!$this->valid) {
+//				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->errors);
+//			}
 		}
 
 		return $this->valid;
@@ -145,8 +175,12 @@ abstract class BaseForm {
 		return $this->responseData;
 	}
 
-	protected function addError($field, $message) {
-		$this->errors[$field] = $message;
+	protected function addError($field, $message, $extra = null) {
+		$this->errors[] = [
+			'field' => "{$this->namespace}{$field}",
+			'message' => $message,
+			'extra' => $extra,
+		];
 	}
 
 	protected function hasErrors() {
@@ -181,7 +215,15 @@ abstract class BaseForm {
 
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
-		$this->requestData = $requestData;
+		$this->requestData = [];
+
+		foreach ($requestData as $key => $value) {
+			if ($key = 1) {
+
+			}
+			//$this->requestData[$key]
+
+		}
 		$this->valid = null;
 	}
 //

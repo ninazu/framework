@@ -11,6 +11,8 @@ class UniqueValidator extends BaseValidator {
 
 	protected $message;
 
+	protected $hasDependency = true;
+
 	public function validate($value) {
 		if (!is_callable($this->callback)) {
 			throw new ErrorException('Callback must be callable');
