@@ -5,6 +5,7 @@ namespace vendor\ninazu\framework\Form;
 use ErrorException;
 use Exception;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
+use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Form\Validator\ChildFormValidator;
@@ -34,10 +35,21 @@ abstract class BaseForm {
 
 	protected $errors = [];
 
+	/**
+	 * @return ITransaction
+	 */
 	public function getTransaction() {
 		return $this->transaction;
 	}
 
+	/**
+	 * @param IConnection $connection
+	 * @param callable $function
+	 *
+	 * @return bool
+	 *
+	 * @throws Exception
+	 */
 	public function trySave(IConnection $connection, callable $function) {
 		$this->transaction = $connection->beginTransaction();
 
@@ -66,18 +78,40 @@ abstract class BaseForm {
 		}
 	}
 
+	/**
+	 * @param $name
+	 * @return mixed|null
+	 */
+	public function getAttribute($name) {
+		return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
+	}
+
+	/**
+	 * @return array
+	 */
 	public function getAttributes() {
 		return $this->attributes;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getRequiredFields() {
 		return $this->requiredFields;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getFlatRules() {
 		return $this->flatRules;
 	}
 
+	/**
+	 * @return bool|null
+	 *
+	 * @throws Exception
+	 */
 	public function validate() {
 		if (is_null($this->valid)) {
 			/**@var BaseValidator $validator */
@@ -140,36 +174,11 @@ abstract class BaseForm {
 		return $this->valid;
 	}
 
-	public function formatResponse() {
-		return $this->responseData;
-	}
-
-	public function createResponse($data) {
-		if (!is_array($data) || empty($data)) {
-			return true;
-		}
-
-		if ($processors = $this->postProcessors()) {
-			foreach ($processors as $rule) {
-				list($fields, $class, $params) = array_pad($rule, 3, []);;
-
-				foreach ($fields as $field) {
-					if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
-						throw new ErrorException("Invalid PostProcessor '{$class}'");
-					}
-
-					/**@var BaseProcessor $processor */
-					$processor = new $class($field, $params);
-					$processor->execute($data);
-				}
-			}
-		}
-
-		$this->responseData = $data;
-
-		return true;
-	}
-
+	/**
+	 * @param IResponse $response
+	 * @param array $requestData
+	 * @throws ErrorException
+	 */
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
 		$this->flatRequestData = Reflector::toFlatArray($requestData);
@@ -211,6 +220,11 @@ abstract class BaseForm {
 		$this->valid = null;
 	}
 
+	/**
+	 * @param $field
+	 * @param $message
+	 * @param null $extra
+	 */
 	protected function addError($field, $message, $extra = null) {
 		$this->errors[] = [
 			'field' => "{$this->namespace}{$field}",
@@ -219,8 +233,41 @@ abstract class BaseForm {
 		];
 	}
 
+	/**
+	 * @return bool
+	 */
 	protected function hasErrors() {
 		return !empty($this->errors);
+	}
+
+	public function formatResponse() {
+		return $this->responseData;
+	}
+
+	public function createResponse($data) {
+		if (!is_array($data) || empty($data)) {
+			return true;
+		}
+
+		if ($processors = $this->postProcessors()) {
+			foreach ($processors as $rule) {
+				list($fields, $class, $params) = array_pad($rule, 3, []);;
+
+				foreach ($fields as $field) {
+					if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+						throw new ErrorException("Invalid PostProcessor '{$class}'");
+					}
+
+					/**@var BaseProcessor $processor */
+					$processor = new $class($field, $params);
+					$processor->execute($data);
+				}
+			}
+		}
+
+		$this->responseData = $data;
+
+		return true;
 	}
 
 	abstract protected function rules();
