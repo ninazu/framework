@@ -62,8 +62,7 @@ abstract class BaseForm {
 			}
 
 			$this->transaction->rollback($rollBackMessage);
-
-			return false;
+			throw $exception;
 		}
 	}
 
