@@ -5,13 +5,17 @@ namespace vendor\ninazu\framework\Form\Validator;
 use ErrorException;
 use vendor\ninazu\framework\Form\BaseValidator;
 
+/**
+ * callable $callback($field)
+ * bool $hasDependency
+ */
 class UniqueValidator extends BaseValidator {
 
 	protected $callback;
 
-	protected $message;
-
-	protected $hasDependency = true;
+	protected function init() {
+		$this->hasDependency = true;
+	}
 
 	public function validate($value) {
 		if (!is_callable($this->callback)) {

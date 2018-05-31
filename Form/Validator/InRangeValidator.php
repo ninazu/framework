@@ -4,6 +4,13 @@ namespace vendor\ninazu\framework\Form\Validator;
 
 use vendor\ninazu\framework\Form\BaseValidator;
 
+/**
+ * <pre>
+ * array    $range  List of values
+ * int      $min    Min Value
+ * int      $max    Max Value
+ * </pre>
+ */
 class InRangeValidator extends BaseValidator {
 
 	protected $range;

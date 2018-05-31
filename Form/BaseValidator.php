@@ -9,18 +9,22 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $field;
 
-	protected $index;
-
 	/**@var Response $response */
 	protected $response;
 
 	protected $hasDependency = false;
 
-	public function __construct($field, $params, $response, $index = null) {
+	protected $message;
+
+	public function __construct($field, $params, $response) {
 		$this->field = $field;
-		$this->index = $index;
 		$this->response = $response;
 		$this->fillFromConfig($params);
+		$this->init();
+	}
+
+	protected function init() {
+		return;
 	}
 
 	public function getExtra() {

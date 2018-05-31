@@ -4,13 +4,15 @@ namespace vendor\ninazu\framework\Form\Validator;
 
 use vendor\ninazu\framework\Form\BaseValidator;
 
+/**
+ * int $min - Minimum Length
+ * int $max - Maximum Length
+ */
 class StringValidator extends BaseValidator {
 
 	protected $min;
 
 	protected $max;
-
-	protected $message;
 
 	public function validate($value) {
 		if (!is_string($value) && !is_numeric($value)) {

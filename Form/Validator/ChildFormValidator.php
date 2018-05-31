@@ -7,6 +7,12 @@ use vendor\ninazu\framework\Form\BaseForm;
 use vendor\ninazu\framework\Form\BaseValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
+/**
+ * <pre>
+ * string   class       Class Name with namespace or ::class,
+ * bool     multiply    Array of forms
+ * </pre>
+ */
 class ChildFormValidator extends BaseValidator {
 
 	protected $class;
@@ -14,8 +20,6 @@ class ChildFormValidator extends BaseValidator {
 	protected $multiply = false;
 
 	protected $hasDependency = true;
-
-	private $message;
 
 	public function validate($value) {
 		$isAssoc = false;

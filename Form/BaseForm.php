@@ -87,12 +87,12 @@ abstract class BaseForm {
 			foreach ($this->flatRules as $field => $validators) {
 				foreach ($validators as $class => $params) {
 					$validator = new $class($field, $params, $this->response);
-					$value = $this->flatRequestData[$field];
 
 					if ($validator instanceof RequiredValidator) {
 						$this->requiredFields[] = $field;
 					}
 
+					$value = $this->flatRequestData[$field];
 					$this->attributes[$field] = $value;
 
 					if ($validator->hasDependency()) {
@@ -104,8 +104,6 @@ abstract class BaseForm {
 
 					if (!$validator->validate($value)) {
 						$this->addError($field, $validator->getMessage(), $validator->getExtra());
-
-						continue;
 					}
 				}
 			}
