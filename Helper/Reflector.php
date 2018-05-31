@@ -152,4 +152,36 @@ class Reflector {
 
 		return array_keys($array) !== range(0, count($array) - 1);
 	}
+
+	public static function toFlatArray(array $array, $namespace = null) {
+		$tmp = [];
+
+		foreach ($array as $key => $value) {
+			$flatKey = !is_null($namespace) ? "{$namespace}.{$key}" : $key;
+
+			if (is_array($value)) {
+				$tmp = array_merge($tmp, self::toFlatArray($value, $flatKey));
+			} else {
+				$tmp[$flatKey] = $value;
+			}
+		}
+
+		return $tmp;
+	}
+
+	public static function flatKeyToLink(array $tree, $key) {
+		$keys = explode('.', $key);
+
+		foreach ($keys as $key) {
+			if (!isset($tree[$key])) {
+				return null;
+			}
+
+			$tree = &$tree[$key];
+		}
+
+		return [
+			$key => $tree,
+		];
+	}
 }

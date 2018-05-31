@@ -12,7 +12,15 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
 
+	/**@var Response $response */
+	private $response = null;
+
+	//TODO use?
 	private $requestData = [];
+
+	private $flatRequestData = [];
+
+	private $flatRules = [];
 
 	private $responseData = [];
 
@@ -20,18 +28,11 @@ abstract class BaseForm {
 
 	private $required = [];
 
-	private $validators = [];
+	private $transaction = null;
 
-	private $childValidators = [];
+	public $namespace = null;
 
-	/**@var Response $response */
-	private $response;
-
-	private $transaction;
-
-	public $namespace;
-
-	protected $attributes = [];
+	private $attributes = [];
 
 	private $errors = [];
 
@@ -76,64 +77,13 @@ abstract class BaseForm {
 		return $this->required;
 	}
 
-	public function __construct() {
-		if ($rules = $this->rules()) {
-			foreach ($rules as $rule) {
-				list($fields, $validator, $params) = array_pad($rule, 3, []);
-
-				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
-					throw new ErrorException("Invalid class of validator '{$validator}'");
-				}
-
-				if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
-					foreach ($fields as $field) {
-						$this->childValidators[$validator][$field] = $params;
-					}
-				} else {
-					foreach ($fields as $field) {
-						$this->validators[$validator][$field] = $params;
-					}
-				}
-			}
-		}
-		//if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
-		//	$required = array_merge($required, $fields);
-		//}
-		//$this->required = array_unique($required);
+	public function getFlatRules() {
+		return $this->flatRules;
 	}
 
 	public function validate() {
 		if (is_null($this->valid)) {
 			/**@var BaseValidator $validator */
-
-			foreach ($this->validators as $class => $fields) {
-				foreach ($fields as $field => $params) {
-					if (!array_key_exists($field, $this->requestData[$field]) && isset($this->errors[$field])) {
-						continue;
-					}
-
-					$value = $this->requestData[$field];
-					//"{$this->namespace}{$field}"
-
-					$validator = new $class($field, $params, $this->response);
-
-					if ($validator->hasDependency()) {
-						$delayedValidator[] = [
-							'validator' => $validator,
-							'value' => $value,
-						];
-
-						continue;
-					}
-
-					$validator->validate($value);
-				}
-			}
-
-			foreach ($delayedValidator as $job) {
-				$validator = $job['validator'];
-				$validator->validate($job['value']);
-			}
 
 //			foreach ($this->requestData as $field => $value) {
 //				if (!isset($this->validators[$field])) {
@@ -215,15 +165,97 @@ abstract class BaseForm {
 
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
-		$this->requestData = [];
+		$this->requestData = $requestData;
+		$this->flatRequestData = Reflector::toFlatArray($requestData);
 
-		foreach ($requestData as $key => $value) {
-			if ($key = 1) {
+		if ($rules = $this->rules()) {
+			foreach ($rules as $rule) {
+				list($fields, $validator, $params) = array_pad($rule, 3, []);
 
+				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
+					throw new ErrorException("Invalid class of validator '{$validator}'");
+				}
+
+				foreach ($fields as $field) {
+					if (!array_key_exists($field, $requestData)) {
+						continue;
+					}
+
+					/**@var BaseForm $model */
+					$model = null;
+					$flatField = !is_null($this->namespace) ? "{$this->namespace}.{$field}" : $field;
+
+					if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
+						if (empty($params['multiply'])) {
+							$model = new $params['class']();
+							$model->namespace = !is_null($this->namespace) ? "{$this->namespace}.{$field}" : "{$field}";
+							$model->load($this->response, $requestData[$field]);
+
+							$this->flatRules = array_merge($this->flatRules, $model->getFlatRules());
+						} else {
+							foreach ($requestData[$field] as $index => $row) {
+								$model = new $params['class']();
+								$model->namespace = !is_null($this->namespace) ? "{$this->namespace}.{$field}.{$index}" : "{$field}.{$index}";
+								$model->load($this->response, $row);
+
+								$this->flatRules = array_merge($this->flatRules, $model->getFlatRules());
+							}
+						}
+
+						continue;
+					}
+
+					$this->flatRules[$flatField][$validator] = $params;
+				}
 			}
-			//$this->requestData[$key]
-
 		}
+
+		//foreach ($this->flatRequestData as $field=)
+
+//		if ($rules = $this->rules()) {
+//			foreach ($rules as $rule) {
+//				list($fields, $validator, $params) = array_pad($rule, 3, []);
+//
+//				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
+//					throw new ErrorException("Invalid class of validator '{$validator}'");
+//				}
+//
+//				foreach ($fields as $field) {
+//					$flatField = $this->namespace ? "{$this->namespace}[{$field}]" : $field;
+//
+//					if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
+//						/**@var BaseForm $model */
+//						$model = new $params['class']($flatField);
+//						$this->flatAttributes = array_merge($this->flatAttributes, $model->flatAttributes);
+//
+//						continue;
+//					}
+//
+//					$this->validators[$validator][$flatField] = $params;
+//					$this->flatAttributes[$flatField] = null;
+//				}
+//
+////
+////				if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
+////					foreach ($fields as $field) {
+////						$this->childValidators[$validator][$field] = $params;
+////					}
+////				} else {
+////					foreach ($fields as $field) {
+////						$this->validators[$validator][$field] = $params;
+////					}
+////				}
+//			}
+//		}
+//
+////		foreach ($requestData as $key => $value) {
+////			if ($key = 1) {
+////
+////			}
+////			//$this->requestData[$key]
+////
+////		}
+///
 		$this->valid = null;
 	}
 //
