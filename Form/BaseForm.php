@@ -14,6 +14,10 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
 
+	const ON_CREATE = 0;
+
+	const ON_UPDATE = 2;
+
 	protected $namespace = null;
 
 	/**@var Response $response */
@@ -205,9 +209,15 @@ abstract class BaseForm {
 			if (!$this->valid) {
 				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
 			}
+
+			$this->afterValidate();
 		}
 
 		return $this->valid;
+	}
+
+	protected function afterValidate() {
+		return;
 	}
 
 	/**

@@ -16,6 +16,8 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $message;
 
+	protected $on = [BaseForm::ON_CREATE];
+
 	public function __construct($field, $params, $response) {
 		$this->field = $field;
 		$this->response = $response;
