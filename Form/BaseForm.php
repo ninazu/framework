@@ -35,18 +35,34 @@ abstract class BaseForm {
 
 	protected $errors = [];
 
+	/**@var BaseForm $parentForm */
+	protected $parentForm = null;
+
+	public function __construct(BaseForm $parentForm = null) {
+		$this->parentForm = $parentForm;
+	}
+
 	/**
-	 * @return ITransaction
+	 * @return IConnection|ITransaction
 	 */
 	public function getTransaction() {
 		return $this->transaction;
 	}
 
+	public function trySaveInside(callable $function) {
+		if (!$this->parentForm) {
+			throw new ErrorException('trySaveInside without parentForm');
+		}
+
+		$this->load($this->parentForm->response, $this->parentForm->getAttributes());
+		$this->trySave($this->parentForm->getTransaction(), $function);
+
+		return $this;
+	}
+
 	/**
 	 * @param IConnection $connection
 	 * @param callable $function
-	 *
-	 * @return bool
 	 *
 	 * @throws Exception
 	 */
@@ -55,16 +71,21 @@ abstract class BaseForm {
 
 		try {
 			if (!$this->validate()) {
-				return false;
+				$this->setParentFormError();
+
+				return $this;
 			}
 
-			if (!$function($this)) {
-				throw new Exception('Form return FALSE without errors');
+			$function($this);
+
+			if ($this->hasErrors()) {
+				$this->transaction->rollback();
+				$this->setParentFormError();
+
+				return $this;
 			}
 
 			$this->transaction->commit();
-
-			return true;
 		} catch (Exception $exception) {
 			$rollBackMessage = null;
 
@@ -74,8 +95,21 @@ abstract class BaseForm {
 			}
 
 			$this->transaction->rollback($rollBackMessage);
+			$this->setParentFormError();
+
 			throw $exception;
 		}
+
+		return $this;
+	}
+
+	private function setParentFormError() {
+		if (!$this->parentForm) {
+			return;
+		}
+
+		$this->parentForm->errors = array_merge($this->errors, $this->parentForm->errors);
+		$this->parentForm->valid = !$this->parentForm->hasErrors();
 	}
 
 	/**
@@ -167,7 +201,7 @@ abstract class BaseForm {
 			}
 
 			if (!$this->valid) {
-				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->errors);
+				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
 			}
 		}
 
@@ -225,12 +259,19 @@ abstract class BaseForm {
 	 * @param $message
 	 * @param null $extra
 	 */
-	protected function addError($field, $message, $extra = null) {
-		$this->errors[] = [
-			'field' => "{$this->namespace}{$field}",
+	public function addError($field, $message, $extra = null) {
+		$data = [
+			'field' => $field,
 			'message' => $message,
 			'extra' => $extra,
 		];
+		$key = md5(json_encode($data));
+		$this->errors[$key] = $data;
+		$this->valid = false;
+	}
+
+	public function getErrors() {
+		return array_values($this->errors);
 	}
 
 	/**
@@ -241,6 +282,10 @@ abstract class BaseForm {
 	}
 
 	public function formatResponse() {
+		if (!$this->valid) {
+			$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
+		}
+
 		return $this->responseData;
 	}
 
