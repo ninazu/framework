@@ -285,6 +285,10 @@ abstract class BaseForm {
 
 	public function formatResponse() {
 		if (!$this->valid) {
+			if ($this->parentForm) {
+				return $this->getErrors();
+			}
+
 			$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
 		}
 
