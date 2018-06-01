@@ -64,6 +64,8 @@ abstract class BaseForm {
 	 * @param IConnection $connection
 	 * @param callable $function
 	 *
+	 * @return BaseForm
+	 *
 	 * @throws Exception
 	 */
 	public function trySave(IConnection $connection, callable $function) {
