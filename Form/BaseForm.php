@@ -306,16 +306,6 @@ abstract class BaseForm {
 	}
 
 	public function createResponse($data) {
-		$this->responseData = $data;
-
-		if ($this->parentForm) {
-			$this->parentForm->createResponse($data);
-		}
-
-		if (!is_array($data) || empty($data)) {
-			return true;
-		}
-
 		if ($processors = $this->postProcessors()) {
 			foreach ($processors as $rule) {
 				list($fields, $class, $params) = array_pad($rule, 3, []);;
@@ -332,7 +322,11 @@ abstract class BaseForm {
 			}
 		}
 
-		return true;
+		$this->responseData = $data;
+
+		if ($this->parentForm) {
+			$this->parentForm->createResponse($data);
+		}
 	}
 
 	abstract protected function rules();
