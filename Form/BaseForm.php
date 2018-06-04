@@ -306,6 +306,12 @@ abstract class BaseForm {
 	}
 
 	public function createResponse($data) {
+		$this->responseData = $data;
+
+		if ($this->parentForm) {
+			$this->parentForm->createResponse($data);
+		}
+
 		if (!is_array($data) || empty($data)) {
 			return true;
 		}
@@ -326,14 +332,14 @@ abstract class BaseForm {
 			}
 		}
 
-		$this->responseData = $data;
-
 		return true;
 	}
 
 	abstract protected function rules();
 
-	abstract protected function postProcessors();
+	protected function postProcessors() {
+		return [];
+	}
 
 	private function mergeSubRules($class, $suffix, $data) {
 		/**@var BaseForm $model */

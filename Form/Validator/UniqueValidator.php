@@ -11,20 +11,28 @@ use vendor\ninazu\framework\Form\BaseValidator;
  */
 class UniqueValidator extends BaseValidator {
 
+	/**
+	 * @var \Closure $callback
+	 */
 	protected $callback;
+
+	private $value;
 
 	protected function init() {
 		$this->hasDependency = true;
-	}
 
-	public function validate($value) {
 		if (!is_callable($this->callback)) {
 			throw new ErrorException('Callback must be callable');
 		}
 
-		$callback = $this->callback;
+		$this->callback->bindTo($this);
+	}
 
-		return $callback($this->field);
+	public function validate($value) {
+		$callback = $this->callback;
+		$this->value = $value;
+
+		return !$callback($this->field);
 	}
 
 	public function getMessage() {
@@ -33,5 +41,11 @@ class UniqueValidator extends BaseValidator {
 		}
 
 		return "Field '{$this->field}' must be unique";
+	}
+
+	public function getExtra() {
+		return [
+			$this->field => $this->value,
+		];
 	}
 }

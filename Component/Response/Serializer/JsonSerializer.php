@@ -39,7 +39,6 @@ class JsonSerializer extends BaseSerializer {
 				$result = [
 					'status' => false,
 					'fields' => $response->getData(),
-					'extra' => $response->getExtra(),
 				];
 				break;
 
