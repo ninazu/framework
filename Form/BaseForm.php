@@ -127,6 +127,14 @@ abstract class BaseForm {
 	}
 
 	/**
+	 * @param $name
+	 * @return mixed|null
+	 */
+	public function getResponseData($name) {
+		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
+	}
+
+	/**
 	 * @return array
 	 */
 	public function getAttributes() {
