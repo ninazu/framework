@@ -21,8 +21,9 @@ class SetProcessor extends BaseProcessor {
 				throw new ErrorException('Callback must be callable');
 			}
 
-//			$f = new ReflectionFunction($this->callback);
-//			$params = $f->getParameters();
+			$f = new ReflectionFunction($this->callback);
+			$params = $f->getParameters();
+
 			$this->callback->bindTo($this);
 		}
 	}
@@ -30,9 +31,11 @@ class SetProcessor extends BaseProcessor {
 	public function execute(array &$data) {
 		if (isset($this->callback)) {
 			$callback = $this->callback;
-			$callback($data, $this->field);
+			$callback($data, $this->fields);
 		} elseif (isset($this->value)) {
-			$data[$this->field] = $this->value;
+			foreach ($this->fields as $field) {
+				$data[$field] = $this->value;
+			}
 		} else {
 			throw new ErrorException('SetProcessor without callback or value in params');
 		}

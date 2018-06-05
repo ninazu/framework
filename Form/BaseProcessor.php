@@ -6,10 +6,10 @@ use vendor\ninazu\framework\Core\BaseConfigurator;
 
 abstract class BaseProcessor extends BaseConfigurator {
 
-	protected $field;
+	protected $fields;
 
-	public function __construct($field, $params) {
-		$this->field = $field;
+	public function __construct($fields, $params) {
+		$this->fields = $fields;
 		$this->fillFromConfig($params);
 		$this->init();
 	}

@@ -318,15 +318,13 @@ abstract class BaseForm {
 			foreach ($processors as $rule) {
 				list($fields, $class, $params) = array_pad($rule, 3, []);;
 
-				foreach ($fields as $field) {
-					if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
-						throw new ErrorException("Invalid PostProcessor '{$class}'");
-					}
-
-					/**@var BaseProcessor $processor */
-					$processor = new $class($field, $params);
-					$processor->execute($data);
+				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+					throw new ErrorException("Invalid PostProcessor '{$class}'");
 				}
+
+				/**@var BaseProcessor $processor */
+				$processor = new $class($fields, $params);
+				$processor->execute($data);
 			}
 		}
 
