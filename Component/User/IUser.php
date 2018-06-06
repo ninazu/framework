@@ -10,4 +10,6 @@ interface IUser {
 
 	public function getIdentity();
 
+	public function setIdentity(IUserIdentity $user);
+
 }

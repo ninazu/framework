@@ -64,6 +64,12 @@ abstract class BaseForm {
 		return $this;
 	}
 
+	public function setConnection(IConnection $connection) {
+		$this->transaction = $connection;
+
+		return $this;
+	}
+
 	/**
 	 * @param IConnection $connection
 	 * @param callable $function

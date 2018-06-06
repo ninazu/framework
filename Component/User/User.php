@@ -22,7 +22,7 @@ class User extends BaseComponent implements IUser {
 			throw new ErrorException("UserModel must be implement IUserModel");
 		}
 
-		$this->model = new $this->modelClass();
+		$this->setIdentity(new $this->modelClass());
 	}
 
 	/**
@@ -30,5 +30,9 @@ class User extends BaseComponent implements IUser {
 	 */
 	public function getIdentity() {
 		return $this->model;
+	}
+
+	public function setIdentity(IUserIdentity $identity) {
+		$this->model = $identity;
 	}
 }

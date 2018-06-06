@@ -86,6 +86,17 @@ abstract class BaseController extends BaseComponent {
 	}
 
 	private function getPermissionErrorCode($userRole, $actionList, $permissions) {
+		$customRole = !in_array($userRole, [
+			IUser::ROLE_GUEST,
+			IUser::ROLE_AUTHORIZED,
+		]);
+
+		$allowedForAuthorised = isset($permissions[IUser::ROLE_AUTHORIZED]);
+
+		if ($allowedForAuthorised && $customRole) {
+			return null;
+		}
+
 		//Role not found. Deny
 		if (!isset($permissions[$userRole])) {
 			return $this->permissionScenario($userRole, $actionList);
