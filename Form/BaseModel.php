@@ -41,6 +41,12 @@ abstract class BaseModel {
 
 	protected $scenario = self::ON_WRITE;
 
+	public function setScenario($scenario) {
+		$list = Reflector::getConstantGroup(static::class, 'ON_');
+
+		return $this;
+	}
+
 	/**@var BaseModel $parentForm */
 	protected $parentForm = null;
 
