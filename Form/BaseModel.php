@@ -14,9 +14,9 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseModel {
 
-	const ON_WRITE = 1;
+	const ON_WRITE = 'write';
 
-	const ON_READ = 2;
+	const ON_READ = 'read';
 
 	protected $namespace = null;
 
@@ -42,7 +42,11 @@ abstract class BaseModel {
 	protected $scenario = self::ON_WRITE;
 
 	public function setScenario($scenario) {
-		$list = Reflector::getConstantGroup(static::class, 'ON_');
+		$list = Reflector::getConstantGroup(static::class, 'ON_')->getData();
+
+		if (!array_key_exists($scenario, $list)) {
+			throw new ErrorException('Wrong scenario, please declare CONST before use');
+		}
 
 		return $this;
 	}
@@ -185,15 +189,23 @@ abstract class BaseModel {
 					}
 
 					$validator = new $class($field, $params, $this->response);
+					$value = array_key_exists($field, $this->flatRequestData) ? $this->flatRequestData[$field] : null;
+					$this->attributes[$field] = $value;
 
 					if ($validator instanceof RequiredValidator) {
 						$this->requiredFields[] = $field;
+
+//						if ($validator->applyOnSave()) {
+//							//TODO Stop
+//							$this->applyOnSave['validator'] = $validator;
+//							$this->applyOnSave['fields'][$field] = $value;
+//
+//							continue;
+//						}
 					}
 
-					$value = $this->flatRequestData[$field];
-					$this->attributes[$field] = $value;
-
 					if ($validator->hasDependency()) {
+						//TODO ManyValidators at diff params
 						$delayedValidators[$class]['validator'] = $validator;
 						$delayedValidators[$class]['fields'][$field] = $value;
 
@@ -248,7 +260,7 @@ abstract class BaseModel {
 	 */
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
-		$this->flatRequestData = Reflector::toFlatArray($requestData);
+		$this->preProcessors($requestData);
 
 		if ($rules = $this->rules()) {
 			foreach ($rules as $rule) {
@@ -260,10 +272,10 @@ abstract class BaseModel {
 
 				foreach ($fields as $field) {
 					if (!array_key_exists($field, $requestData)) {
-						//TODO Stop
 						if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
 							$requestData[$field] = null;
 						} else {
+							//
 							continue;
 						}
 					}
@@ -289,6 +301,7 @@ abstract class BaseModel {
 			}
 		}
 
+		$this->flatRequestData = Reflector::toFlatArray($requestData);
 		$this->valid = null;
 	}
 
@@ -360,6 +373,10 @@ abstract class BaseModel {
 	abstract protected function rules();
 
 	protected function postProcessors() {
+		return [];
+	}
+
+	protected function preProcessors(array &$requestData) {
 		return [];
 	}
 

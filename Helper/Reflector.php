@@ -160,6 +160,7 @@ class Reflector {
 			$flatKey = !is_null($namespace) ? "{$namespace}.{$key}" : $key;
 
 			if (is_array($value)) {
+				$tmp[$flatKey] = $value;
 				$tmp = array_merge($tmp, self::toFlatArray($value, $flatKey));
 			} else {
 				$tmp[$flatKey] = $value;
