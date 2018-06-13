@@ -111,6 +111,8 @@ abstract class BaseMultiForm {
 			$this->response->sendError(IResponse::STATUS_CODE_VALIDATION, $this->getErrors());
 		}
 
+		//static::save($connection);
+
 		foreach ($this->childForms as $flatField => $params) {
 			foreach ($params as $param) {
 				if (empty($param['params']['multiply'])) {
