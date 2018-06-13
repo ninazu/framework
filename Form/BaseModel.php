@@ -37,6 +37,8 @@ abstract class BaseModel {
 
 	protected $attributes = [];
 
+	protected $applyOnSave = [];
+
 	protected $errors = [];
 
 	protected $scenario = self::ON_WRITE;
@@ -175,7 +177,14 @@ abstract class BaseModel {
 			$delayedValidators = [];
 
 			foreach ($this->flatRules as $field => $validators) {
-				foreach ($validators as $class => $params) {
+				foreach ($validators as $row) {
+					if ($this->namespace != $row['namespace']) {
+						continue;
+					}
+
+					$params = $row['params'];
+					$class = $row['class'];
+
 					if (isset($params['on'])) {
 						if (is_array($params['on'])) {
 							if (!in_array($this->scenario, $params['on'])) {
@@ -193,21 +202,23 @@ abstract class BaseModel {
 					$this->attributes[$field] = $value;
 
 					if ($validator instanceof RequiredValidator) {
-						$this->requiredFields[] = $field;
+						if ($validator->applyOnSave()) {
+							$this->applyOnSave[$field][] = [
+								$validator,
+								$value,
+							];
 
-//						if ($validator->applyOnSave()) {
-//							//TODO Stop
-//							$this->applyOnSave['validator'] = $validator;
-//							$this->applyOnSave['fields'][$field] = $value;
-//
-//							continue;
-//						}
+							continue;
+						}
+
+						$this->requiredFields[] = $field;
 					}
 
 					if ($validator->hasDependency()) {
-						//TODO ManyValidators at diff params
-						$delayedValidators[$class]['validator'] = $validator;
-						$delayedValidators[$class]['fields'][$field] = $value;
+						$delayedValidators[$field][] = [
+							$validator,
+							$value,
+						];
 
 						continue;
 					}
@@ -219,25 +230,11 @@ abstract class BaseModel {
 			}
 
 			if (empty($this->errors)) {
-				foreach ($delayedValidators as $job) {
-					$validator = $job['validator'];
-
-					foreach ($job['fields'] as $field => $value) {
-						if (isset($this->errors[$field])) {
-							continue;
-						}
-
-						if (!$validator->validate($value)) {
-							$this->addError($field, $validator->getMessage(), $validator->getExtra());
-
-							continue;
-						}
-					}
-				}
+				$this->delayedValidators($delayedValidators);
 			}
 
 			$missing = array_diff($this->requiredFields, array_keys($this->flatRequestData));
-			$this->valid = empty($this->errors) && empty($missing);
+			$this->valid = !$this->hasErrors() && empty($missing);
 
 			if ($missing) {
 				$this->response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
@@ -253,6 +250,31 @@ abstract class BaseModel {
 		return $this->valid;
 	}
 
+	public function validateOnSave() {
+		$this->delayedValidators($this->applyOnSave);
+
+		return !$this->hasErrors();
+	}
+
+	private function delayedValidators($delayedValidators) {
+		foreach ($delayedValidators as $field => $jobs) {
+			foreach ($jobs as $job) {
+				if (isset($this->errors[$field])) {
+					break;
+				}
+
+				/**@var BaseValidator $validator */
+				list($validator, $value) = $job;
+
+				if (!$validator->validate($value)) {
+					$this->addError($field, $validator->getMessage(), $validator->getExtra());
+
+					continue;
+				}
+			}
+		}
+	}
+
 	/**
 	 * @param IResponse $response
 	 * @param array $requestData
@@ -260,19 +282,18 @@ abstract class BaseModel {
 	 */
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
-		$this->preProcessors($requestData);
 
 		if ($rules = $this->rules()) {
 			foreach ($rules as $rule) {
-				list($fields, $validator, $params) = array_pad($rule, 3, []);
+				list($fields, $class, $params) = array_pad($rule, 3, []);
 
-				if (!is_string($validator) || !Reflector::isInstanceOf($validator, BaseValidator::class)) {
-					throw new ErrorException("Invalid class of validator '{$validator}'");
+				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
+					throw new ErrorException("Invalid class of validator '{$class}'");
 				}
 
 				foreach ($fields as $field) {
 					if (!array_key_exists($field, $requestData)) {
-						if (Reflector::isInstanceOf($validator, RequiredValidator::class)) {
+						if (Reflector::isInstanceOf($class, RequiredValidator::class)) {
 							$requestData[$field] = null;
 						} else {
 							//
@@ -284,7 +305,7 @@ abstract class BaseModel {
 					$model = null;
 					$flatField = !is_null($this->namespace) ? "{$this->namespace}.{$field}" : $field;
 
-					if (Reflector::isInstanceOf($validator, ChildFormValidator::class)) {
+					if (Reflector::isInstanceOf($class, ChildFormValidator::class)) {
 						if (empty($params['multiply'])) {
 							$this->mergeSubRules($params['class'], $field, $requestData[$field]);
 						} else {
@@ -296,7 +317,11 @@ abstract class BaseModel {
 						continue;
 					}
 
-					$this->flatRules[$flatField][$validator] = $params;
+					$this->flatRules[$flatField][] = [
+						'namespace' => $this->namespace,
+						'class' => $class,
+						'params' => $params,
+					];
 				}
 			}
 		}
@@ -373,10 +398,6 @@ abstract class BaseModel {
 	abstract protected function rules();
 
 	protected function postProcessors() {
-		return [];
-	}
-
-	protected function preProcessors(array &$requestData) {
 		return [];
 	}
 
