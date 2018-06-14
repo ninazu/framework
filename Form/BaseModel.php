@@ -207,34 +207,10 @@ abstract class BaseModel {
 		foreach ($this->childForms as $flatField => $params) {
 			foreach ($params as $param) {
 				if (empty($param['params']['multiply'])) {
-					/**@var BaseModel $form */
-					$form = new $param['params']['class']();
-					$form->namespace = "{$namespace}{$flatField}";
-					$form->load($this->response, $this->mergeWithNamespace((array)$this->flatRequestData[$flatField], $data));
-					$responseForm = $form->trySave($connection);
-
-					if (is_array($responseForm)) {
-						foreach ($responseForm as $key => $value) {
-							Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
-						}
-					} else {
-						Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
-					}
+					$this->processChildForm($response, $namespace, $param['params']['class'], $flatField, $this->flatRequestData[$flatField], $data);
 				} else {
 					foreach ($this->flatRequestData[$flatField] as $index => $row) {
-						/**@var BaseModel $form */
-						$form = new $param['params']['class']();
-						$form->namespace = "{$namespace}{$flatField}.{$index}";
-						$form->load($this->response, $this->mergeWithNamespace((array)$row, $data));
-						$responseForm = $form->trySave($connection);
-
-						if (is_array($responseForm)) {
-							foreach ($responseForm as $key => $value) {
-								Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
-							}
-						} else {
-							Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
-						}
+						$this->processChildForm($response, $namespace, $param['params']['class'], "{$flatField}.{$index}", $row, $data);
 					}
 				}
 			}
@@ -243,6 +219,22 @@ abstract class BaseModel {
 		$this->createResponse($response);
 
 		return $this->responseData;
+	}
+
+	private function processChildForm(&$response, $namespace, $class, $field, $row, $data) {
+		/**@var BaseModel $form */
+		$form = new $class();
+		$form->namespace = "{$namespace}{$field}";
+		$form->load($this->response, $this->mergeWithNamespace((array)$row, $data));
+		$responseForm = $form->trySave($this->getTransaction());
+
+		if (is_array($responseForm)) {
+			foreach ($responseForm as $key => $value) {
+				Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
+			}
+		} else {
+			Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
+		}
 	}
 
 	public function createResponse($data) {
