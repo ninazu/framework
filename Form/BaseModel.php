@@ -3,13 +3,10 @@
 namespace vendor\ninazu\framework\Form;
 
 use ErrorException;
-use Exception;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Component\Response\IResponse;
-use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Form\Validator\ChildFormValidator;
-use vendor\ninazu\framework\Form\Validator\RequiredValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseModel {
@@ -18,112 +15,42 @@ abstract class BaseModel {
 
 	const ON_READ = 'read';
 
-	protected $namespace = null;
+	protected $scenario = self::ON_WRITE;
 
-	/**@var Response $response */
-	protected $response = null;
+	/**
+	 * @var IResponse $response
+	 */
+	protected $response;
 
-	protected $responseData = [];
+	protected $requestData = [];
 
-	protected $flatRequestData = [];
+	protected $namespace;
 
 	protected $flatRules = [];
 
-	protected $valid = null;
+	protected $flatRequestData = [];
 
-	protected $requiredFields = [];
-
-	protected $transaction = null;
-
-	protected $attributes = [];
-
-	protected $applyOnSave = [];
+	protected $childForms = [];
 
 	protected $errors = [];
 
-	protected $scenario = self::ON_WRITE;
+	protected $parentForm;
+
+	protected $transaction;
+
+	protected $attributes = [];
+
+	protected $responseData = [];
+
+	public function __construct(BaseModel $parentForm = null) {
+		$this->parentForm = $parentForm;
+	}
 
 	public function setScenario($scenario) {
 		$list = Reflector::getConstantGroup(static::class, 'ON_')->getData();
 
 		if (!array_key_exists($scenario, $list)) {
 			throw new ErrorException('Wrong scenario, please declare CONST before use');
-		}
-
-		return $this;
-	}
-
-	/**@var BaseModel $parentForm */
-	protected $parentForm = null;
-
-	public function __construct(BaseModel $parentForm = null) {
-		$this->parentForm = $parentForm;
-	}
-
-	/**
-	 * @return IConnection|ITransaction
-	 */
-	public function getTransaction() {
-		return $this->transaction;
-	}
-
-	public function trySaveInside(callable $function) {
-		if (!$this->parentForm) {
-			throw new ErrorException('trySaveInside without parentForm');
-		}
-
-		$this->load($this->parentForm->response, $this->parentForm->getAttributes());
-		$this->trySave($this->parentForm->getTransaction(), $function);
-
-		return $this;
-	}
-
-	public function setConnection(IConnection $connection) {
-		$this->transaction = $connection;
-
-		return $this;
-	}
-
-	/**
-	 * @param IConnection $connection
-	 * @param callable $function
-	 *
-	 * @return BaseModel
-	 *
-	 * @throws Exception
-	 */
-	public function trySave(IConnection $connection, callable $function) {
-		$this->transaction = $connection->beginTransaction();
-
-		try {
-			if (!$this->validate()) {
-				$this->setParentFormError();
-
-				return $this;
-			}
-
-			$function($this);
-
-			if ($this->hasErrors()) {
-				$this->transaction->rollback();
-				$this->setParentFormError();
-
-				return $this;
-			}
-
-			$this->transaction->commit();
-		} catch (Exception $exception) {
-			$rollBackMessage = null;
-
-			if (!$this->hasErrors() && is_null($this->transaction->getRollBackMessage())) {
-				$this->addError(null, $exception->getMessage());
-				$rollBackMessage = $exception->getMessage();
-			}
-
-			$this->transaction->rollback($rollBackMessage);
-			$this->setParentFormError();
-
-			throw $exception;
 		}
 
 		return $this;
@@ -138,14 +65,6 @@ abstract class BaseModel {
 	}
 
 	/**
-	 * @param $name
-	 * @return mixed|null
-	 */
-	public function getResponseData($name) {
-		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
-	}
-
-	/**
 	 * @return array
 	 */
 	public function getAttributes() {
@@ -153,126 +72,10 @@ abstract class BaseModel {
 	}
 
 	/**
-	 * @return array
+	 * @return IConnection|ITransaction
 	 */
-	public function getRequiredFields() {
-		return $this->requiredFields;
-	}
-
-	/**
-	 * @return array
-	 */
-	public function getFlatRules() {
-		return $this->flatRules;
-	}
-
-	/**
-	 * @return bool|null
-	 *
-	 * @throws Exception
-	 */
-	public function validate() {
-		if (is_null($this->valid)) {
-			/**@var BaseValidator $validator */
-			$delayedValidators = [];
-
-			foreach ($this->flatRules as $field => $validators) {
-				foreach ($validators as $row) {
-					if ($this->namespace != $row['namespace']) {
-						continue;
-					}
-
-					$params = $row['params'];
-					$class = $row['class'];
-
-					if (isset($params['on'])) {
-						if (is_array($params['on'])) {
-							if (!in_array($this->scenario, $params['on'])) {
-								continue;
-							}
-						} else if (is_int($params['on'])) {
-							continue;
-						} else {
-							throw new Exception("'on' params of Validator must be Array");
-						}
-					}
-
-					$validator = new $class($field, $params, $this->response);
-					$value = array_key_exists($field, $this->flatRequestData) ? $this->flatRequestData[$field] : null;
-					$this->attributes[$field] = $value;
-
-					if ($validator instanceof RequiredValidator) {
-						if ($validator->applyOnSave()) {
-							$this->applyOnSave[$field][] = [
-								$validator,
-								$value,
-							];
-
-							continue;
-						}
-
-						$this->requiredFields[] = $field;
-					}
-
-					if ($validator->hasDependency()) {
-						$delayedValidators[$field][] = [
-							$validator,
-							$value,
-						];
-
-						continue;
-					}
-
-					if (!$validator->validate($value)) {
-						$this->addError($field, $validator->getMessage(), $validator->getExtra());
-					}
-				}
-			}
-
-			if (empty($this->errors)) {
-				$this->delayedValidators($delayedValidators);
-			}
-
-			$missing = array_diff($this->requiredFields, array_keys($this->flatRequestData));
-			$this->valid = !$this->hasErrors() && empty($missing);
-
-			if ($missing) {
-				$this->response->sendError(Response::STATUS_CODE_BAD_REQUEST, array_values($missing));
-			}
-
-			if (!$this->valid) {
-				$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
-			}
-
-			$this->afterValidate();
-		}
-
-		return $this->valid;
-	}
-
-	public function validateOnSave() {
-		$this->delayedValidators($this->applyOnSave);
-
-		return !$this->hasErrors();
-	}
-
-	private function delayedValidators($delayedValidators) {
-		foreach ($delayedValidators as $field => $jobs) {
-			foreach ($jobs as $job) {
-				if (isset($this->errors[$field])) {
-					break;
-				}
-
-				/**@var BaseValidator $validator */
-				list($validator, $value) = $job;
-
-				if (!$validator->validate($value)) {
-					$this->addError($field, $validator->getMessage(), $validator->getExtra());
-
-					continue;
-				}
-			}
-		}
+	public function getTransaction() {
+		return $this->transaction;
 	}
 
 	/**
@@ -282,52 +85,85 @@ abstract class BaseModel {
 	 */
 	public function load(IResponse $response, array $requestData) {
 		$this->response = $response;
+		$this->flatRules = [];
+		$this->childForms = [];
+		$this->flatRequestData = [];
 
-		if ($rules = $this->rules()) {
-			foreach ($rules as $rule) {
-				list($fields, $class, $params) = array_pad($rule, 3, []);
+		if (!$rules = $this->rules()) {
+			return;
+		}
 
-				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
-					throw new ErrorException("Invalid class of validator '{$class}'");
+		foreach ($rules as $rule) {
+			list($fields, $class, $params) = array_pad($rule, 3, []);
+
+			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
+				throw new ErrorException("Invalid class of validator '{$class}'");
+			}
+
+			foreach ($fields as $field) {
+				if (!array_key_exists($field, $requestData)) {
+					$requestData[$field] = null;
 				}
 
-				foreach ($fields as $field) {
-					if (!array_key_exists($field, $requestData)) {
-						if (Reflector::isInstanceOf($class, RequiredValidator::class)) {
-							$requestData[$field] = null;
-						} else {
-							//
-							continue;
-						}
-					}
+				$flatField = !is_null($this->namespace) ? "{$this->namespace}.{$field}" : $field;
 
-					/**@var BaseModel $model */
-					$model = null;
-					$flatField = !is_null($this->namespace) ? "{$this->namespace}.{$field}" : $field;
-
-					if (Reflector::isInstanceOf($class, ChildFormValidator::class)) {
-						if (empty($params['multiply'])) {
-							$this->mergeSubRules($params['class'], $field, $requestData[$field]);
-						} else {
-							foreach ($requestData[$field] as $index => $row) {
-								$this->mergeSubRules($params['class'], "{$field}.{$index}", $row);
-							}
-						}
-
-						continue;
-					}
-
-					$this->flatRules[$flatField][] = [
-						'namespace' => $this->namespace,
+				if (Reflector::isInstanceOf($class, ChildFormValidator::class)) {
+					$this->childForms[$flatField][] = [
 						'class' => $class,
 						'params' => $params,
 					];
+
+					continue;
+				}
+
+				$this->flatRules[$flatField][] = [
+					'class' => $class,
+					'params' => $params,
+				];
+			}
+		}
+
+		$this->flatRequestData = Reflector::toFlatArray($requestData, $this->namespace);
+	}
+
+	/**
+	 * @return bool
+	 * @throws ErrorException
+	 */
+	public function validate() {
+		$this->beforeValidate();
+
+		foreach ($this->flatRules as $field => $validators) {
+			foreach ($validators as $row) {
+				$params = $row['params'];
+				$class = $row['class'];
+
+				if (isset($params['on'])) {
+					if (is_array($params['on'])) {
+						if (!in_array($this->scenario, $params['on'])) {
+							continue;
+						}
+					} else if (is_int($params['on'])) {
+						continue;
+					} else {
+						throw new ErrorException("'on' params of Validator must be Array");
+					}
+				}
+
+				/**@var BaseValidator $validator */
+				$validator = new $class($field, $params, $this->response);
+				$value = $this->flatRequestData[$field];
+				$this->attributes[$this->removeNameSpace($field)] = $value;
+
+				if (!$validator->validate($value)) {
+					$this->addError($field, $validator->getMessage(), $validator->getExtra());
 				}
 			}
 		}
 
-		$this->flatRequestData = Reflector::toFlatArray($requestData);
-		$this->valid = null;
+		$this->afterValidate();
+
+		return !$this->hasErrors();
 	}
 
 	/**
@@ -343,21 +179,68 @@ abstract class BaseModel {
 		];
 		$key = md5(json_encode($data));
 		$this->errors[$key] = $data;
-		$this->valid = false;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function getErrors() {
 		return array_values($this->errors);
 	}
 
-	public function formatResponse() {
-		if (!$this->valid) {
-			if ($this->parentForm) {
-				return $this->getErrors();
-			}
+	/**
+	 * @param IConnection $connection
+	 * @return array
+	 * @throws ErrorException
+	 */
+	public function trySave(IConnection $connection) {
+		$this->transaction = $connection;
 
-			$this->response->sendError(Response::STATUS_CODE_VALIDATION, $this->getErrors());
+		if (!$this->validate()) {
+			$this->response->sendError(IResponse::STATUS_CODE_VALIDATION, $this->getErrors());
 		}
+
+		$data = $this->save();
+		$namespace = $this->getSafeNamespace();
+		$response = $data;
+
+		foreach ($this->childForms as $flatField => $params) {
+			foreach ($params as $param) {
+				if (empty($param['params']['multiply'])) {
+					/**@var BaseModel $form */
+					$form = new $param['params']['class']();
+					$form->namespace = "{$namespace}{$flatField}";
+					$form->load($this->response, $this->mergeWithNamespace((array)$this->flatRequestData[$flatField], $data));
+					$responseForm = $form->trySave($connection);
+
+					if (is_array($responseForm)) {
+						foreach ($responseForm as $key => $value) {
+							Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
+						}
+					} else {
+						Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
+					}
+				} else {
+					foreach ($this->flatRequestData[$flatField] as $index => $row) {
+						/**@var BaseModel $form */
+						$form = new $param['params']['class']();
+						$form->namespace = "{$namespace}{$flatField}.{$index}";
+						$form->load($this->response, $this->mergeWithNamespace((array)$row, $data));
+						$responseForm = $form->trySave($connection);
+
+						if (is_array($responseForm)) {
+							foreach ($responseForm as $key => $value) {
+								Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
+							}
+						} else {
+							Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
+						}
+					}
+				}
+			}
+		}
+
+		$this->createResponse($response);
 
 		return $this->responseData;
 	}
@@ -384,8 +267,57 @@ abstract class BaseModel {
 		}
 	}
 
+	public function setAttribute($name, $value) {
+		$namespace = $this->getSafeNamespace();
+
+		$this->attributes[$name] = $value;
+		$this->requestData[$name] = $value;
+		$this->flatRequestData["{$namespace}{$name}"] = $value;
+	}
+
+	public function formatResponse() {
+		if ($this->hasErrors()) {
+			if ($this->parentForm) {
+				return $this->getErrors();
+			}
+
+			$this->response->sendError(IResponse::STATUS_CODE_VALIDATION, $this->getErrors());
+		}
+
+		return $this->responseData;
+	}
+
+	/**
+	 * @param $name
+	 * @return mixed|null
+	 */
+	public function getResponseData($name) {
+		return isset($this->responseData[$name]) ? $this->responseData[$name] : null;
+	}
+
+	protected function mergeWithNamespace(array $params, array $data) {
+		$tmp = [];
+		$namespace = $this->getSafeNamespace();
+
+		foreach ($data as $key => $value) {
+			//if (array_key_exists("{$namespace}{$key}", $this->flatRules)) {
+			$tmp["{$namespace}{$key}"] = $value;
+			//}
+		}
+
+		return array_replace_recursive($tmp, $params);
+	}
+
+	protected function beforeValidate() {
+		return;
+	}
+
 	protected function afterValidate() {
 		return;
+	}
+
+	protected function postProcessors() {
+		return [];
 	}
 
 	/**
@@ -397,25 +329,13 @@ abstract class BaseModel {
 
 	abstract protected function rules();
 
-	protected function postProcessors() {
-		return [];
+	abstract protected function save();
+
+	private function removeNameSpace($name) {
+		return str_replace("{$this->namespace}.", '', $name);
 	}
 
-	private function setParentFormError() {
-		if (!$this->parentForm) {
-			return;
-		}
-
-		$this->parentForm->errors = array_merge($this->errors, $this->parentForm->errors);
-		$this->parentForm->valid = !$this->parentForm->hasErrors();
-	}
-
-	private function mergeSubRules($class, $suffix, $data) {
-		/**@var BaseModel $model */
-		$model = new $class();
-		$model->namespace = !is_null($this->namespace) ? "{$this->namespace}.{$suffix}" : $suffix;
-		$model->load($this->response, $data);
-
-		$this->flatRules = array_merge($this->flatRules, $model->getFlatRules());
+	private function getSafeNamespace() {
+		return ltrim("{$this->namespace}.", '.');
 	}
 }
