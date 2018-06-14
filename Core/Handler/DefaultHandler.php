@@ -78,7 +78,12 @@ class DefaultHandler implements IHandler {
 			$data = "Unexpected server error " . md5($exception->getMessage());
 		} else {
 			$data = $exception->getMessage();
-			$extra = "{$exception->getFile()}:{$exception->getLine()}";
+
+			foreach ($exception->getTrace() as $row) {
+				if (isset($row['file'], $row['line'])) {
+					$extra[] = "{$row['file']}:{$row['line']}";
+				}
+			}
 		}
 
 		if (!headers_sent()) {

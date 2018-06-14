@@ -157,6 +157,22 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		return $keyedResult;
 	}
 
+	public function queryValue($name = null) {
+		$data = $this->queryOne();
+
+		if (!$data) {
+			return null;
+		}
+
+		$data = reset($data);
+
+		if (!is_null($name) && array_key_exists($name, $data)) {
+			return $data[$name];
+		}
+
+		return reset($data);
+	}
+
 	/**
 	 * @inheritdoc
 	 */

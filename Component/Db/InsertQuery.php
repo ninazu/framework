@@ -183,7 +183,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function validateValues(array $values) {
+	public function validateValues(array &$values) {
 		$firstRow = reset($values);
 
 		if (!is_array($firstRow)) {
@@ -203,6 +203,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 			foreach ($columnNames as $column) {
 				if (!isset($row[$column])) {
+					if (array_key_exists($column, $row)) {
+						$values[$index][$column] = Mysql::Expression('NULL');
+
+						continue;
+					}
+
 					throw new ErrorException("One of the rows does not contain value for the column '{$column}'.");
 				}
 			}

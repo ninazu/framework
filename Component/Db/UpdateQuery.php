@@ -58,7 +58,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @return bool
 	 * @throws ErrorException
 	 */
-	public function validateValues(array $values) {
+	public function validateValues(array &$values) {
 		foreach ($values as $key => $value) {
 			if (is_numeric($key)) {
 				throw new ErrorException('Values must be a associative array');
@@ -67,6 +67,12 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 			self::checkColumnName($key);
 
 			if (!is_scalar($value) && !$value instanceof Expression) {
+				if (is_null($value)) {
+					$values[$key] = Mysql::Expression('NULL');
+
+					continue;
+				}
+
 				throw new ErrorException('Value must be a scalar');
 			}
 		}

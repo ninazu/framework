@@ -170,7 +170,7 @@ class Reflector {
 		return $tmp;
 	}
 
-	public static function flatKeyToLink(array $tree, $key) {
+	public static function flatKeyToValue(array $tree, $key) {
 		$keys = explode('.', $key);
 
 		foreach ($keys as $key) {
@@ -184,5 +184,15 @@ class Reflector {
 		return [
 			$key => $tree,
 		];
+	}
+
+	public static function flatKeyToLink(array &$tree, $key, $value) {
+		$keys = explode('.', $key);
+
+		foreach ($keys as $key) {
+			$tree = &$tree[$key];
+		}
+
+		$tree = $value;
 	}
 }

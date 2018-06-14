@@ -27,4 +27,10 @@ interface ISelectResult extends IQueryResult {
 	 * @return array
 	 */
 	public function queryOne();
+
+	/**
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function queryValue($name = null);
 }

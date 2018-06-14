@@ -4,11 +4,28 @@ namespace vendor\ninazu\framework\Form;
 
 use ErrorException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
+use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Form\Validator\ChildFormValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseMultiForm {
+
+	const ON_WRITE = 'write';
+
+	const ON_READ = 'read';
+
+	protected $scenario = self::ON_WRITE;
+
+	public function setScenario($scenario) {
+		$list = Reflector::getConstantGroup(static::class, 'ON_')->getData();
+
+		if (!array_key_exists($scenario, $list)) {
+			throw new ErrorException('Wrong scenario, please declare CONST before use');
+		}
+
+		return $this;
+	}
 
 	/**
 	 * @var IResponse $response
@@ -27,12 +44,57 @@ abstract class BaseMultiForm {
 
 	protected $errors = [];
 
-	public function load(IResponse $response, $requestData) {
+	protected $parentForm;
+
+	protected $transaction;
+
+	protected $attributes = [];
+
+	protected $responseData = [];
+
+	public function __construct(BaseMultiForm $parentForm = null) {
+		$this->parentForm = $parentForm;
+	}
+
+	/**
+	 * @param $name
+	 * @return mixed|null
+	 */
+	public function getAttribute($name) {
+		return isset($this->attributes[$name]) ? $this->attributes[$name] : null;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getAttributes() {
+		return $this->attributes;
+	}
+
+	/**
+	 * @return IConnection|ITransaction
+	 */
+	public function getTransaction() {
+		return $this->transaction;
+	}
+
+	/**
+	 * @param IResponse $response
+	 * @param array $requestData
+	 * @param array $parentRequestData
+	 * @throws ErrorException
+	 */
+	public function load(IResponse $response, array $requestData, array $parentRequestData = []) {
 		$this->response = $response;
 		$this->flatRules = [];
 		$this->childForms = [];
+		$this->flatRequestData = [];
 
-		foreach ($this->rules() as $rule) {
+		if (!$rules = $this->rules()) {
+			return;
+		}
+
+		foreach ($rules as $rule) {
 			list($fields, $class, $params) = array_pad($rule, 3, []);
 
 			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
@@ -65,21 +127,42 @@ abstract class BaseMultiForm {
 		$this->flatRequestData = Reflector::toFlatArray($requestData, $this->namespace);
 	}
 
+	/**
+	 * @return bool
+	 * @throws ErrorException
+	 */
 	public function validate() {
+		$this->beforeValidate();
+
 		foreach ($this->flatRules as $field => $validators) {
 			foreach ($validators as $row) {
 				$params = $row['params'];
 				$class = $row['class'];
 
+				if (isset($params['on'])) {
+					if (is_array($params['on'])) {
+						if (!in_array($this->scenario, $params['on'])) {
+							continue;
+						}
+					} else if (is_int($params['on'])) {
+						continue;
+					} else {
+						throw new ErrorException("'on' params of Validator must be Array");
+					}
+				}
+
 				/**@var BaseValidator $validator */
 				$validator = new $class($field, $params, $this->response);
 				$value = $this->flatRequestData[$field];
+				$this->attributes[$this->removeNameSpace($field)] = $value;
 
 				if (!$validator->validate($value)) {
 					$this->addError($field, $validator->getMessage(), $validator->getExtra());
 				}
 			}
 		}
+
+		$this->afterValidate();
 
 		return !$this->hasErrors();
 	}
@@ -99,6 +182,10 @@ abstract class BaseMultiForm {
 		$this->errors[$key] = $data;
 	}
 
+	private function removeNameSpace($name) {
+		return str_replace("{$this->namespace}.", '', $name);
+	}
+
 	/**
 	 * @return array
 	 */
@@ -106,35 +193,132 @@ abstract class BaseMultiForm {
 		return array_values($this->errors);
 	}
 
-	public function save(IConnection $connection) {
+	/**
+	 * @param IConnection $connection
+	 * @return array
+	 * @throws ErrorException
+	 */
+	public function trySave(IConnection $connection) {
+		$this->transaction = $connection;
+
 		if (!$this->validate()) {
 			$this->response->sendError(IResponse::STATUS_CODE_VALIDATION, $this->getErrors());
 		}
 
-		//static::save($connection);
+		$data = $this->save();
+		$namespace = $this->getSafeNamespace();
+		$response = $data;
 
 		foreach ($this->childForms as $flatField => $params) {
 			foreach ($params as $param) {
 				if (empty($param['params']['multiply'])) {
 					/**@var BaseMultiForm $form */
 					$form = new $param['params']['class']();
-					$form->namespace = trim("{$this->namespace}.{$flatField}", '.');
-					$form->load($this->response, $this->flatRequestData[$flatField]);
-					$form->save($connection);
+					$form->namespace = "{$namespace}{$flatField}";
+					$form->load($this->response, $this->mergeWithNamespace((array)$this->flatRequestData[$flatField], $data));
+					$responseForm = $form->trySave($connection);
+
+					if (is_array($responseForm)) {
+						foreach ($responseForm as $key => $value) {
+							Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
+						}
+					} else {
+						Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
+					}
+
 				} else {
 					foreach ($this->flatRequestData[$flatField] as $index => $row) {
 						/**@var BaseMultiForm $form */
 						$form = new $param['params']['class']();
-						$form->namespace = trim("{$this->namespace}.{$flatField}.{$index}", '.');
-						$form->load($this->response, $row);
-						$form->save($connection);
+						$form->namespace = "{$namespace}{$flatField}.{$index}";
+						$form->load($this->response, $this->mergeWithNamespace((array)$row, $data));
+						$responseForm = $form->trySave($connection);
+
+						if (is_array($responseForm)) {
+							foreach ($responseForm as $key => $value) {
+								Reflector::flatKeyToLink($response, "{$form->namespace}.{$key}", $value);
+							}
+						} else {
+							Reflector::flatKeyToLink($response, "{$form->namespace}", $responseForm);
+						}
 					}
 				}
 			}
 		}
+
+		$this->createResponse($response);
+
+		return $this->responseData;
+	}
+
+	public function createResponse($data) {
+		if ($processors = $this->postProcessors()) {
+			foreach ($processors as $rule) {
+				list($fields, $class, $params) = array_pad($rule, 3, []);;
+
+				if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+					throw new ErrorException("Invalid PostProcessor '{$class}'");
+				}
+
+				/**@var BaseProcessor $processor */
+				$processor = new $class($fields, $params);
+				$processor->execute($data);
+			}
+		}
+
+		$this->responseData = $data;
+
+		if ($this->parentForm) {
+			$this->parentForm->createResponse($data);
+		}
+	}
+
+	private function getSafeNamespace() {
+		return ltrim("{$this->namespace}.", '.');
+	}
+
+	public function setAttribute($name, $value) {
+		$namespace = $this->getSafeNamespace();
+
+		$this->attributes[$name] = $value;
+		$this->requestData[$name] = $value;
+		$this->flatRequestData["{$namespace}{$name}"] = $value;
+	}
+
+	protected function mergeWithNamespace(array $params, array $data) {
+		$tmp = [];
+		$namespace = $this->getSafeNamespace();
+
+		foreach ($data as $key => $value) {
+			//if (array_key_exists("{$namespace}{$key}", $this->flatRules)) {
+			$tmp["{$namespace}{$key}"] = $value;
+			//}
+		}
+
+		return array_replace_recursive($tmp, $params);
 	}
 
 	public function formatResponse() {
+		if ($this->hasErrors()) {
+			if ($this->parentForm) {
+				return $this->getErrors();
+			}
+
+			$this->response->sendError(IResponse::STATUS_CODE_VALIDATION, $this->getErrors());
+		}
+
+		return $this->responseData;
+	}
+
+	protected function beforeValidate() {
+		return;
+	}
+
+	protected function afterValidate() {
+		return;
+	}
+
+	protected function postProcessors() {
 		return [];
 	}
 
@@ -146,4 +330,6 @@ abstract class BaseMultiForm {
 	}
 
 	abstract protected function rules();
+
+	abstract protected function save();
 }

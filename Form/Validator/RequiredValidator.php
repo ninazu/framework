@@ -11,12 +11,6 @@ class RequiredValidator extends BaseValidator {
 
 	protected $allowEmpty = false;
 
-	protected $onSave = false;
-
-	public function applyOnSave() {
-		return $this->onSave;
-	}
-
 	public function validate($value) {
 		if ($this->allowEmpty) {
 			return isset($value);
