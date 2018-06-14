@@ -78,6 +78,10 @@ abstract class BaseModel {
 		return $this->transaction;
 	}
 
+	public function setConnection(IConnection $connection) {
+		$this->transaction = $connection;
+	}
+
 	/**
 	 * @param IResponse $response
 	 * @param array $requestData
