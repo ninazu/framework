@@ -12,13 +12,21 @@ class CustomValidator extends BaseValidator {
 	 */
 	protected $callback;
 
-	private $value;
+	protected $value;
 
 	public function validate($value) {
 		$callback = $this->callback;
-		$this->value = $value;
+		$this->setValue($value);
 
 		return $callback($this);
+	}
+
+	public function getValue() {
+		return $this->value;
+	}
+
+	public function setValue($value) {
+		$this->value = $value;
 	}
 
 	public function getMessage() {
@@ -30,6 +38,10 @@ class CustomValidator extends BaseValidator {
 	}
 
 	public function getExtra() {
+		if ($this->extra) {
+			return $this->extra;
+		}
+
 		return [
 			$this->field => $this->value,
 		];

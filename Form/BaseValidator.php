@@ -16,6 +16,8 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $message;
 
+	protected $extra = [];
+
 	protected $on = [
 		BaseModel::ON_WRITE => true,
 		BaseModel::ON_READ => true,
@@ -33,7 +35,11 @@ abstract class BaseValidator extends BaseConfigurator {
 	}
 
 	public function getExtra() {
-		return [];
+		return $this->extra;
+	}
+
+	public function setExtra($extra) {
+		$this->extra = $extra;
 	}
 
 	public function getScenarios() {
