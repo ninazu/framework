@@ -17,8 +17,8 @@ abstract class BaseValidator extends BaseConfigurator {
 	protected $message;
 
 	protected $on = [
-		BaseModel::ON_WRITE,
-		BaseModel::ON_READ,
+		BaseModel::ON_WRITE => true,
+		BaseModel::ON_READ => true,
 	];
 
 	public function __construct($field, $params, $response) {
@@ -36,8 +36,24 @@ abstract class BaseValidator extends BaseConfigurator {
 		return [];
 	}
 
+	public function getScenarios() {
+		return $this->on;
+	}
+
 	public function hasDependency() {
 		return $this->hasDependency;
+	}
+
+	public function setMessage($message) {
+		$this->message = $message;
+	}
+
+	public function setField($field) {
+		$this->field = $field;
+	}
+
+	public function getField() {
+		return $this->field;
 	}
 
 	abstract public function validate($value);

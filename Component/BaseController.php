@@ -17,7 +17,7 @@ abstract class BaseController extends BaseComponent {
 	public function runAction($action, $params) {
 		$this->action = $action;
 		$this->params = array_replace_recursive(
-			json_decode(file_get_contents('php://input'), true),
+			(array)json_decode(file_get_contents('php://input'), true),
 			$params
 		);
 

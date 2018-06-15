@@ -53,6 +53,8 @@ abstract class BaseModel {
 			throw new ErrorException('Wrong scenario, please declare CONST before use');
 		}
 
+		$this->scenario = $scenario;
+
 		return $this;
 	}
 
@@ -142,25 +144,19 @@ abstract class BaseModel {
 				$params = $row['params'];
 				$class = $row['class'];
 
-				if (isset($params['on'])) {
-					if (is_array($params['on'])) {
-						if (!in_array($this->scenario, $params['on'])) {
-							continue;
-						}
-					} else if (is_int($params['on'])) {
-						continue;
-					} else {
-						throw new ErrorException("'on' params of Validator must be Array");
-					}
-				}
-
 				/**@var BaseValidator $validator */
 				$validator = new $class($field, $params, $this->response);
+				$scenarios = $validator->getScenarios();
+
+				if (empty($scenarios[$this->scenario])) {
+					continue;
+				}
+
 				$value = $this->flatRequestData[$field];
 				$this->attributes[$this->removeNameSpace($field)] = $value;
 
 				if (!$validator->validate($value)) {
-					$this->addError($field, $validator->getMessage(), $validator->getExtra());
+					$this->addError($validator->getField(), $validator->getMessage(), $validator->getExtra());
 				}
 			}
 		}
@@ -229,7 +225,7 @@ abstract class BaseModel {
 		/**@var BaseModel $form */
 		$form = new $class();
 		$form->namespace = "{$namespace}{$field}";
-		$form->load($this->response, $this->mergeWithNamespace((array)$row, $data));
+		$form->load($this->response, $this->mergeWithNamespace((array)$row, (array)$data));
 		$responseForm = $form->trySave($this->getTransaction());
 
 		if (is_array($responseForm)) {
