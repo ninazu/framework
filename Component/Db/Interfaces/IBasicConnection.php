@@ -17,6 +17,13 @@ interface IBasicConnection {
 	public function debugDisable();
 
 	/**
+	 * @param $attribute
+	 * @param $value
+	 * @return $this
+	 */
+	public function setAttribute($attribute, $value);
+
+	/**
 	 * @param string $query
 	 *
 	 * @return ISelect

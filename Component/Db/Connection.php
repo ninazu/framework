@@ -9,6 +9,7 @@ use PDOException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Core\BaseConfigurator;
+use vendor\ninazu\framework\Helper\Reflector;
 
 class Connection extends BaseConfigurator implements IConnection, ITransaction {
 
@@ -336,6 +337,15 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 		} catch (PDOException $exception) {
 			$this->error($exception->getMessage());
 		}
+
+		return $this;
+	}
+
+	public function setAttribute($attribute, $value) {
+		$this->adapter->setAttribute($attribute, $value);
+
+		//TODO Return to original
+		//$this->adapter->getAttribute($attribute, $value);
 
 		return $this;
 	}
