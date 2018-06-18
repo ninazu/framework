@@ -8,6 +8,8 @@ namespace vendor\ninazu\framework\Form\Validator;
 
 class PasswordValidator extends StringValidator {
 
+	protected $allowEmpty = false;
+
 	public function init() {
 		parent::init();
 
@@ -15,12 +17,20 @@ class PasswordValidator extends StringValidator {
 	}
 
 	public function validate($value) {
+		if (!$parent = parent::validate($value)) {
+			return false;
+		}
+
+		if (empty($value) && $this->allowEmpty) {
+			return true;
+		}
+
 		if (!preg_match("/^\\S*(?=\\S{{$this->min},})(?=\\S*[a-z])(?=\\S*[A-Z])(?=\\S*[\\d])(?=\S*[\W])\\S*\$/", $value)) {
 			$this->message = "Password must contains Number, UpperCase, LowerCase and SpecialChar";
 
 			return false;
 		}
 
-		return parent::validate($value);
+		return $parent;
 	}
 }

@@ -14,7 +14,13 @@ class StringValidator extends BaseValidator {
 
 	protected $max;
 
+	protected $allowEmpty = false;
+
 	public function validate($value) {
+		if (empty($value) && $this->allowEmpty) {
+			return true;
+		}
+
 		if (!is_string($value) && !is_numeric($value)) {
 			$this->message = "Field '{$this->field}' is not a string";
 

@@ -11,8 +11,6 @@ interface IUpdate extends IBasicQuery {
 	const PRIORITY_LOW = ' LOW_PRIORITY';
 
 	/**
-	 * @internal
-	 *
 	 * @param $string
 	 * @return $this
 	 */

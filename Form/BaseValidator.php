@@ -19,8 +19,9 @@ abstract class BaseValidator extends BaseConfigurator {
 	protected $extra = [];
 
 	protected $on = [
-		BaseModel::ON_WRITE => true,
+		BaseModel::ON_CREATE => true,
 		BaseModel::ON_READ => true,
+		BaseModel::ON_UPDATE => true,
 	];
 
 	public function __construct($field, $params, $response) {

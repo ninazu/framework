@@ -15,6 +15,9 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	use WritableWhere;
 	use OrderAndLimit;
 
+	/**
+	 * @inheritdoc
+	 */
 	public function where($string) {
 		$this->setWhere($string);
 

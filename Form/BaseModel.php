@@ -11,11 +11,13 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseModel {
 
-	const ON_WRITE = 'write';
+	const ON_CREATE = 'create';
+
+	const ON_UPDATE = 'update';
 
 	const ON_READ = 'read';
 
-	protected $scenario = self::ON_WRITE;
+	protected $scenario = self::ON_CREATE;
 
 	/**
 	 * @var IResponse $response
@@ -134,7 +136,6 @@ abstract class BaseModel {
 
 	/**
 	 * @return bool
-	 * @throws ErrorException
 	 */
 	public function validate() {
 		$this->beforeValidate();
@@ -161,9 +162,11 @@ abstract class BaseModel {
 			}
 		}
 
-		$this->afterValidate();
+		if ($result = !$this->hasErrors()) {
+			$this->afterValidate();
+		}
 
-		return !$this->hasErrors();
+		return $result;
 	}
 
 	/**
@@ -322,6 +325,10 @@ abstract class BaseModel {
 	abstract protected function rules();
 
 	abstract protected function save();
+
+	protected function update($where) {
+
+	}
 
 	private function removeNameSpace($name) {
 		return str_replace("{$this->namespace}.", '', $name);
