@@ -31,6 +31,8 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**@var Connection */
 	protected $connection = null;
 
+	protected $skipQuery = false;
+
 	public function __construct($connection) {
 		$this->connection = $connection;
 	}
@@ -113,7 +115,9 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 */
 	public function bindsArray($placeholder, array $binds) {
 		if (empty($binds)) {
-			throw new ErrorException('bindArray empty array given');
+			$this->skipQuery = true;
+
+			return $this;
 		}
 
 		$dummy = '';
@@ -143,7 +147,11 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 			$this->replaceArrayPlaceholder($placeholder, $values, $query, $placeholders, $bindsString, true);
 		}
 
-		$this->statement = $this->connection->execute(static::class, $query, $bindsString, $this->bindsInteger);
+		if (!$this->skipQuery) {
+			$this->statement = $this->connection->execute(static::class, $query, $bindsString, $this->bindsInteger);
+		} else {
+			$this->statement = new \PDOStatement();
+		}
 
 		return $this;
 	}

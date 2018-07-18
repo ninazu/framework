@@ -16,13 +16,13 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $message;
 
-	protected $extra = [];
+//	protected $extra = [];
 
-	protected $on = [
-		BaseModel::ON_CREATE => true,
-		BaseModel::ON_READ => true,
-		BaseModel::ON_UPDATE => true,
-	];
+//	protected $on = [
+//		BaseModel::ON_CREATE => true,
+//		BaseModel::ON_READ => true,
+//		BaseModel::ON_UPDATE => true,
+//	];
 
 	public function __construct($field, $params, $response) {
 		$this->field = $field;
@@ -35,17 +35,17 @@ abstract class BaseValidator extends BaseConfigurator {
 		return;
 	}
 
-	public function getExtra() {
-		return $this->extra;
-	}
+//	public function getExtra() {
+//		return $this->extra;
+//	}
 
 	public function setExtra($extra) {
 		$this->extra = $extra;
 	}
 
-	public function getScenarios() {
-		return $this->on;
-	}
+//	public function getScenarios() {
+//		return $this->on;
+//	}
 
 	public function hasDependency() {
 		return $this->hasDependency;
