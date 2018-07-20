@@ -2,28 +2,52 @@
 
 namespace vendor\ninazu\framework\Form;
 
+use ReflectionClass;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Component\Response\IResponse;
 
 abstract class BaseForm {
 
-	/**@var IConnection $transaction */
+	/**@var IConnection|ITransaction $transaction */
 	protected $transaction;
 
+	/**@var IResponse */
 	protected $response;
 
 	protected $errors = [];
 
 	protected $attributes = [];
 
-	public function __construct(IResponse $response, ITransaction $connection) {
-		$this->transaction = $connection;
-		$this->response = $response;
+	public function __construct() {
+		$reflect = new ReflectionClass(static::class);
+		$phpDoc = $reflect->getDocComment();
+		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches);
+		$this->attributes = array_fill_keys($matches[1], null);
+	}
+
+	public static function createWithResponse(IResponse $response, ITransaction $connection) {
+		$instance = new static();
+		$instance->transaction = $connection;
+		$instance->response = $response;
+
+		return $instance;
 	}
 
 	public function load(array $requestData) {
-		//TODO
+		$attributeKeys = array_keys($this->attributes);
+
+		foreach ($attributeKeys as $key) {
+			if (array_key_exists($key, $requestData)) {
+				$this->attributes[$key] = $requestData[$key];
+			}
+		}
+
+		return $this;
+	}
+
+	public function reset() {
+		array_fill_keys(array_keys($this->attributes), null);
 	}
 
 	public function getResult() {
@@ -39,7 +63,7 @@ abstract class BaseForm {
 	}
 
 	public function __get($name) {
-		if (isset($this->attributes[$name])) {
+		if (array_key_exists($name, $this->attributes)) {
 			return $this->attributes[$name];
 		}
 
@@ -47,7 +71,9 @@ abstract class BaseForm {
 	}
 
 	public function __set($name, $value) {
-		$this->attributes[$name] = $value;
+		if (array_key_exists($name, $this->attributes)) {
+			$this->attributes[$name] = $value;
+		}
 	}
 
 	public function getAttributes() {
