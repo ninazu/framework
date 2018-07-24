@@ -2,10 +2,12 @@
 
 namespace vendor\ninazu\framework\Form;
 
+use ErrorException;
 use ReflectionClass;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
 use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
 use vendor\ninazu\framework\Component\Response\IResponse;
+use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
 
@@ -18,6 +20,8 @@ abstract class BaseForm {
 	protected $errors = [];
 
 	protected $attributes = [];
+
+	protected $oldAttributes = [];
 
 	public function __construct() {
 		$reflect = new ReflectionClass(static::class);
@@ -87,5 +91,39 @@ abstract class BaseForm {
 		];
 		$key = md5(json_encode($data));
 		$this->errors[$key] = $data;
+	}
+
+	public function validate() {
+		$rules = $this->rules();
+
+		foreach ($rules as $rule) {
+			list($fields, $class, $params) = array_pad($rule, 3, []);
+
+			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
+				throw new ErrorException("Invalid class of validator '{$class}'");
+			}
+
+			foreach ($fields as $field) {
+				/**@var BaseValidator $validator */
+				$validator = new $class($field, $params, $this->response);
+
+				if (!$validator->validate($this->$field)) {
+					$this->addError($field, $validator->getMessage());
+				}
+			}
+		}
+
+		return !$this->hasErrors();
+	}
+
+	/**
+	 * @return bool
+	 */
+	protected function hasErrors() {
+		return !empty($this->errors);
+	}
+
+	public function rules() {
+		return [];
 	}
 }
