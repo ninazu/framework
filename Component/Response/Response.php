@@ -5,6 +5,7 @@ namespace vendor\ninazu\framework\Component\Response;
 use ErrorException;
 use Exception;
 use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
+use vendor\ninazu\framework\Component\Response\Serializer\HtmlSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\JsonSerializer;
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Reflector;
@@ -19,11 +20,16 @@ class Response extends BaseComponent implements IResponse {
 
 	const CONTENT_CSV = 'text/csv';
 
+	const CONTENT_HTML = 'text/html';
+
 	protected $contentType = self::CONTENT_JSON;
 
 	protected $forceHttpStatus = true;
 
 	protected $serializers = [
+		self::CONTENT_HTML => [
+			'class' => HtmlSerializer::class,
+		],
 		self::CONTENT_JSON => [
 			'class' => JsonSerializer::class,
 		],
@@ -44,6 +50,7 @@ class Response extends BaseComponent implements IResponse {
 	 * @param $errorCode
 	 * @param $data
 	 * @param array $extra
+	 *
 	 * @return bool
 	 * @throws Exception
 	 */
@@ -148,6 +155,7 @@ class Response extends BaseComponent implements IResponse {
 
 	/**
 	 * @param $response
+	 *
 	 * @throws Exception
 	 */
 	protected function renderHeaders($response) {
