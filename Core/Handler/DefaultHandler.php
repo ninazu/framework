@@ -58,7 +58,7 @@ class DefaultHandler implements IHandler {
 	}
 
 	/**
-	 * @param Exception $exception
+	 * @param Throwable $exception
 	 *
 	 * @throws Exception
 	 */
