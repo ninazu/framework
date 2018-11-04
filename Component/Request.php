@@ -62,6 +62,7 @@ class Request extends BaseComponent {
 
 		$headers = [];
 
+		//TODO apache_request_headers
 		//Apache
 		if (function_exists('getallheaders')) {
 			$headers = getallheaders();
