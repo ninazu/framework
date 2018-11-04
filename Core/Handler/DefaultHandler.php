@@ -59,11 +59,11 @@ class DefaultHandler implements IHandler {
 	}
 
 	/**
-	 * @param Throwable $exception
+	 * @param Exception $exception
 	 *
 	 * @throws Exception
 	 */
-	public function handlerException(Throwable $exception) {
+	public function handlerException(Exception $exception) {
 		mail('sayu.urs@gmail.com', 'DEBUG', $exception->getMessage());
 		//TODO BugTracker
 
