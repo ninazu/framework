@@ -79,7 +79,7 @@ class Request extends BaseComponent {
 		$this->headers = $headers;
 
 		$URLParts = parse_url($this->URL);
-		$this->path = $URLParts['path'];
+		$this->path = isset($URLParts['path']) ? $URLParts['path'] : '';
 
 		if (isset($URLParts['query'])) {
 			parse_str($URLParts['query'], $this->params);
