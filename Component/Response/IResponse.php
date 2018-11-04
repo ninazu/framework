@@ -20,6 +20,8 @@ interface IResponse {
 
 	const STATUS_PRECONDITION_FAILED = 412;
 
+	const STATUS_REDIRECT = 302;
+
 	public function getData();
 
 	public function getExtra();

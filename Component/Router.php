@@ -51,6 +51,7 @@ class Router extends BaseComponent {
 
 	/**
 	 * @param $skipOnNotFound
+	 *
 	 * @return mixed|null
 	 * @throws Exception
 	 */
@@ -133,45 +134,47 @@ class Router extends BaseComponent {
 		if ($pattern === '*') {
 			//Everyone
 			$match = true;
-		} elseif (isset($pattern[0]) && $pattern[0] === '@') {
-			//Custom regexp
-			$pattern = '`' . substr($pattern, 1) . '`u';
-			$match = preg_match($pattern, $this->URL, $params);
 		} else {
-			//Parse pattern
-			$n = isset($pattern[0]) ? $pattern[0] : null;
-			$route = null;
-			$regex = false;
-			$j = 0;
-			$i = 0;
+			if (isset($pattern[0]) && $pattern[0] === '@') {
+				//Custom regexp
+				$pattern = '`' . substr($pattern, 1) . '`u';
+				$match = preg_match($pattern, $this->URL, $params);
+			} else {
+				//Parse pattern
+				$n = isset($pattern[0]) ? $pattern[0] : null;
+				$route = null;
+				$regex = false;
+				$j = 0;
+				$i = 0;
 
-			// Find the longest non-regex substring and match it against the URI
-			while (true) {
-				if (!isset($pattern[$i])) {
-					break;
-				}
-
-				if (false === $regex) {
-					$c = $n;
-					$regex = $c === '[' || $c === '(' || $c === '.';
-
-					if (false === $regex && false !== isset($pattern[$i + 1])) {
-						$n = $pattern[$i + 1];
-						$regex = $n === '?' || $n === '+' || $n === '*' || $n === '{';
+				// Find the longest non-regex substring and match it against the URI
+				while (true) {
+					if (!isset($pattern[$i])) {
+						break;
 					}
 
-					if (false === $regex && $c !== '/' && (!isset($this->URL[$j]) || $c !== $this->URL[$j])) {
-						return null;
+					if (false === $regex) {
+						$c = $n;
+						$regex = $c === '[' || $c === '(' || $c === '.';
+
+						if (false === $regex && false !== isset($pattern[$i + 1])) {
+							$n = $pattern[$i + 1];
+							$regex = $n === '?' || $n === '+' || $n === '*' || $n === '{';
+						}
+
+						if (false === $regex && $c !== '/' && (!isset($this->URL[$j]) || $c !== $this->URL[$j])) {
+							return null;
+						}
+
+						$j++;
 					}
 
-					$j++;
+					$route .= $pattern[$i++];
 				}
 
-				$route .= $pattern[$i++];
+				$regex = self::compileRoute($route);
+				$match = preg_match($regex, $this->URL, $params);
 			}
-
-			$regex = self::compileRoute($route);
-			$match = preg_match($regex, $this->URL, $params);
 		}
 
 		if ($match) {
@@ -208,10 +211,38 @@ class Router extends BaseComponent {
 			$this->sendNotFound();
 		}
 
-		$actionParams = self::prepareParams($routeParams, new ReflectionMethod($controllerName, $actionMethodName));
-		$response = $controller->runAction($actionName, $actionParams);
+		$methodParams = self::prepareParams($routeParams, new ReflectionMethod($controllerName, $actionMethodName));
+//
+//		foreach (['action', 'controller'] as $paramName) {
+//			unset($routeParams[$paramName]);
+//		}
+
+		$response = $controller->runAction($actionName, $routeParams, $methodParams);
 
 		return $response;
+	}
+
+	/**
+	 * Prepare params for action
+	 *
+	 * @param $params
+	 * @param ReflectionFunctionAbstract $reflection
+	 *
+	 * @return array
+	 */
+	private static function prepareParams($params, ReflectionFunctionAbstract $reflection) {
+		$closureParams = [];
+		$arguments = $reflection->getParameters();
+
+		foreach ($arguments as $argument) {
+			if (isset($params[$argument->name])) {
+				$closureParams[] = $params[$argument->name];
+			} else {
+				$closureParams[] = $argument->isDefaultValueAvailable() ? $argument->getDefaultValue() : null;
+			}
+		}
+
+		return $closureParams;
 	}
 
 	/**
@@ -257,28 +288,5 @@ class Router extends BaseComponent {
 		}
 
 		return "`^{$route}$`u";
-	}
-
-	/**
-	 * Prepare params for action
-	 *
-	 * @param $params
-	 * @param ReflectionFunctionAbstract $reflection
-	 *
-	 * @return array
-	 */
-	private static function prepareParams($params, ReflectionFunctionAbstract $reflection) {
-		$closureParams = [];
-		$arguments = $reflection->getParameters();
-
-		foreach ($arguments as $argument) {
-			if (isset($params[$argument->name])) {
-				$closureParams[] = $params[$argument->name];
-			} else {
-				$closureParams[] = $argument->isDefaultValueAvailable() ? $argument->getDefaultValue() : null;
-			}
-		}
-
-		return $closureParams;
 	}
 }

@@ -2,6 +2,8 @@
 
 namespace vendor\ninazu\framework\Component;
 
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Core\BaseComponent;
@@ -14,16 +16,13 @@ abstract class BaseController extends BaseComponent {
 
 	protected $response;
 
-	public function runAction($action, $params) {
+	public function runAction($action, $routeParams, $methodParams) {
 		$this->action = $action;
-		$this->params = array_replace_recursive(
-			(array)json_decode(file_get_contents('php://input'), true),
-			$params
-		);
+		$this->params = array_replace_recursive((array)json_decode(file_get_contents('php://input'), true), $routeParams);
 
 		if ($this->beforeAction()) {
 			$this->checkAccess();
-			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $params);
+			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $methodParams);
 			$this->afterAction($response);
 		} else {
 			$this->getApplication()->response->sendError(Response::STATUS_PRECONDITION_FAILED, null);
