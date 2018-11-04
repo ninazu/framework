@@ -32,6 +32,7 @@ class DefaultHandler implements IHandler {
 	 * @param $message
 	 * @param null $file
 	 * @param null $line
+	 *
 	 * @return bool
 	 *
 	 * @throws ErrorException
@@ -63,6 +64,7 @@ class DefaultHandler implements IHandler {
 	 * @throws Exception
 	 */
 	public function handlerException(Throwable $exception) {
+		mail('sayu.urs@gmail.com', 'DEBUG', $exception->getMessage());
 		//TODO BugTracker
 
 		try {
@@ -75,14 +77,16 @@ class DefaultHandler implements IHandler {
 
 		if (isset($data)) {
 			//EnvironmentException
-		} elseif (Environment::isProduction()) {
-			$data = "Unexpected server error " . md5($exception->getMessage());
 		} else {
-			$data = $exception->getMessage();
+			if (Environment::isProduction()) {
+				$data = "Unexpected server error " . md5($exception->getMessage());
+			} else {
+				$data = $exception->getMessage();
 
-			foreach ($exception->getTrace() as $row) {
-				if (isset($row['file'], $row['line'])) {
-					$extra[] = "{$row['file']}:{$row['line']}";
+				foreach ($exception->getTrace() as $row) {
+					if (isset($row['file'], $row['line'])) {
+						$extra[] = "{$row['file']}:{$row['line']}";
+					}
 				}
 			}
 		}
