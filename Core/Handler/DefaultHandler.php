@@ -4,6 +4,7 @@ namespace vendor\ninazu\framework\Core\Handler;
 
 use ErrorException;
 use Exception;
+use Throwable;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Core\BaseApplication;
 use vendor\ninazu\framework\Core\Environment;
@@ -61,7 +62,7 @@ class DefaultHandler implements IHandler {
 	 *
 	 * @throws Exception
 	 */
-	public function handlerException(Exception $exception) {
+	public function handlerException(Throwable $exception) {
 		//TODO BugTracker
 
 		try {
