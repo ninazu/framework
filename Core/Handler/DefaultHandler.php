@@ -64,7 +64,7 @@ class DefaultHandler implements IHandler {
 	 * @throws Exception
 	 */
 	public function handlerException(Exception $exception) {
-		mail('sayu.urs@gmail.com', 'DEBUG', print_r($exception, true));
+		//mail('sayu.urs@gmail.com', 'DEBUG', print_r($exception, true));
 		//TODO BugTracker
 
 		try {
