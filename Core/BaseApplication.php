@@ -29,6 +29,8 @@ abstract class BaseApplication {
 
 	private $encoding = 'UTF-8';
 
+	private $adminEmail;
+
 	private $components = [];
 
 	private $initialized = false;
@@ -102,6 +104,15 @@ abstract class BaseApplication {
 	}
 
 	/**
+	 * Getter of basePath
+	 *
+	 * @return string
+	 */
+	public function getAdminEmail() {
+		return $this->adminEmail;
+	}
+
+	/**
 	 * Setup application and return router
 	 *
 	 * @param callable $configCallback
@@ -117,6 +128,10 @@ abstract class BaseApplication {
 
 		$this->initialized = true;
 		$config = $configCallback();
+
+		if (isset($config['adminEmail'])) {
+			$this->adminEmail = $config['adminEmail'];
+		}
 
 		if (isset($config['basePath'])) {
 			$this->basePath = realpath($config['basePath']);

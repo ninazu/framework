@@ -77,18 +77,26 @@ class DefaultHandler implements IHandler {
 		if (isset($data)) {
 			//EnvironmentException
 		} else {
+			foreach ($exception->getTrace() as $row) {
+				if (isset($row['file'], $row['line'])) {
+					$extra[] = "{$row['file']}:{$row['line']}";
+				}
+			}
+
 			if (Environment::isProduction()) {
-				$md5 = md5($exception->getMessage());
+				$md5 = md5($exception->getMessage()) . md5(implode($extra));
 				$data = "Unexpected server error {$md5}";
-				//mail('sayu.urs@gmail.com', 'DEBUG', print_r($exception, true));
+
+				if ($this->application->getAdminEmail()) {
+					mail($this->application->getAdminEmail(), "DEBUG {$md5}", print_r([
+						$exception,
+						$extra,
+					], true));
+				}
+
+				$extra = [];
 			} else {
 				$data = $exception->getMessage();
-
-				foreach ($exception->getTrace() as $row) {
-					if (isset($row['file'], $row['line'])) {
-						$extra[] = "{$row['file']}:{$row['line']}";
-					}
-				}
 			}
 		}
 
