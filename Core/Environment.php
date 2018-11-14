@@ -98,6 +98,7 @@ class Environment {
 			case self::ENVIRONMENT_DEVELOPMENT:
 			case self::ENVIRONMENT_PRODUCTION:
 			case self::ENVIRONMENT_STAGING:
+			case self::ENVIRONMENT_LOCAL:
 				break;
 			default:
 				throw new Exception('Wrong environment allowed Environment::ENVIRONMENT_* const');
