@@ -89,7 +89,7 @@ class DefaultHandler implements IHandler {
 
 				if ($this->application->getAdminEmail()) {
 					mail($this->application->getAdminEmail(), "DEBUG {$md5}", print_r([
-						$exception,
+						$exception->getMessage(),
 						$extra,
 					], true));
 				}
