@@ -144,7 +144,7 @@ abstract class BaseApplication {
 		$this->setEncoding();
 
 		foreach ($config['components'] as $name => $params) {
-			$params = array_replace_recursive(is_array($this->components[$name]) ? $this->components[$name] : [], $params);
+			$params = array_replace_recursive(isset($this->components[$name]) && is_array($this->components[$name]) ? $this->components[$name] : [], $params);
 
 			if (!array_key_exists('class', $params) || empty($params['class']) || !is_string($params['class'])) {
 				throw new ErrorException("Missing 'class' of component '{$name}'");

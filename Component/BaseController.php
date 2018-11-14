@@ -29,6 +29,31 @@ abstract class BaseController extends BaseComponent {
 		}
 	}
 
+	protected function layoutParams($view, array $params) {
+		return [];
+	}
+
+	public function layout(array $params) {
+		extract($params);
+		ob_start();
+		require __DIR__ . '/../views/layouts/layout.php';
+		$layout = ob_get_contents();
+		ob_end_clean();
+
+		return $layout;
+	}
+
+	public function render($view, array $params) {
+		$params = $this->layoutParams($view, $params);
+		extract($params);
+		ob_start();
+		require __DIR__ . "/../views/{$view}.php" . '';
+		$params['content'] = ob_get_contents();
+		ob_end_clean();
+
+		return $this->layout($params);
+	}
+
 	/**
 	 * @return array
 	 */
@@ -113,10 +138,12 @@ abstract class BaseController extends BaseComponent {
 	private function permissionScenario($userRole, $actionList) {
 		if (!array_key_exists($this->action, $actionList)) {
 			$statusCode = Response::STATUS_CODE_NOT_FOUND;
-		} elseif (is_null($userRole) || $userRole == IUser::ROLE_GUEST) {
-			$statusCode = Response::STATUS_CODE_LOGOUT;
 		} else {
-			$statusCode = Response::STATUS_CODE_FORBIDDEN;
+			if (is_null($userRole) || $userRole == IUser::ROLE_GUEST) {
+				$statusCode = Response::STATUS_CODE_LOGOUT;
+			} else {
+				$statusCode = Response::STATUS_CODE_FORBIDDEN;
+			}
 		}
 
 		return $statusCode;
