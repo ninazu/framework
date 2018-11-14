@@ -12,6 +12,8 @@ class Environment {
 
 	const ENVIRONMENT_DEVELOPMENT = 'dev';
 
+	const ENVIRONMENT_LOCAL = 'local';
+
 	private static $environment;
 
 	private static $register = [];
@@ -31,6 +33,7 @@ class Environment {
 	 *
 	 * @param string $name
 	 * @param mixed $default
+	 *
 	 * @return array|mixed|string
 	 */
 	public static function get($name, $default = '') {
@@ -119,6 +122,17 @@ class Environment {
 		self::checkInitialize();
 
 		return self::ENVIRONMENT_PRODUCTION == self::$environment;
+	}
+
+	/**
+	 * @return bool
+	 *
+	 * @throws Exception
+	 */
+	public static function isLocal() {
+		self::checkInitialize();
+
+		return self::ENVIRONMENT_LOCAL == self::$environment;
 	}
 
 	/**

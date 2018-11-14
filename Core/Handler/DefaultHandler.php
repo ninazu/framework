@@ -64,8 +64,7 @@ class DefaultHandler implements IHandler {
 	 * @throws Exception
 	 */
 	public function handlerException(Exception $exception) {
-		//mail('sayu.urs@gmail.com', 'DEBUG', print_r($exception, true));
-		//TODO BugTracker
+		ob_end_clean();
 
 		try {
 			Environment::getEnvironment();
@@ -79,7 +78,9 @@ class DefaultHandler implements IHandler {
 			//EnvironmentException
 		} else {
 			if (Environment::isProduction()) {
-				$data = "Unexpected server error " . md5($exception->getMessage());
+				$md5 = md5($exception->getMessage());
+				$data = "Unexpected server error {$md5}";
+				//mail('sayu.urs@gmail.com', 'DEBUG', print_r($exception, true));
 			} else {
 				$data = $exception->getMessage();
 
