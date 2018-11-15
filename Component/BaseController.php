@@ -3,8 +3,6 @@
 namespace vendor\ninazu\framework\Component;
 
 use ReflectionClass;
-use ReflectionFunctionAbstract;
-use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Core\BaseComponent;
@@ -42,7 +40,7 @@ abstract class BaseController extends BaseComponent {
 	}
 
 	protected function layoutParams($view, array $params) {
-		return [];
+		return $params;
 	}
 
 	protected function layout($layout, array $params) {
