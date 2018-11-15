@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Component;
 
+use ReflectionClass;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
@@ -15,6 +16,17 @@ abstract class BaseController extends BaseComponent {
 	protected $action;
 
 	protected $response;
+
+	protected $basePath;
+
+	protected $name;
+
+	public function init() {
+		$reflection = new ReflectionClass(static::class);
+		$this->basePath = dirname(dirname($reflection->getFileName()));
+		preg_match('/(.*?)Controller$/', $reflection->getShortName(), $matches);
+		$this->name = lcfirst($matches[1]);
+	}
 
 	public function runAction($action, $routeParams, $methodParams) {
 		$this->action = $action;
@@ -33,25 +45,25 @@ abstract class BaseController extends BaseComponent {
 		return [];
 	}
 
-	public function layout(array $params) {
+	protected function layout($layout, array $params) {
 		extract($params);
 		ob_start();
-		require __DIR__ . '/../views/layouts/layout.php';
+		require "{$this->basePath}/views/layouts/{$layout}.php" . '';
 		$layout = ob_get_contents();
 		ob_end_clean();
 
 		return $layout;
 	}
 
-	public function render($view, array $params) {
+	public function render($view, array $params, $layout = 'main') {
 		$params = $this->layoutParams($view, $params);
 		extract($params);
 		ob_start();
-		require __DIR__ . "/../views/{$view}.php" . '';
+		require "{$this->basePath}/views/{$this->name}/{$view}.php" . '';
 		$params['content'] = ob_get_contents();
 		ob_end_clean();
 
-		return $this->layout($params);
+		return $this->layout($layout, $params);
 	}
 
 	/**
