@@ -19,6 +19,8 @@ abstract class BaseController extends BaseComponent {
 
 	protected $name;
 
+	protected $layout = 'main';
+
 	public function init() {
 		$reflection = new ReflectionClass(static::class);
 		$this->basePath = dirname(dirname($reflection->getFileName()));
@@ -53,13 +55,17 @@ abstract class BaseController extends BaseComponent {
 		return $layout;
 	}
 
-	public function render($view, array $params, $layout = 'main') {
+	public function render($view, array $params, $layout = null) {
 		$params = $this->layoutParams($view, $params);
 		extract($params);
 		ob_start();
 		require "{$this->basePath}/views/{$this->name}/{$view}.php" . '';
 		$params['content'] = ob_get_contents();
 		ob_end_clean();
+
+		if (is_null($layout)) {
+			$layout = $this->layout;
+		}
 
 		return $this->layout($layout, $params);
 	}
