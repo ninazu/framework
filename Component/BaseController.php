@@ -37,7 +37,7 @@ abstract class BaseController extends BaseComponent {
 			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $methodParams);
 			$this->afterAction($response);
 		} else {
-			$this->getApplication()->response->sendError(Response::STATUS_PRECONDITION_FAILED, null);
+			$this->getApplication()->response->sendError(Response::STATUS_CODE_PRECONDITION_FAILED, null);
 		}
 	}
 

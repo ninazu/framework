@@ -18,9 +18,9 @@ interface IResponse {
 
 	const STATUS_CODE_VALIDATION = 422;
 
-	const STATUS_PRECONDITION_FAILED = 412;
+	const STATUS_CODE_PRECONDITION_FAILED = 412;
 
-	const STATUS_REDIRECT = 302;
+	const STATUS_CODE_REDIRECT = 302;
 
 	public function getData();
 
