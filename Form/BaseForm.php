@@ -108,6 +108,10 @@ abstract class BaseForm {
 		return array_values($this->errorFields);
 	}
 
+	public function response(array $data) {
+		return $data;
+	}
+
 	/**
 	 * @return bool
 	 */
