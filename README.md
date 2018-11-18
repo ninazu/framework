@@ -8,10 +8,15 @@ git push
 ```
 
 ## FirstUpdateModule
+
 ```
+git submodule update --init --recursive
+git submodule foreach git pull origin master
+
 cd ./vendor/ninazu/framework
 git submodule update --init --recursive
 git submodule update --recursive --remote
+
 ```
 
 ### PHPStorm Config
