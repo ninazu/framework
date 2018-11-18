@@ -11,31 +11,17 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
 
-	/**@var IConnection|ITransaction $transaction */
-	protected $transaction;
-
-	/**@var IResponse */
-	protected $response;
+	protected $errorFields = [];
 
 	protected $errors = [];
 
 	protected $attributes = [];
-
-	protected $oldAttributes = [];
 
 	public function __construct() {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
 		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches);
 		$this->attributes = array_fill_keys($matches[1], null);
-	}
-
-	public static function createWithResponse(IResponse $response, ITransaction $connection) {
-		$instance = new static();
-		$instance->transaction = $connection;
-		$instance->response = $response;
-
-		return $instance;
 	}
 
 	public function load(array $requestData) {
@@ -52,18 +38,6 @@ abstract class BaseForm {
 
 	public function reset() {
 		array_fill_keys(array_keys($this->attributes), null);
-	}
-
-	public function getResult() {
-		//TODO
-		return [];
-	}
-
-	/**
-	 * @return IConnection|ITransaction
-	 */
-	public function getTransaction() {
-		return $this->transaction;
 	}
 
 	public function __get($name) {
@@ -89,6 +63,11 @@ abstract class BaseForm {
 			'field' => $field,
 			'message' => $message,
 		];
+
+		if (!array_key_exists($field, $this->errorFields)) {
+			$this->errorFields[$field] = $data;
+		}
+
 		$key = md5(json_encode($data));
 		$this->errors[$key] = $data;
 	}
@@ -104,8 +83,9 @@ abstract class BaseForm {
 			}
 
 			foreach ($fields as $field) {
+
 				/**@var BaseValidator $validator */
-				$validator = new $class($field, $params, $this->response);
+				$validator = new $class($field, $params);
 
 				if (!$validator->validate($this->$field)) {
 					$this->addError($field, $validator->getMessage());
@@ -114,6 +94,18 @@ abstract class BaseForm {
 		}
 
 		return !$this->hasErrors();
+	}
+
+	public function getMissingFields() {
+		return [];
+	}
+
+	public function getErrors() {
+		return array_values($this->errors);
+	}
+
+	public function getErrorFields() {
+		return array_values($this->errorFields);
 	}
 
 	/**

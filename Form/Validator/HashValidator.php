@@ -13,17 +13,17 @@ class HashValidator extends StringValidator {
 	protected $hash = self::HASH_MD5;
 
 	public function init() {
-		$hashLen = [
+		$hashLength = [
 			self::HASH_MD5 => 32,
 			self::HASH_SHA1 => 40,
 		];
 
-		if (!array_keys($hashLen, $this->hash)) {
+		if (!array_key_exists($this->hash, $hashLength)) {
 			throw new Exception("Hash '{$this->hash}' not implemented");
 		}
 
-		$this->min = $hashLen[$this->hash];
-		$this->max = $hashLen[$this->hash];
+		$this->min = $hashLength[$this->hash];
+		$this->max = $hashLength[$this->hash];
 	}
 
 	public function validate($value) {
