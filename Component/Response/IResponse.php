@@ -22,13 +22,23 @@ interface IResponse {
 
 	const STATUS_CODE_REDIRECT = 302;
 
+	const NOTIFY_TYPE_INFO = 1;
+
+	const NOTIFY_TYPE_WARNING = 2;
+
+	const NOTIFY_TYPE_ERROR = 3;
+
 	public function getData();
 
 	public function getExtra();
 
+	public function getNotifications();
+
 	public function getStatusCode();
 
 	public function forceHttpStatus();
+
+	public function addNotify($typeEnum, $message, $extra = []);
 
 	public function setHeaders(array $data);
 

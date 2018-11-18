@@ -2,9 +2,11 @@
 
 namespace vendor\ninazu\framework\Form\Validator;
 
-use vendor\ninazu\framework\Form\BaseValidator;
+class EmailValidator extends StringValidator {
 
-class EmailValidator extends BaseValidator {
+	protected $min = 6;
+
+	protected $max = 254;
 
 	public function validate($value) {
 		return filter_var($value, FILTER_VALIDATE_EMAIL);

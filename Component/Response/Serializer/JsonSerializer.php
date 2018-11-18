@@ -69,6 +69,10 @@ class JsonSerializer extends BaseSerializer {
 			$result['httpStatus'] = $response->getStatusCode();
 		}
 
+		if ($notifications = $response->getNotifications()) {
+			$result['notifications'] = $notifications;
+		}
+
 		return json_encode($result);
 	}
 }

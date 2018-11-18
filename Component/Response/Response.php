@@ -42,9 +42,19 @@ class Response extends BaseComponent implements IResponse {
 
 	private $headers = [];
 
+	private $notifications = [];
+
 	private $data;
 
 	private $extra;
+
+	public function addNotify($typeEnum, $message, $extra = []) {
+		$this->notifications[] = [
+			'type_enum' => $typeEnum,
+			'message' => $message,
+			'extra' => $extra,
+		];
+	}
 
 	/**
 	 * @param $errorCode
@@ -192,5 +202,9 @@ class Response extends BaseComponent implements IResponse {
 
 	public function forceHttpStatus() {
 		return $this->forceHttpStatus;
+	}
+
+	public function getNotifications() {
+		return $this->notifications;
 	}
 }
