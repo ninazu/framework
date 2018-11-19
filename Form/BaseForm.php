@@ -17,11 +17,14 @@ abstract class BaseForm {
 
 	protected $attributes = [];
 
-	public function __construct() {
+	protected $connection;
+
+	public function __construct(IConnection $connection) {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
 		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches);
 		$this->attributes = array_fill_keys($matches[1], null);
+		$this->connection = $connection;
 	}
 
 	public function load(array $requestData) {
