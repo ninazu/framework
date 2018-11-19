@@ -19,7 +19,7 @@ class User extends BaseComponent implements IUser {
 		}
 
 		if (!Reflector::isInstanceOf($this->modelClass, IUserIdentity::class)) {
-			throw new ErrorException("UserModel must be implement IUserModel");
+			throw new ErrorException("UserModel must be implement IUserIdentity");
 		}
 
 		$this->setIdentity(new $this->modelClass());
