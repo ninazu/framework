@@ -109,6 +109,20 @@ abstract class BaseForm {
 	}
 
 	public function response(array $data) {
+		$processors = $this->processors();
+
+		foreach ($processors as $config) {
+			list($fields, $class, $params) = array_pad($config, 3, []);
+
+			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
+				throw new ErrorException("Invalid class of processor '{$class}'");
+			}
+
+			/**@var BaseProcessor $processor */
+			$processor = new $class($fields, $params);
+			$processor->execute($data);
+		}
+
 		return $data;
 	}
 
@@ -120,6 +134,10 @@ abstract class BaseForm {
 	}
 
 	public function rules() {
+		return [];
+	}
+
+	public function processors() {
 		return [];
 	}
 }
