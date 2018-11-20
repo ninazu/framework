@@ -17,7 +17,9 @@ class Request extends BaseComponent {
 
 	const METHOD_DELETE = 'DELETE';
 
-	const METHOD_OPTION = 'OPTION';
+	const METHOD_OPTIONS = 'OPTIONS';
+
+	const METHOD_HEAD = 'HEAD';
 
 	private $URL;
 
@@ -64,24 +66,19 @@ class Request extends BaseComponent {
 
 		$headers = [];
 
-		if (function_exists('apache_request_headers')) {
-			$requestHeaders = apache_request_headers();
+		if (function_exists('getallheaders')) {
+			$requestHeaders = getallheaders();
 			$requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
 			$headers = array_replace_recursive($headers, $requestHeaders);
+		} else {
+			foreach ($_SERVER as $name => $value) {
+				if (substr($name, 0, 5) == 'HTTP_') {
+					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
+				} else {
+					$headers[$name] = $value;
+				}
+			}
 		}
-
-		if (function_exists('getallheaders')) {
-			$headers = array_replace_recursive($headers, getallheaders());
-		}
-
-//			foreach ($_SERVER as $name => $value) {
-//				if (substr($name, 0, 5) == 'HTTP_') {
-//					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
-//				} else {
-//					$headers[$name] = $value;
-//				}
-//			}
-
 
 		$this->headers = $headers;
 

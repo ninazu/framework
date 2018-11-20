@@ -195,4 +195,17 @@ class Reflector {
 
 		$tree = $value;
 	}
+
+	public static function findDefinedConstant($name) {
+		$all = get_defined_constants();
+		$matches = [];
+
+		foreach (array_keys($all) as $key) {
+			if (stripos($key, $name) !== false) {
+				$matches[$key] = $all[$key];
+			}
+		}
+
+		return $matches;
+	}
 }

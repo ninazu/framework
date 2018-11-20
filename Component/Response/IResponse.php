@@ -28,6 +28,38 @@ interface IResponse {
 
 	const NOTIFY_TYPE_ERROR = 3;
 
+	const EXIT_CODE_OK = 0;
+
+	const EXIT_CODE_WITH_ERROR = 1;
+
+	const CONTENT_JSON = 'application/json';
+
+	const CONTENT_CSV = 'text/csv';
+
+	const CONTENT_HTML = 'text/html';
+
+	const AUTH_BASIC = 'Basic';
+
+	const AUTH_BEARER = 'Bearer';
+
+	const AUTH_DIGEST = 'Digest';
+
+	const AUTH_HOBA = 'HOBA';
+
+	const AUTH_MUTUAL = 'Mutual';
+
+	const AUTH_NEGOTIATE = 'Negotiate';
+
+	const AUTH_OAUTH = 'OAuth';
+
+	const AUTH_SCRAM_SHA_1 = 'SCRAM-SHA-1';
+
+	const AUTH_SCRAM_SHA_256 = 'SCRAM-SHA-256';
+
+	const AUTH_VAPID = 'vapid';
+
+	public function getAuthSchema();
+
 	public function getData();
 
 	public function getExtra();

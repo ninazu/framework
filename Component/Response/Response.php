@@ -12,19 +12,11 @@ use vendor\ninazu\framework\Helper\Reflector;
 
 class Response extends BaseComponent implements IResponse {
 
-	const EXIT_CODE_OK = 0;
-
-	const EXIT_CODE_WITH_ERROR = 1;
-
-	const CONTENT_JSON = 'application/json';
-
-	const CONTENT_CSV = 'text/csv';
-
-	const CONTENT_HTML = 'text/html';
-
 	protected $contentType = self::CONTENT_JSON;
 
 	protected $forceHttpStatus = true;
+
+	protected $authSchema = self::AUTH_BEARER;
 
 	protected $serializers = [
 		self::CONTENT_HTML => [
@@ -186,6 +178,10 @@ class Response extends BaseComponent implements IResponse {
 
 	protected function end($exitCode) {
 		exit($exitCode);
+	}
+
+	public function getAuthSchema() {
+		return $this->authSchema;
 	}
 
 	public function getExtra() {

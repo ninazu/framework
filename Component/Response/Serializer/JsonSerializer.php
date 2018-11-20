@@ -19,9 +19,19 @@ class JsonSerializer extends BaseSerializer {
 				];
 				break;
 
+			case IResponse::STATUS_CODE_LOGOUT:
+				$uniqueID = uniqid();
+				$response->setHeaders([
+					'WWW-Authenticate' => "{$response->getAuthSchema()} realm='{$uniqueID}', error='invalid_token'",
+				]);
+
+				$result = ([
+					'status' => false,
+				]);
+				break;
+
 			case IResponse::STATUS_CODE_NOT_FOUND:
 			case IResponse::STATUS_CODE_FORBIDDEN:
-			case IResponse::STATUS_CODE_LOGOUT:
 			case IResponse::STATUS_CODE_PRECONDITION_FAILED:
 				$result = ([
 					'status' => false,
