@@ -42,7 +42,7 @@ class Request extends BaseComponent {
 	}
 
 	public function getHeaders() {
-		return $this->params;
+		return $this->headers;
 	}
 
 	public function getMethod() {

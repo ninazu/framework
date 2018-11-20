@@ -54,4 +54,19 @@ class Formatter {
 
 		return $text;
 	}
+
+	public static function maskText($text, $mask, $position) {
+		$textLen = strlen($text);
+		$maskLen = strlen($mask);
+
+		if ($position >= $textLen || $position < 0) {
+			return $text;
+		}
+
+		if ($textLen < ($position + $maskLen)) {
+			$mask = substr($mask, 0, $textLen - $position);
+		}
+
+		return substr_replace($text, $mask, $position, $maskLen);
+	}
 }
