@@ -31,9 +31,9 @@ abstract class BaseController extends BaseComponent {
 	public function runAction($action, $routeParams, $methodParams) {
 		$this->action = $action;
 		$this->params = array_replace_recursive((array)json_decode(file_get_contents('php://input'), true), $routeParams);
+		$this->checkAccess();
 
 		if ($this->beforeAction()) {
-			$this->checkAccess();
 			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $methodParams);
 			$this->afterAction($response);
 		} else {
