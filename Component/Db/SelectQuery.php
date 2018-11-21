@@ -179,7 +179,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	public function queryOne() {
 		$result = $this->statement->fetch(PDO::FETCH_ASSOC);
 
-		if (empty($result)) {
+		if (empty($result) || (is_null($this->columnName) && is_null($this->callBack))) {
 			$this->reset();
 
 			return $result;
@@ -187,12 +187,6 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 
 		$result = [$result];
 		$callBack = $this->callBack;
-
-		if (is_null($this->columnName) && is_null($this->callBack)) {
-			$this->reset();
-
-			return $result;
-		}
 
 		if (!is_null($this->columnName) && !empty($result) && !isset($result[0][$this->columnName])) {
 			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");

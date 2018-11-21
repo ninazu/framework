@@ -4,9 +4,6 @@ namespace vendor\ninazu\framework\Form;
 
 use ErrorException;
 use ReflectionClass;
-use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
-use vendor\ninazu\framework\Component\Db\Interfaces\ITransaction;
-use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Helper\Reflector;
 
 abstract class BaseForm {
@@ -17,14 +14,11 @@ abstract class BaseForm {
 
 	protected $attributes = [];
 
-	protected $connection;
-
-	public function __construct(IConnection $connection) {
+	public function __construct() {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
-		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches);
+		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches); //TODO Array
 		$this->attributes = array_fill_keys($matches[1], null);
-		$this->connection = $connection;
 	}
 
 	public function load(array $requestData) {
