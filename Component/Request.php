@@ -66,11 +66,17 @@ class Request extends BaseComponent {
 
 		$headers = [];
 
+		if (array_key_exists('REDIRECT_HTTP_AUTHORIZATION', $_SERVER)) {
+			$headers['Authorization'] = $_SERVER['REDIRECT_HTTP_AUTHORIZATION'];
+		}
+
 		if (function_exists('getallheaders')) {
+			//Apache
 			$requestHeaders = getallheaders();
 			$requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
 			$headers = array_replace_recursive($headers, $requestHeaders);
 		} else {
+			//Nginx
 			foreach ($_SERVER as $name => $value) {
 				if (substr($name, 0, 5) == 'HTTP_') {
 					$headers[str_replace(' ', '-', ucwords(strtolower(str_replace('_', ' ', substr($name, 5)))))] = $value;
