@@ -10,6 +10,7 @@ use vendor\ninazu\framework\Component\Db\Mysql;
 use vendor\ninazu\framework\Component\Request;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\Router;
+use vendor\ninazu\framework\Component\Translate;
 use vendor\ninazu\framework\Component\User\User;
 use vendor\ninazu\framework\Core\Handler\DefaultHandler;
 use vendor\ninazu\framework\Core\Handler\IHandler;
@@ -20,6 +21,7 @@ use vendor\ninazu\framework\Core\Handler\IHandler;
  * @property Router $router
  * @property User $user
  * @property IMysql $db
+ * @property Translate $lang
  * */
 abstract class BaseApplication {
 
@@ -168,6 +170,7 @@ abstract class BaseApplication {
 			'request' => Request::class,
 			'user' => User::class,
 			'db' => Mysql::class,
+			'lang' => Translate::class,
 		];
 
 		foreach ($components as $name => $class) {
