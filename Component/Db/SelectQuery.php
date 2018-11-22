@@ -22,6 +22,9 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	/**@var Meta $columnMeta */
 	private $columnMeta = null;
 
+	/**@var array */
+	private $autoConvertMeta = false;
+
 	/**
 	 * @inheritdoc
 	 */
@@ -29,6 +32,67 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		$this->columnName = $columnName;
 
 		return $this;
+	}
+
+	public function convertMeta() {
+		$this->processMeta();
+		$this->autoConvertMeta = true;
+
+		return $this;
+	}
+
+	private function processMeta() {
+		$columnCount = $this->columnCount();
+
+		for ($i = 0; $i < $columnCount; $i++) {
+			$meta = $this->columnMeta($i);
+
+			$columnMeta[$meta['name']] = [
+				'type' => $meta['native_type'],
+				'precision' => $meta['precision'],
+				'flags' => $meta['flags'],
+				'smartConvert' => function ($value) use ($meta) {
+					switch ($meta['native_type']) {
+						case 'TINY':
+						case 'SHORT':
+						case 'LONG':
+						case 'INT24':
+						case 'SET':
+							return is_null($value) ? null : (int)$value;
+
+						case 'DECIMAL':
+						case 'NEWDECIMAL':
+						case 'FLOAT':
+						case 'DOUBLE':
+							return is_null($value) ? null : (double)$value;
+
+						case 'BIT':
+							return (bool)$value;
+
+						case 'NULL':
+							return null;
+
+						default:
+							/**
+							 * MYSQL_TYPE_LONGLONG
+							 * MYSQL_TYPE_TIMESTAMP
+							 * MYSQL_TYPE_DATE
+							 * MYSQL_TYPE_TIME
+							 * MYSQL_TYPE_DATETIME
+							 * MYSQL_TYPE_YEAR
+							 * MYSQL_TYPE_STRING
+							 * MYSQL_TYPE_VAR_STRING
+							 * MYSQL_TYPE_BLOB
+							 * MYSQL_TYPE_ENUM    ENUM
+							 * MYSQL_TYPE_GEOMETRY
+							 */
+							return $value;
+					}
+				},
+			];
+
+			$this->columnMeta = new Meta($columnMeta);
+		}
 	}
 
 	/**
@@ -44,57 +108,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		$this->callBack = $callback;
 
 		if ($this->callBackParamsCount === 3) {
-			$columnCount = $this->columnCount();
-
-			for ($i = 0; $i < $columnCount; $i++) {
-				$meta = $this->columnMeta($i);
-
-				$columnMeta[$meta['name']] = [
-					'type' => $meta['native_type'],
-					'precision' => $meta['precision'],
-					'flags' => $meta['flags'],
-					'smartConvert' => function ($value) use ($meta) {
-						switch ($meta['native_type']) {
-							case 'TINY':
-							case 'SHORT':
-							case 'LONG':
-							case 'INT24':
-							case 'SET':
-								return is_null($value) ? null : (int)$value;
-
-							case 'DECIMAL':
-							case 'NEWDECIMAL':
-							case 'FLOAT':
-							case 'DOUBLE':
-								return is_null($value) ? null : (double)$value;
-
-							case 'BIT':
-								return (bool)$value;
-
-							case 'NULL':
-								return null;
-
-							default:
-								/**
-								 * MYSQL_TYPE_LONGLONG
-								 * MYSQL_TYPE_TIMESTAMP
-								 * MYSQL_TYPE_DATE
-								 * MYSQL_TYPE_TIME
-								 * MYSQL_TYPE_DATETIME
-								 * MYSQL_TYPE_YEAR
-								 * MYSQL_TYPE_STRING
-								 * MYSQL_TYPE_VAR_STRING
-								 * MYSQL_TYPE_BLOB
-								 * MYSQL_TYPE_ENUM    ENUM
-								 * MYSQL_TYPE_GEOMETRY
-								 */
-								return $value;
-						}
-					},
-				];
-
-				$this->columnMeta = new Meta($columnMeta);
-			}
+			$this->processMeta();
 		}
 
 		return $this;
@@ -118,7 +132,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 
 		$callBack = $this->callBack;
 
-		if (is_null($this->columnName) && is_null($this->callBack)) {
+		if (is_null($this->columnName) && is_null($this->callBack) && $this->autoConvertMeta === false) {
 			$this->reset();
 
 			return $result;
@@ -128,6 +142,14 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");
 		}
 
+		$keyedResult = $this->processRows($result, $callBack);
+
+		$this->reset();
+
+		return $keyedResult;
+	}
+
+	private function processRows($result, $callBack) {
 		$keyedResult = [];
 
 		foreach ($result as $index => $row) {
@@ -135,7 +157,18 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 
 			switch ($this->callBackParamsCount) {
 				case 0:
+					if ($this->autoConvertMeta) {
+						$columns = [];
+
+						foreach ($this->columnMeta->getKeys() as $key) {
+							$columns[$key] = $this->columnMeta->convert($key, $row);
+						}
+
+						$row = array_replace_recursive(isset($keyedResult[$index]) ? $keyedResult[$index] : [], $columns);
+					}
+
 					$keyedResult[$index] = $row;
+
 					break;
 
 				case 1:
@@ -151,8 +184,6 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 					break;
 			}
 		}
-
-		$this->reset();
 
 		return $keyedResult;
 	}
@@ -179,7 +210,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	public function queryOne() {
 		$result = $this->statement->fetch(PDO::FETCH_ASSOC);
 
-		if (empty($result) || (is_null($this->columnName) && is_null($this->callBack))) {
+		if (empty($result) || (is_null($this->columnName) && is_null($this->callBack) && $this->autoConvertMeta === false)) {
 			$this->reset();
 
 			return $result;
@@ -192,29 +223,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");
 		}
 
-		$keyedResult = [];
-
-		foreach ($result as $index => $row) {
-			$index = !is_null($this->columnName) ? $row[$this->columnName] : $index;
-
-			switch ($this->callBackParamsCount) {
-				case 0:
-					$keyedResult[$index] = $row;
-					break;
-
-				case 1:
-					$keyedResult[$index] = $callBack($row);
-					break;
-
-				case 2:
-					$keyedResult[$index] = $callBack($row, isset($keyedResult[$index]) ? $keyedResult[$index] : []);
-					break;
-
-				case 3:
-					$keyedResult[$index] = $callBack($row, isset($keyedResult[$index]) ? $keyedResult[$index] : [], $this->columnMeta);
-					break;
-			}
-		}
+		$keyedResult = $this->processRows($result, $callBack);
 
 		$this->reset();
 
@@ -227,6 +236,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		$this->callBack = null;
 		$this->columnMeta = null;
 		$this->callBackParamsCount = 0;
+		$this->autoConvertMeta = false;
 	}
 
 	/**

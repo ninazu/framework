@@ -19,6 +19,11 @@ interface ISelectResult extends IQueryResult {
 	public function handler(callable $callback);
 
 	/**
+	 * @return $this
+	 */
+	public function convertMeta();
+
+	/**
 	 * @return array
 	 */
 	public function queryAll();
