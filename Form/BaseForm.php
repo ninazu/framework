@@ -14,11 +14,22 @@ abstract class BaseForm {
 
 	protected $attributes = [];
 
-	public function __construct() {
+	protected $attributeTypes;
+
+	public function getDeclaredAttributes() {
+		//if (is_null(self::$attributeTypes)) {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
-		preg_match_all('/\@property\s+\w+\s+\$(\w+)/', $phpDoc, $matches); //TODO Array
-		$this->attributes = array_fill_keys($matches[1], null);
+		preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)/', $phpDoc, $matches);
+		$this->attributeTypes = array_combine($matches[4], $matches[1]);
+
+		//}
+
+		return $this->attributeTypes;
+	}
+
+	public function __construct() {
+		$this->attributes = array_fill_keys(array_keys($this->getDeclaredAttributes()), null);
 	}
 
 	public function load(array $requestData) {
