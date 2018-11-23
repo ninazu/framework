@@ -26,7 +26,7 @@ class HashValidator extends StringValidator {
 		$this->max = $hashLength[$this->hash];
 	}
 
-	public function validate($value) {
+	public function validate(&$value) {
 		if (!$parent = parent::validate($value)) {
 			return false;
 		}

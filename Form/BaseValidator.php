@@ -10,6 +10,8 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $message;
 
+	protected $extra;
+
 	public function __construct($field, $params) {
 		$this->field = $field;
 		$this->fillFromConfig($params);
@@ -18,6 +20,14 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected function init() {
 		return;
+	}
+
+	public function setExtra(array $extra) {
+		$this->extra = $extra;
+	}
+
+	public function getExtra() {
+		return $this->extra;
 	}
 
 	public function setMessage($message) {
@@ -32,7 +42,7 @@ abstract class BaseValidator extends BaseConfigurator {
 		return $this->field;
 	}
 
-	abstract public function validate($value);
+	abstract public function validate(&$value);
 
 	abstract public function getMessage();
 }

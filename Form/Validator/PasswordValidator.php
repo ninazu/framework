@@ -16,7 +16,7 @@ class PasswordValidator extends StringValidator {
 		$this->min = 8;
 	}
 
-	public function validate($value) {
+	public function validate(&$value) {
 		if (!$parent = parent::validate($value)) {
 			return false;
 		}

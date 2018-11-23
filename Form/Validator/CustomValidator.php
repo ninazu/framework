@@ -14,13 +14,16 @@ class CustomValidator extends BaseValidator {
 
 	protected $value;
 
-	public function validate($value) {
+	public function validate(&$value) {
 		$callback = $this->callback;
 		$this->setValue($value);
 
 		return $callback($this);
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getValue() {
 		return $this->value;
 	}
@@ -37,19 +40,7 @@ class CustomValidator extends BaseValidator {
 		return "Field '{$this->field}' failed validation";
 	}
 
-	public function getExtra() {
-		if ($this->extra) {
-			return $this->extra;
-		}
-
-		return [
-			$this->field => $this->value,
-		];
-	}
-
 	protected function init() {
-		$this->hasDependency = true;
-
 		if (!is_callable($this->callback)) {
 			throw new ErrorException('Callback must be callable');
 		}

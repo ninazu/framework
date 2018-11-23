@@ -16,14 +16,13 @@ abstract class BaseForm {
 
 	protected $attributeTypes;
 
+	protected $breakOnError = true;
+
 	public function getDeclaredAttributes() {
-		//if (is_null(self::$attributeTypes)) {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
 		preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)/', $phpDoc, $matches);
 		$this->attributeTypes = array_combine($matches[4], $matches[1]);
-
-		//}
 
 		return $this->attributeTypes;
 	}
@@ -91,11 +90,15 @@ abstract class BaseForm {
 			}
 
 			foreach ($fields as $field) {
+				if ($this->breakOnError && array_key_exists($field, $this->errorFields)) {
+					continue;
+				}
 
 				/**@var BaseValidator $validator */
 				$validator = new $class($field, $params);
+				$value = $this->$field;
 
-				if (!$validator->validate($this->$field)) {
+				if (!$validator->validate($value)) {
 					$this->addError($field, $validator->getMessage());
 				}
 			}

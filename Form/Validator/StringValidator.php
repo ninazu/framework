@@ -16,7 +16,7 @@ class StringValidator extends BaseValidator {
 
 	protected $allowEmpty = false;
 
-	public function validate($value) {
+	public function validate(&$value) {
 		if (empty($value) && $this->allowEmpty) {
 			return true;
 		}
