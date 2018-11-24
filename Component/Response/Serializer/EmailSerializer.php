@@ -13,7 +13,7 @@ class EmailSerializer extends BaseSerializer {
 		$extra = $response->getExtra();
 
 		if (!empty($data) || !empty($extra)) {
-			mail($app->getAdminEmail(), "Email Serializer", print_r([$data, $extra], true));
+			mail($app->getAdminEmail(), "Email Serializer", print_r(['data' => $data, 'extra' => $extra], true));
 		}
 
 		return '';
