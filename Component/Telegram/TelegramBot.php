@@ -15,6 +15,8 @@ class TelegramBot extends BaseComponent {
 
 	protected $secureParam;
 
+	protected $chatId;
+
 	public function getSecureParam() {
 		return $this->secureParam;
 	}
@@ -23,6 +25,14 @@ class TelegramBot extends BaseComponent {
 		return $this->request('setWebhook', [
 			'url' => $url,
 		]);
+	}
+
+	public function sendMessage($chatID, $message) {
+		return $this->request('sendMessage', array(
+			'chat_id' => $chatID,
+			'text' => $message,
+			'parse_mode' => 'HTML',
+		));
 	}
 
 	public function markUp($chatID, $message, $buttons, $inline = false) {
