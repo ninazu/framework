@@ -10,7 +10,7 @@ abstract class BaseValidator extends BaseConfigurator {
 
 	protected $message;
 
-	protected $extra;
+	protected $extra = [];
 
 	public function __construct($field, $params) {
 		$this->field = $field;
