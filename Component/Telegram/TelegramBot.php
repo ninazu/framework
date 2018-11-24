@@ -13,6 +13,12 @@ class TelegramBot extends BaseComponent {
 
 	protected $key;
 
+	protected $secureParam;
+
+	public function getSecureParam() {
+		return $this->secureParam;
+	}
+
 	public function install($url) {
 		return $this->request('setWebhook', [
 			'url' => $url,
