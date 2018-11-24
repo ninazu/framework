@@ -201,7 +201,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 			return $data[$name];
 		}
 
-		return reset($data);
+		return $data;
 	}
 
 	/**
