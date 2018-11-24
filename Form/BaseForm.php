@@ -65,10 +65,11 @@ abstract class BaseForm {
 		return $this->attributes;
 	}
 
-	public function addError($field, $message) {
+	public function addError($field, $message, array $extra) {
 		$data = [
 			'field' => $field,
 			'message' => $message,
+			'extra' => $extra,
 		];
 
 		if (!array_key_exists($field, $this->errorFields)) {
@@ -99,7 +100,7 @@ abstract class BaseForm {
 				$value = $this->$field;
 
 				if (!$validator->validate($value)) {
-					$this->addError($field, $validator->getMessage());
+					$this->addError($field, $validator->getMessage(), $validator->getExtra());
 				}
 			}
 		}
