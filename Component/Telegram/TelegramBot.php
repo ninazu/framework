@@ -195,12 +195,14 @@ class TelegramBot extends BaseComponent {
 
 			return $response;
 		} elseif ($http_code == 400) {
+			print_r($responseObject);
+
 			switch ($responseObject['description']) {
 				case "Bad Request: message is not modified":
-					throw new NotModifiedException();
+					throw new NotModifiedException($responseObject['error_code']);
 
 				case "Bad Request: message to edit not found":
-					throw new NotFoundException();
+					throw new NotFoundException($responseObject['error_code']);
 			}
 		} else {
 			echo base64_encode(print_r([$parameters], true));
