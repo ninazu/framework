@@ -56,8 +56,6 @@ class TelegramBot extends BaseComponent {
 
 	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
 		if (empty($messageID)) {
-			mail($this->getApplication()->getAdminEmail(), 'UpdateMarkup', $messageID);
-
 			return $this->markUp($chatID, $text, $buttons, $inline);
 		}
 
