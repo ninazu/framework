@@ -3,9 +3,6 @@
 namespace vendor\ninazu\framework\Component\Telegram;
 
 use Exception;
-use vendor\ninazu\framework\Component\Telegram\exception\NotFoundException;
-use vendor\ninazu\framework\Component\Telegram\exception\NotModifiedException;
-use vendor\ninazu\framework\Component\Telegram\exception\UnauthorizedException;
 use vendor\ninazu\framework\Core\BaseComponent;
 
 class TelegramBot extends BaseComponent {
@@ -21,6 +18,10 @@ class TelegramBot extends BaseComponent {
 	protected $webHookUrl;
 
 	protected $botName;
+
+	public function setPredefinedButton($buttons) {
+		$this->predefinedMarkUp = $buttons;
+	}
 
 	public function getBotName() {
 		return $this->botName;
