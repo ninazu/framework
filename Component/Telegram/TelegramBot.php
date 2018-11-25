@@ -3,6 +3,9 @@
 namespace vendor\ninazu\framework\Component\Telegram;
 
 use Exception;
+use vendor\ninazu\framework\Component\Telegram\exception\NotFoundException;
+use vendor\ninazu\framework\Component\Telegram\exception\NotModifiedException;
+use vendor\ninazu\framework\Component\Telegram\exception\UnauthorizedException;
 use vendor\ninazu\framework\Core\BaseComponent;
 
 class TelegramBot extends BaseComponent {
@@ -59,16 +62,29 @@ class TelegramBot extends BaseComponent {
 			return $this->markUp($chatID, $text, $buttons, $inline);
 		}
 
-		$response = $this->request('editMessageText', [
-				'chat_id' => $chatID,
-				'message_id' => $messageID,
-				'parse_mode' => 'HTML',
-				'text' => $text,
-				'reply_markup' => [
-					'inline_keyboard' => $this->prepareButtons($buttons, $inline),
-				],
-			]
-		);
+		try {
+			$response = $this->request('editMessageText', [
+					'chat_id' => $chatID,
+					'message_id' => $messageID,
+					'parse_mode' => 'HTML',
+					'text' => $text,
+					'reply_markup' => [
+						'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+					],
+				]
+			);
+		} catch (NotFoundException $exception) {
+			$response = $this->request('editMessageText', [
+					'chat_id' => $chatID,
+					'message_id' => null,
+					'parse_mode' => 'HTML',
+					'text' => $text,
+					'reply_markup' => [
+						'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+					],
+				]
+			);
+		}
 
 		return $response;
 	}
@@ -173,14 +189,19 @@ class TelegramBot extends BaseComponent {
 			sleep(100);
 			throw new Exception("Server side error. {$responseObject['error_code']}: {$responseObject['description']}");
 		} elseif ($http_code == 401) {
-			throw new Exception("Invalid access token provided");
+			throw new UnauthorizedException();
 		} elseif ($http_code == 429) {
 			sleep(30);
 
 			return $response;
-			//throw new \Exception("WTF");
-		} elseif ($http_code == 400 && $responseObject['description'] == 'Bad Request: message is not modified') {
-			throw new \Exception('Not modified: ');
+		} elseif ($http_code == 400) {
+			switch ($responseObject['description']) {
+				case "Bad Request: message is not modified":
+					throw new NotModifiedException();
+
+				case "Bad Request: message to edit not found":
+					throw new NotFoundException();
+			}
 		} else {
 			echo base64_encode(print_r([$parameters], true));
 
