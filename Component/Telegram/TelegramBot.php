@@ -55,7 +55,11 @@ class TelegramBot extends BaseComponent {
 	}
 
 	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
-		return $this->request('editMessageText', [
+		if (empty($messageID)) {
+			return $this->markUp($chatID, $text, $buttons, $inline);
+		}
+
+		$response = $this->request('editMessageText', [
 				'chat_id' => $chatID,
 				'message_id' => $messageID,
 				'parse_mode' => 'HTML',
@@ -65,6 +69,8 @@ class TelegramBot extends BaseComponent {
 				],
 			]
 		);
+
+		return $response;
 	}
 
 	public static function getResponse() {
