@@ -54,6 +54,19 @@ class TelegramBot extends BaseComponent {
 		return $this->request('sendMessage', $params);
 	}
 
+	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
+		return $this->request('editMessageText', array(
+				'chat_id' => $chatID,
+				'message_id' => $messageID,
+				'parse_mode' => 'HTML',
+				'text' => $text,
+				'reply_markup' => array(
+					'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+				),
+			)
+		);
+	}
+
 	public static function getResponse() {
 		$content = file_get_contents("php://input");
 
