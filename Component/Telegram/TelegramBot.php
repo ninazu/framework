@@ -19,6 +19,12 @@ class TelegramBot extends BaseComponent {
 
 	protected $webHookUrl;
 
+	protected $botName;
+
+	public function getBotName() {
+		return $this->botName;
+	}
+
 	public function getChatId() {
 		return $this->chatId;
 	}
@@ -73,19 +79,35 @@ class TelegramBot extends BaseComponent {
 
 		if (!$inline) {
 			foreach ($buttons as $buttonText => $buttonData) {
-				$inlineKeyboard[][] = array(
-					'text' => $buttonText,
-					'callback_data' => (string)$buttonData,
-				);
+				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
+					$inlineKeyboard[][] = array(
+						'text' => $buttonText,
+						'url' => $buttonData,
+						'callback_data' => (string)$buttonData,
+					);
+				} else {
+					$inlineKeyboard[][] = array(
+						'text' => $buttonText,
+						'callback_data' => (string)$buttonData,
+					);
+				}
 			}
 		} else {
 			$lineButton = array();
 
 			foreach ($buttons as $buttonText => $buttonData) {
-				$lineButton[] = array(
-					'text' => $buttonText,
-					'callback_data' => (string)$buttonData,
-				);
+				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
+					$lineButton[][] = array(
+						'text' => $buttonText,
+						'url' => $buttonData,
+						'callback_data' => (string)$buttonData,
+					);
+				} else {
+					$lineButton[] = array(
+						'text' => $buttonText,
+						'callback_data' => (string)$buttonData,
+					);
+				}
 			}
 
 			$inlineKeyboard[] = $lineButton;
