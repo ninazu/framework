@@ -34,36 +34,36 @@ class TelegramBot extends BaseComponent {
 	}
 
 	public function sendMessage($chatID, $message) {
-		return $this->request('sendMessage', array(
+		return $this->request('sendMessage', [
 			'chat_id' => $chatID,
 			'text' => $message,
 			'parse_mode' => 'HTML',
-		));
+		]);
 	}
 
 	public function markUp($chatID, $message, $buttons, $inline = false) {
-		$params = array(
+		$params = [
 			'chat_id' => $chatID,
 			'text' => $message,
 			'parse_mode' => 'HTML',
-			'reply_markup' => array(
+			'reply_markup' => [
 				'inline_keyboard' => $this->prepareButtons($buttons, $inline),
-			),
-		);
+			],
+		];
 
 		return $this->request('sendMessage', $params);
 	}
 
 	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
-		return $this->request('editMessageText', array(
+		return $this->request('editMessageText', [
 				'chat_id' => $chatID,
 				'message_id' => $messageID,
 				'parse_mode' => 'HTML',
 				'text' => $text,
-				'reply_markup' => array(
+				'reply_markup' => [
 					'inline_keyboard' => $this->prepareButtons($buttons, $inline),
-				),
-			)
+				],
+			]
 		);
 	}
 
@@ -78,38 +78,38 @@ class TelegramBot extends BaseComponent {
 	}
 
 	private function prepareButtons($buttons, $inline) {
-		$inlineKeyboard = array();
+		$inlineKeyboard = [];
 
 		if (!$inline) {
 			foreach ($buttons as $buttonText => $buttonData) {
 				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
-					$inlineKeyboard[][] = array(
+					$inlineKeyboard[][] = [
 						'text' => $buttonText,
 						'url' => $buttonData,
 						'callback_data' => (string)$buttonData,
-					);
+					];
 				} else {
-					$inlineKeyboard[][] = array(
+					$inlineKeyboard[][] = [
 						'text' => $buttonText,
 						'callback_data' => (string)$buttonData,
-					);
+					];
 				}
 			}
 		} else {
-			$lineButton = array();
+			$lineButton = [];
 
 			foreach ($buttons as $buttonText => $buttonData) {
 				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
-					$lineButton[][] = array(
+					$lineButton[][] = [
 						'text' => $buttonText,
 						'url' => $buttonData,
 						'callback_data' => (string)$buttonData,
-					);
+					];
 				} else {
-					$lineButton[] = array(
+					$lineButton[] = [
 						'text' => $buttonText,
 						'callback_data' => (string)$buttonData,
-					);
+					];
 				}
 			}
 
