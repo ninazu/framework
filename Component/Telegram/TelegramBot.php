@@ -15,22 +15,12 @@ class TelegramBot extends BaseComponent {
 
 	protected $secureParam;
 
-	protected $chatId;
-
 	protected $webHookUrl;
 
 	protected $botName;
 
 	public function getBotName() {
 		return $this->botName;
-	}
-
-	public function getChatId() {
-		return $this->chatId;
-	}
-
-	public function setChatId() {
-		return $this->chatId;
 	}
 
 	public function getSecureParam() {
