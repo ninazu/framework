@@ -62,18 +62,18 @@ class TelegramBot extends BaseComponent {
 			return $this->markUp($chatID, $text, $buttons, $inline);
 		}
 
-		try {
-			$response = $this->request('editMessageText', [
-					'chat_id' => $chatID,
-					'message_id' => $messageID,
-					'parse_mode' => 'HTML',
-					'text' => $text,
-					'reply_markup' => [
-						'inline_keyboard' => $this->prepareButtons($buttons, $inline),
-					],
-				]
-			);
-		} catch (NotFoundException $exception) {
+		$response = $this->request('editMessageText', [
+				'chat_id' => $chatID,
+				'message_id' => $messageID,
+				'parse_mode' => 'HTML',
+				'text' => $text,
+				'reply_markup' => [
+					'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+				],
+			]
+		);
+
+		if (!$response['status']) {
 			$response = $this->request('editMessageText', [
 					'chat_id' => $chatID,
 					'message_id' => null,
@@ -168,46 +168,40 @@ class TelegramBot extends BaseComponent {
 		return $this->checkResponse($handle, $parameters);
 	}
 
-	private function checkResponse($handle, $parameters = []) {
+	private function checkResponse($handle, $parameters) {
 		if (!$response = curl_exec($handle)) {
 			$errorNumber = curl_errno($handle);
 			$errorText = curl_error($handle);
 
-			throw new Exception("Curl returned error {$errorNumber}: {$errorText}");
+			return [
+				'status' => false,
+				'error' => [
+					'number' => $errorNumber,
+					'message' => $errorText,
+					'params' => $parameters,
+				],
+			];
 		}
 
 		$http_code = intval(curl_getinfo($handle, CURLINFO_HTTP_CODE));
 		curl_close($handle);
 
 		if ($http_code == 200) {
-			return $response;
+			return [
+				'status' => true,
+				'data' => $response,
+			];
 		}
 
 		$responseObject = json_decode($response, true);
 
-		if ($http_code >= 500) {
-			sleep(100);
-			throw new Exception("Server side error. {$responseObject['error_code']}: {$responseObject['description']}");
-		} elseif ($http_code == 401) {
-			throw new UnauthorizedException();
-		} elseif ($http_code == 429) {
-			sleep(30);
-
-			return $response;
-		} elseif ($http_code == 400) {
-			print_r($responseObject);
-
-			switch ($responseObject['description']) {
-				case "Bad Request: message is not modified":
-					throw new NotModifiedException($responseObject['error_code']);
-
-				case "Bad Request: message to edit not found":
-					throw new NotFoundException($responseObject['error_code']);
-			}
-		} else {
-			echo base64_encode(print_r([$parameters], true));
-
-			throw new Exception("Request has failed with error {$responseObject['error_code']}: {$responseObject['description']}.");
-		}
+		return [
+			'status' => false,
+			'error' => [
+				'number' => $responseObject['error_code'],
+				'message' => $responseObject['description'],
+				'params' => $parameters,
+			],
+		];
 	}
 }
