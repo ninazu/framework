@@ -13,6 +13,7 @@ class EmailSerializer extends BaseSerializer {
 		$extra = $response->getExtra();
 
 		if (!empty($data) || !empty($extra)) {
+			//TODO Custom emails
 			mail($app->getAdminEmail(), "Email Serializer", json_encode(['data' => $data, 'extra' => $extra], JSON_PRETTY_PRINT));
 		}
 
