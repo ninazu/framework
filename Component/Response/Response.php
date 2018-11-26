@@ -38,9 +38,13 @@ class Response extends BaseComponent implements IResponse {
 
 	private $data;
 
-	private $extra;
+	private $extra = [];
 
-	public function addNotify($typeEnum, $message, $extra = []) {
+	public function addExtra(array $extra) {
+		$this->extra[] = array_merge($this->extra, $extra);
+	}
+
+	public function addNotify($typeEnum, $message, array $extra = []) {
 		$this->notifications[] = [
 			'type_enum' => $typeEnum,
 			'message' => $message,
@@ -56,7 +60,7 @@ class Response extends BaseComponent implements IResponse {
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendError($errorCode, $data, $extra = []) {
+	public function sendError($errorCode, $data, array $extra = []) {
 		$this->setStatusCode($errorCode);
 		$this->setData($data);
 		$this->extra = $extra;

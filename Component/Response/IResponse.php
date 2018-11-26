@@ -70,11 +70,11 @@ interface IResponse {
 
 	public function forceHttpStatus();
 
-	public function addNotify($typeEnum, $message, $extra = []);
+	public function addNotify($typeEnum, $message, array $extra = []);
 
 	public function setHeaders(array $data);
 
-	public function sendError($errorCode, $data, $extra = []);
+	public function sendError($errorCode, $data, array $extra = []);
 
 	public function sendOk($data);
 }
