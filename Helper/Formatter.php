@@ -69,4 +69,16 @@ class Formatter {
 
 		return substr_replace($text, $mask, $position, $maskLen);
 	}
+
+	public static function explodeWords($text, $separator = " \t\n;,/|\\<>#") {
+		$words = [];
+		$tok = strtok($text, $separator);
+
+		while ($tok) {
+			$words[] = $tok;
+			$tok = strtok($separator);
+		}
+
+		return $words;
+	}
 }
