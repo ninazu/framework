@@ -21,6 +21,8 @@ class TelegramBot extends BaseComponent {
 
 	public function setPredefinedButton($buttons) {
 		$this->predefinedMarkUp = $buttons;
+
+		return $this;
 	}
 
 	public function getBotName() {
