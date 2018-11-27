@@ -77,9 +77,17 @@ class DefaultHandler implements IHandler {
 		if (isset($data)) {
 			//EnvironmentException
 		} else {
+			$args = [];
+
 			foreach ($exception->getTrace() as $row) {
 				if (isset($row['file'], $row['line'])) {
-					$extra[] = "{$row['file']}:{$row['line']}";
+					$extraRow = "{$row['file']}:{$row['line']}";
+
+					if (isset($row['function'])) {
+						$args[] = "\n\t{$row['function']}(" . (isset($row['args']) ? implode(',', $row['args']) : '') . ')';
+					}
+
+					$extra[] = $extraRow;
 				}
 			}
 
