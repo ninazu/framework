@@ -79,7 +79,6 @@ class TelegramBot extends BaseComponent {
 		);
 
 		if (!$response['status']) {
-			sleep(0.5);
 			$response = $this->markUp($chatID, $text, $buttons, $inline);
 		}
 
