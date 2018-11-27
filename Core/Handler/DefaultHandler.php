@@ -83,9 +83,9 @@ class DefaultHandler implements IHandler {
 				if (isset($row['file'], $row['line'])) {
 					$extraRow = "{$row['file']}:{$row['line']}";
 
-					if (isset($row['function'])) {
-						$args[] = "\n\t{$row['function']}(" . (isset($row['args']) ? implode(',', $row['args']) : '') . ')';
-					}
+//					if (isset($row['function'])) {
+//						$args[] = "\n\t{$row['function']}(" . (isset($row['args']) ? implode(',', $row['args']) : '') . ')';
+//					}
 
 					$extra[] = $extraRow;
 				}
