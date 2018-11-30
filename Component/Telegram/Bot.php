@@ -87,9 +87,9 @@ class Bot extends BaseComponent {
 	}
 
 	public function replyKeyboardMarkup($chatId, $messageID, $text, array $buttons) {
-//		if (!empty($messageID)) {
-//			$this->deleteMessage($chatId, $messageID);
-//		}
+		if (!empty($messageID)) {
+			$this->deleteMessage($chatId, $messageID);
+		}
 
 		$response = $this->request('sendMessage', [
 				'chat_id' => $chatId,
