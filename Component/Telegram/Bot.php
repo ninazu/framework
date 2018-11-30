@@ -77,25 +77,22 @@ class Bot extends BaseComponent {
 		return $this->request('sendMessage', $params);
 	}
 
-	public function replyKeyboardMarkup($chatId, $messageID, $text, array $buttons) {
-		if (empty($messageID)) {
-			$response = $this->request('sendMessage', [
-					'chat_id' => $chatId,
-					'parse_mode' => 'HTML',
-					'text' => $text,
-					'reply_markup' => [
-						'one_time_keyboard' => true,
-						'keyboard' => $this->prepareButtons($buttons),
-					],
-				]
-			);
+	public function deleteMessage($chatId, $messageID) {
+		$response = $this->request('deleteMessage', [
+			'chat_id' => $chatId,
+			'message_id' => $messageID,
+		]);
 
-			return $response;
+		return $response;
+	}
+
+	public function replyKeyboardMarkup($chatId, $messageID, $text, array $buttons) {
+		if (!empty($messageID)) {
+			$this->updateMarkUp($chatId, $messageID, $text, []);
 		}
 
-		$response = $this->request('editMessageText', [
+		$response = $this->request('sendMessage', [
 				'chat_id' => $chatId,
-				'message_id' => $messageID,
 				'parse_mode' => 'HTML',
 				'text' => $text,
 				'reply_markup' => [
