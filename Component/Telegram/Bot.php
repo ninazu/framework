@@ -88,7 +88,7 @@ class Bot extends BaseComponent {
 
 	public function replyKeyboardMarkup($chatId, $messageID, $text, array $buttons) {
 		if (!empty($messageID)) {
-			$this->updateMarkUp($chatId, $messageID, $text, []);
+			$this->deleteMessage($chatId, $messageID);
 		}
 
 		$response = $this->request('sendMessage', [
@@ -214,7 +214,10 @@ class Bot extends BaseComponent {
 		curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
 		curl_setopt($handle, CURLOPT_TIMEOUT, 60);
 		curl_setopt($handle, CURLOPT_POSTFIELDS, json_encode($parameters));
-		curl_setopt($handle, CURLOPT_HTTPHEADER, ["Content-Type: application/json"]);
+		curl_setopt($handle, CURLOPT_HTTPHEADER, [
+			"Content-Type: application/json",
+			"Retry-After: 3600",
+		]);
 
 		return $this->checkResponse($handle, $parameters);
 	}
