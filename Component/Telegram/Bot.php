@@ -106,6 +106,20 @@ class Bot extends BaseComponent {
 		return $response;
 	}
 
+	public function hideKeyboard($chatId, $text) {
+		$response = $this->request('sendMessage', [
+				'chat_id' => $chatId,
+				'text' => $text,
+				'parse_mode' => 'HTML',
+				'reply_markup' => [
+					'remove_keyboard' => true,
+				],
+			]
+		);
+
+		return $response;
+	}
+
 	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
 		if (empty($messageID)) {
 			$response = $this->markUp($chatID, $text, $buttons, $inline);
