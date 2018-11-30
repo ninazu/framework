@@ -5,7 +5,11 @@ namespace vendor\ninazu\framework\Component\Telegram;
 use Exception;
 use vendor\ninazu\framework\Core\BaseComponent;
 
-class TelegramBot extends BaseComponent {
+/**
+ * @property-read Request $request
+ * @property-read Response $response
+ * */
+class Bot extends BaseComponent {
 
 	private $predefinedMarkUp;
 
@@ -18,6 +22,19 @@ class TelegramBot extends BaseComponent {
 	protected $webHookUrl;
 
 	protected $botName;
+
+	public $request;
+
+	public $response;
+
+	const TYPE_INLINE = 'inline_keyboard';
+
+	const TYPE_REPLY = 'inline_keyboard';
+
+	public function init() {
+		$this->response = new Response();
+		$this->request = new Request();
+	}
 
 	public function setPredefinedButton($buttons) {
 		$this->predefinedMarkUp = $buttons;
@@ -53,11 +70,42 @@ class TelegramBot extends BaseComponent {
 			'text' => $message,
 			'parse_mode' => 'HTML',
 			'reply_markup' => [
-				'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+				'inline_keyboard' => $this->prepareQueryButtons($buttons, $inline),
 			],
 		];
 
 		return $this->request('sendMessage', $params);
+	}
+
+	public function replyKeyboardMarkup($chatId, $messageID, $text, array $buttons) {
+		if (empty($messageID)) {
+			$response = $this->request('sendMessage', [
+					'chat_id' => $chatId,
+					'parse_mode' => 'HTML',
+					'text' => $text,
+					'reply_markup' => [
+						'one_time_keyboard' => true,
+						'keyboard' => $this->prepareButtons($buttons),
+					],
+				]
+			);
+
+			return $response;
+		}
+
+		$response = $this->request('editMessageText', [
+				'chat_id' => $chatId,
+				'message_id' => $messageID,
+				'parse_mode' => 'HTML',
+				'text' => $text,
+				'reply_markup' => [
+					'one_time_keyboard' => true,
+					'keyboard' => $this->prepareButtons($buttons),
+				],
+			]
+		);
+
+		return $response;
 	}
 
 	public function updateMarkUp($chatID, $messageID, $text, $buttons, $inline = false) {
@@ -73,7 +121,7 @@ class TelegramBot extends BaseComponent {
 				'parse_mode' => 'HTML',
 				'text' => $text,
 				'reply_markup' => [
-					'inline_keyboard' => $this->prepareButtons($buttons, $inline),
+					'inline_keyboard' => $this->prepareQueryButtons($buttons, $inline),
 				],
 			]
 		);
@@ -95,7 +143,17 @@ class TelegramBot extends BaseComponent {
 		return $response;
 	}
 
-	private function prepareButtons($buttons, $inline) {
+	private function prepareButtons($buttons) {
+		$buttons = [];
+
+		foreach ($buttons as $text) {
+			$buttons[] = [['text' => $text]];
+		}
+
+		return $buttons;
+	}
+
+	private function prepareQueryButtons($buttons, $inline) {
 		$inlineKeyboard = [];
 
 		if (!$inline) {
