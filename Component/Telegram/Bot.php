@@ -86,7 +86,12 @@ class Bot extends BaseComponent {
 
 		$response = $this
 			->setPredefinedButton([])
-			->updateMarkUp($chatId, $messageID, "Старое меню", []);
+			->updateMarkUp(
+				$chatId,
+				$messageID,
+				"Старое меню",
+				[]
+			);
 
 		return $response;
 	}
