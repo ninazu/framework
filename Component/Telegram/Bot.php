@@ -96,7 +96,8 @@ class Bot extends BaseComponent {
 				'text' => $text,
 				'parse_mode' => 'HTML',
 				'reply_markup' => [
-					'one_time_keyboard' => false,
+					'one_time_keyboard' => true,
+					'resize_keyboard' => true,
 					'keyboard' => $this->prepareButtons($buttons),
 				],
 			]
