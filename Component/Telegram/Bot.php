@@ -141,13 +141,15 @@ class Bot extends BaseComponent {
 	}
 
 	private function prepareButtons($buttons) {
-		$buttons = [];
+		$result = [];
 
 		foreach ($buttons as $text) {
-			$buttons[] = [['text' => $text]];
+			$result[] = [
+				['text' => $text],
+			];
 		}
 
-		return $buttons;
+		return $result;
 	}
 
 	private function prepareQueryButtons($buttons, $inline) {
