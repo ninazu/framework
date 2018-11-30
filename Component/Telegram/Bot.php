@@ -78,10 +78,15 @@ class Bot extends BaseComponent {
 	}
 
 	public function deleteMessage($chatId, $messageID) {
-		$response = $this->request('deleteMessage', [
-			'chat_id' => $chatId,
-			'message_id' => $messageID,
-		]);
+//		//Only 48 Hours
+//		$response = $this->request('deleteMessage', [
+//			'chat_id' => $chatId,
+//			'message_id' => $messageID,
+//		]);
+
+		$response = $this
+			->setPredefinedButton([])
+			->updateMarkUp($chatId, $messageID, "Старое меню", []);
 
 		return $response;
 	}
