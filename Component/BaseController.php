@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Component;
 
 use ReflectionClass;
+use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Core\BaseComponent;
@@ -13,6 +14,7 @@ abstract class BaseController extends BaseComponent {
 
 	protected $action;
 
+	/**@var IResponse $response */
 	protected $response;
 
 	protected $basePath;

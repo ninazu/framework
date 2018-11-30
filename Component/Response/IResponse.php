@@ -72,6 +72,8 @@ interface IResponse {
 
 	public function addNotify($typeEnum, $message, array $extra = []);
 
+	public function addExtra(array $extra);
+
 	public function setHeaders(array $data);
 
 	public function sendError($errorCode, $data, array $extra = []);
