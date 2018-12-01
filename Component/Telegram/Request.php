@@ -30,7 +30,7 @@ class Request extends BaseReader {
 		} else {
 			$to->isCallback = isset($content['callback_query']);
 			$to->isInline = false;
-			$to->command = $to->isCallback ? $content['callback_query']['data'] : $content['message']['text'];
+			$to->command = $to->isCallback ? $content['callback_query']['data'] : isset($content['message']['text']) ? $content['message']['text'] : null;
 			$to->isPrivateChat = ($to->isCallback ? $content['callback_query']['message']['chat']['type'] : $content['message']['chat']['type']) === 'private';
 			$to->messageId = $to->isCallback ? $content['callback_query']['message']['message_id'] : null;
 			$fromData = $to->isCallback ? $content['callback_query']['from'] : $content['message']['from'];
