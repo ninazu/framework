@@ -23,6 +23,8 @@ class Bot extends BaseComponent {
 
 	protected $botName;
 
+	protected $debug = false;
+
 	public $request;
 
 	public $response;
@@ -201,13 +203,13 @@ class Bot extends BaseComponent {
 			foreach ($buttons as $buttonText => $buttonData) {
 				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
 					$lineButton[][] = [
-						'text' => $buttonText,
+						'text' => $this->debug ? "{$buttonData}_{$buttonText}" : $buttonText,
 						'url' => $buttonData,
 						'callback_data' => (string)$buttonData,
 					];
 				} else {
 					$lineButton[] = [
-						'text' => $buttonText,
+						'text' => $this->debug ? "{$buttonData}_{$buttonText}" : $buttonText,
 						'callback_data' => (string)$buttonData,
 					];
 				}
