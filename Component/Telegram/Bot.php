@@ -40,11 +40,13 @@ class Bot extends BaseComponent {
 
 	public function setPredefinedButton($buttons) {
 		if ($this->debug) {
+			$this->getApplication()->response->addExtra($buttons);
 			foreach ($buttons as $index => $buttonRow) {
 				foreach ($buttonRow as $index2 => $button) {
 					$buttons[$index][$index2]['text'] = "{$button['callback_data']}_{$button['text']}";
 				}
 			}
+			$this->getApplication()->response->addExtra($buttons);
 		}
 
 		$this->predefinedMarkUp = $buttons;
