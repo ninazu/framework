@@ -23,6 +23,7 @@ class Request extends BaseReader {
 		if (!empty($content['inline_query'])) {
 			$to->isCallback = false;
 			$to->isInline = true;
+			$to->isInvite = false;
 			$to->command = $content['inline_query']['query'];
 			$to->isPrivateChat = false;
 			$to->messageId = $content['inline_query']['id'];
@@ -30,7 +31,8 @@ class Request extends BaseReader {
 		} else {
 			$to->isCallback = isset($content['callback_query']);
 			$to->isInline = false;
-			$to->command = $to->isCallback ? $content['callback_query']['data'] : isset($content['message']['text']) ? $content['message']['text'] : null;
+			$to->isInvite = isset($content['message']['new_chat_members']);
+			$to->command = $to->isCallback ? $content['callback_query']['data'] : $to->isInvite ? $content['message']['new_chat_members'] : $content['message']['text'];
 			$to->isPrivateChat = ($to->isCallback ? $content['callback_query']['message']['chat']['type'] : $content['message']['chat']['type']) === 'private';
 			$to->messageId = $to->isCallback ? $content['callback_query']['message']['message_id'] : null;
 			$fromData = $to->isCallback ? $content['callback_query']['from'] : $content['message']['from'];
