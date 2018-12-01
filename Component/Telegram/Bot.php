@@ -85,6 +85,13 @@ class Bot extends BaseComponent {
 		return $this->request('sendMessage', $params);
 	}
 
+	public function inlineResponse($requestID, $results) {
+		return $this->request('answerInlineQuery', array(
+			'inline_query_id' => $requestID,
+			'results' => $results,
+		));
+	}
+
 	public function deleteTemporaryMessage($chatId, $messageID) {
 		$response = $this->request('deleteMessage', [
 			'chat_id' => $chatId,

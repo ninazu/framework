@@ -25,7 +25,7 @@ class Request extends BaseReader {
 			$to->isInline = true;
 			$to->command = $content['inline_query']['query'];
 			$to->isPrivateChat = false;
-			$to->messageId = null;
+			$to->messageId = $content['inline_query']['id'];
 			$fromData = $content['inline_query']['from'];
 		} else {
 			$to->isCallback = isset($content['callback_query']);
