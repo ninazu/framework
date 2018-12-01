@@ -63,7 +63,7 @@ class Response extends BaseComponent implements IResponse {
 	public function sendError($errorCode, $data, array $extra = []) {
 		$this->setStatusCode($errorCode);
 		$this->setData($data);
-		$this->extra = $extra;
+		$this->addExtra($extra);
 		$this->render();
 		$this->end(self::EXIT_CODE_WITH_ERROR);
 
