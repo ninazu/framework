@@ -13,17 +13,28 @@ class Request extends BaseReader {
 	public function __construct() {
 		parent::__construct();
 
-		return;
-
 		$content = json_decode(file_get_contents("php://input"), true);
-
 		$to = new ToBot();
-		$to->isCallback = isset($content['callback_query']);
-		$to->command = $to->isCallback ? $content['callback_query']['data'] : $content['message']['text'];
-		$to->messageId = $to->isCallback ? $content['callback_query']['message']['message_id'] : null;
-		$to->isPrivateChat = ($to->isCallback ? $content['callback_query']['message']['chat']['type'] : $content['message']['chat']['type']) === 'private';
 
-		$fromData = $to->isCallback ? $content['callback_query']['from'] : $content['message']['from'];
+		if (!empty($content['message']['forward_from']) && empty($content['message']['forward_from']['is_bot'])) {
+			$to->forwardFrom = $content['message']['forward_from']['id'];
+		}
+
+		if (!empty($content['inline_query'])) {
+			$to->isCallback = false;
+			$to->isInline = true;
+			$to->command = $content['inline_query']['query'];
+			$to->isPrivateChat = false;
+			$to->messageId = null;
+			$fromData = $content['inline_query']['from'];
+		} else {
+			$to->isCallback = isset($content['callback_query']);
+			$to->isInline = false;
+			$to->command = $to->isCallback ? $content['callback_query']['data'] : $content['message']['text'];
+			$to->isPrivateChat = ($to->isCallback ? $content['callback_query']['message']['chat']['type'] : $content['message']['chat']['type']) === 'private';
+			$to->messageId = $to->isCallback ? $content['callback_query']['message']['message_id'] : null;
+			$fromData = $to->isCallback ? $content['callback_query']['from'] : $content['message']['from'];
+		}
 
 		$from = new FromUser();
 		$from->userId = $fromData['id'];
