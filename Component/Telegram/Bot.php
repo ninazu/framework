@@ -160,7 +160,7 @@ class Bot extends BaseComponent {
 				'chat_id' => $chatID,
 				'message_id' => $messageID,
 				'parse_mode' => 'HTML',
-				'text' => "{$text}.",
+				'text' => "{$text}",
 				'reply_markup' => [
 					'inline_keyboard' => $this->prepareQueryButtons($buttons, $inline),
 				],
