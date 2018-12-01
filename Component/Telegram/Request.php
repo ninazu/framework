@@ -13,6 +13,8 @@ class Request extends BaseReader {
 	public function __construct() {
 		parent::__construct();
 
+		return;
+
 		$content = json_decode(file_get_contents("php://input"), true);
 
 		$to = new ToBot();
