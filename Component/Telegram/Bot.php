@@ -42,9 +42,10 @@ class Bot extends BaseComponent {
 		if ($this->debug) {
 			$this->getApplication()->response->addExtra($buttons);
 			foreach ($buttons as $index => $buttonRow) {
-				foreach ($buttonRow as $index2 => $button) {
-					$buttons[$index][$index2]['text'] = "{$button['callback_data']}_{$button['text']}";
-				}
+//				foreach ($buttonRow as $index2 => $button) {
+//					$buttons[$index][$index2]['text'] = "{$button['callback_data']}_{$button['text']}";
+//				}
+				$buttons[$index]['text'] = "{$buttonRow['callback_data']}_{$buttonRow['text']}";
 			}
 			$this->getApplication()->response->addExtra($buttons);
 		}
