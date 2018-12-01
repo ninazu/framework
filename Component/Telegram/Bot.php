@@ -186,13 +186,13 @@ class Bot extends BaseComponent {
 			foreach ($buttons as $buttonText => $buttonData) {
 				if (preg_match('/^(https?\:\/\/|tg\:\/\/)/', $buttonData)) {
 					$inlineKeyboard[][] = [
-						'text' => $buttonText,
+						'text' => $this->debug ? "{$buttonData}_{$buttonText}" : $buttonText,
 						'url' => $buttonData,
 						'callback_data' => (string)$buttonData,
 					];
 				} else {
 					$inlineKeyboard[][] = [
-						'text' => $buttonText,
+						'text' => $this->debug ? "{$buttonData}_{$buttonText}" : $buttonText,
 						'callback_data' => (string)$buttonData,
 					];
 				}
