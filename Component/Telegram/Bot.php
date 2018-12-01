@@ -85,12 +85,16 @@ class Bot extends BaseComponent {
 		return $this->request('sendMessage', $params);
 	}
 
+	public function deleteTemporaryMessage($chatId, $messageID) {
+		$response = $this->request('deleteMessage', [
+			'chat_id' => $chatId,
+			'message_id' => $messageID,
+		]);
+
+		return $response;
+	}
+
 	public function deleteMessage($chatId, $messageID) {
-//		//Only 48 Hours
-//		$response = $this->request('deleteMessage', [
-//			'chat_id' => $chatId,
-//			'message_id' => $messageID,
-//		]);
 
 		$response = $this
 			->setPredefinedButton([])
