@@ -2,7 +2,6 @@
 
 namespace vendor\ninazu\framework\Core\Handler;
 
-use Exception;
 use Throwable;
 
 interface IHandler {
@@ -13,7 +12,7 @@ interface IHandler {
 
 	public function handlerShutdown();
 
-	public function handlerException(Exception $exception);
+	public function handlerException(Throwable $exception);
 
 	public function setAutoLoader($autoLoaders);
 }

@@ -7,6 +7,7 @@ use ReflectionClass;
 use ReflectionException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
 use vendor\ninazu\framework\Component\Db\Mysql;
+use vendor\ninazu\framework\Component\Mail\Mail;
 use vendor\ninazu\framework\Component\Request;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\Router;
@@ -22,6 +23,7 @@ use vendor\ninazu\framework\Core\Handler\IHandler;
  * @property User $user
  * @property IMysql $db
  * @property Translate $lang
+ * @property Mail $mail
  * */
 abstract class BaseApplication {
 
@@ -171,6 +173,7 @@ abstract class BaseApplication {
 			'user' => User::class,
 			'db' => Mysql::class,
 			'lang' => Translate::class,
+			'mail' => Mail::class,
 		];
 
 		foreach ($components as $name => $class) {
