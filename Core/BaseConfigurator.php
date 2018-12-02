@@ -7,12 +7,15 @@ use ReflectionProperty;
 
 abstract class BaseConfigurator {
 
+	protected $config;
+
 	/**
 	 * @param array $config
 	 *
 	 * @throws \ReflectionException
 	 */
 	protected function fillFromConfig($config) {
+		$this->config = $config;
 		$reflect = new ReflectionClass($this);
 		$props = $reflect->getProperties(ReflectionProperty::IS_PROTECTED);
 

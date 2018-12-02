@@ -1,25 +1,40 @@
 <?php
 
-use vendor\ninazu\framework\component\Telegram\v2\Message\CallbackQuery;
-use vendor\ninazu\framework\component\Telegram\v2\Message\ChosenInlineResult;
-use vendor\ninazu\framework\component\Telegram\v2\Message\InlineQuery;
-use vendor\ninazu\framework\component\Telegram\v2\Message\Message;
-use vendor\ninazu\framework\component\Telegram\v2\Message\PreCheckoutQuery;
-use vendor\ninazu\framework\component\Telegram\v2\Message\ShippingQuery;
+namespace vendor\ninazu\framework\Component\Telegram\v2;
+
+use TypeError;
 
 class Request {
 
+	private $message;
+
 	public function __construct($data) {
+		if (!$data = json_decode($data, true)) {
+			throw new TypeError('Invalid input data');
+		}
+
 		$map = [
-			'message' => Message::class,
-			'edited_message' => Message::class,
-			'channel_post' => Message::class,
-			'edited_channel_post' => Message::class,
-			'inline_query' => InlineQuery::class,
-			'chosen_inline_result' => ChosenInlineResult::class,
-			'callback_query' => CallbackQuery::class,
-			'shipping_query' => ShippingQuery::class,
-			'pre_checkout_query' => PreCheckoutQuery::class,
+			'message' => 'Message',
+			'edited_message' => 'Message',
+			'channel_post' => 'Message',
+			'edited_channel_post' => 'Message',
+			'inline_query' => 'InlineQuery',
+			'chosen_inline_result' => 'ChosenInlineResult',
+			'callback_query' => 'CallbackQuery',
+			'shipping_query' => 'ShippingQuery',
+			'pre_checkout_query' => 'PreCheckoutQuery',
 		];
+
+		foreach ($map as $key => $class) {
+			if (isset($data[$key])) {
+				$className = __NAMESPACE__ . "\Message\{$class}";
+				$this->message = new $className($data[$key]);
+				break;
+			}
+		}
+
+		if (!$this->message) {
+			throw new TypeError('Undefined message type');
+		}
 	}
 }
