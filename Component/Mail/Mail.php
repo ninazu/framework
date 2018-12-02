@@ -22,10 +22,18 @@ class Mail extends BaseComponent {
 			$transport = (new Swift_SmtpTransport(
 				$this->transport['host'],
 				$this->transport['port'],
-				$this->transport['encryption']
+				isset($this->transport['encryption']) ? $this->transport['encryption'] : null
 			))
-				->setUsername($this->transport['login'])
+				->setUsername($this->transport['username'])
 				->setPassword($this->transport['password']);
+//
+//			$transport->setStreamOptions([
+//				'ssl' => [
+//					'allow_self_signed' => true,
+//					'verify_peer' => false,
+//					'verify_peer_name' => false,
+//				],
+//			]);
 		}
 
 		$this->mailer = new Swift_Mailer($transport);
@@ -33,7 +41,7 @@ class Mail extends BaseComponent {
 
 	public function send(array $to, string $subject, string $text) {
 		$message = (new Swift_Message($subject))
-			->setFrom(isset($this->transport['login']) ? $this->transport['login'] : $this->getApplication()->getAdminEmail())
+			->setFrom(isset($this->transport['username']) ? $this->transport['username'] : $this->getApplication()->getAdminEmail())
 			->setTo($to)
 			->setBody($text);
 
