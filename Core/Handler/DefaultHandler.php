@@ -64,7 +64,9 @@ class DefaultHandler implements IHandler {
 	 * @throws Exception
 	 */
 	public function handlerException(Throwable $exception) {
-		ob_end_clean();
+		if (ob_get_length()) {
+			ob_end_clean();
+		}
 
 		try {
 			Environment::getEnvironment();
@@ -96,7 +98,7 @@ class DefaultHandler implements IHandler {
 				$data = "Unexpected server error {$md5}";
 
 				if ($this->application->getAdminEmail()) {
-					mail($this->application->getAdminEmail(), "DEBUG {$md5}", print_r([
+					$this->application->mail->send([$this->application->getAdminEmail()], "DEBUG {$md5}", print_r([
 						$exception->getMessage(),
 						$extra,
 					], true));
