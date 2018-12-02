@@ -22,7 +22,7 @@ class Mail extends BaseComponent {
 			$transport = (new Swift_SmtpTransport(
 				$this->transport['host'],
 				$this->transport['port'],
-				$this->transport['encryption'],
+				$this->transport['encryption']
 			))
 				->setUsername($this->transport['login'])
 				->setPassword($this->transport['password']);
