@@ -3,7 +3,7 @@
 namespace vendor\ninazu\framework\Component\Telegram\v2\Message;
 
 /**
- * @property string gameShortName
+ * @property string $gameShortName
  * @property int $id
  */
 class CallbackQuery extends BaseMessage {
