@@ -27,7 +27,7 @@ class Request {
 
 		foreach ($map as $key => $class) {
 			if (isset($data[$key])) {
-				$className = __NAMESPACE__ . "\Message\{$class}";
+				$className = __NAMESPACE__ . "\Message\\{$class}";
 				$this->message = new $className($data[$key]);
 				break;
 			}

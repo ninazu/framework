@@ -31,4 +31,8 @@ class Bot extends BaseComponent {
 		$this->response = new Response();
 		$this->response->fillFromConfig($this->config);
 	}
+
+	public function getSecureParam() {
+		return $this->secureParam;
+	}
 }
