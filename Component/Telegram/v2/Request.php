@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Component\Telegram\v2;
 
 use TypeError;
+use vendor\ninazu\framework\Component\Telegram\v2\Message\DummyMessage;
 
 class Request {
 
@@ -10,7 +11,9 @@ class Request {
 
 	public function __construct($data) {
 		if (!$data = json_decode($data, true)) {
-			throw new TypeError('Invalid input data');
+			$this->message = new DummyMessage();
+
+			return;
 		}
 
 		$map = [
