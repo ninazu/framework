@@ -30,7 +30,7 @@ class Response extends BaseConfigurator {
 			$params['text'] = $data;
 		}
 
-		return $this->request('callback_query_id', $params);
+		return $this->request('answerCallbackQuery', $params);
 	}
 
 	private static function isURL(string $data) {
