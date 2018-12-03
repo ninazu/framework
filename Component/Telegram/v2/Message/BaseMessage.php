@@ -2,7 +2,9 @@
 
 namespace vendor\ninazu\framework\Component\Telegram\v2\Message;
 
-abstract class BaseMessage {
+use vendor\ninazu\framework\Component\Telegram\v2\BaseReader;
 
-	abstract public function __construct($data);
+abstract class BaseMessage extends BaseReader {
+
+	abstract public function setData($data);
 }

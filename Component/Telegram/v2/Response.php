@@ -17,7 +17,27 @@ class Response extends BaseConfigurator {
 		]);
 	}
 
-	private function request($method, $parameters = []) {
+	public function answerCallbackQuery(string $queryId, string $data, bool $showAlert = false, int $cacheTime = 0) {
+		$params = [
+			'callback_query_id' => $queryId,
+			'show_alert' => $showAlert,
+			'cache_time' => $cacheTime,
+		];
+
+		if (self::isURL($data)) {
+			$params['url'] = $data;
+		} else {
+			$params['text'] = $data;
+		}
+
+		return $this->request('callback_query_id', $params);
+	}
+
+	private static function isURL(string $data) {
+		return preg_match('/^(https?\:\/\/|tg\:\/\/)/', $data);
+	}
+
+	private function request(string $method, array $parameters = []) {
 		if (!is_string($method)) {
 			throw new TypeError("Method name must be a string");
 		}
@@ -39,7 +59,7 @@ class Response extends BaseConfigurator {
 		return $this->checkResponse($handle, $parameters);
 	}
 
-	private function checkResponse($handle, $parameters) {
+	private function checkResponse($handle, array $parameters) {
 		if (!$response = curl_exec($handle)) {
 			$errorNumber = curl_errno($handle);
 			$errorText = curl_error($handle);
