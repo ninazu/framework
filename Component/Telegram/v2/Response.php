@@ -17,6 +17,14 @@ class Response extends BaseConfigurator {
 		]);
 	}
 
+	public function sendMessage($chatID, $message) {
+		return $this->request('sendMessage', [
+			'chat_id' => $chatID,
+			'text' => $message,
+			'parse_mode' => 'HTML',
+		]);
+	}
+
 	public function answerCallbackQuery(string $queryId, string $data, bool $showAlert = false, int $cacheTime = 0) {
 		$params = [
 			'callback_query_id' => $queryId,
