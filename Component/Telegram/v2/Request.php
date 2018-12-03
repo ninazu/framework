@@ -9,9 +9,13 @@ class Request {
 
 	private $message;
 
+	private $rawData;
+
 	public function __construct($data) {
+		$this->rawData = $data;
+
 		if (!$data = json_decode($data, true)) {
-			$this->message = new DummyMessage();
+			$this->message = new DummyMessage($data);
 
 			return;
 		}
@@ -39,6 +43,10 @@ class Request {
 		if (!$this->message) {
 			throw new TypeError('Undefined message type');
 		}
+	}
+
+	public function getRawData() {
+		return $this->rawData;
 	}
 
 	public function getMessage() {
