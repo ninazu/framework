@@ -40,4 +40,8 @@ class Request {
 			throw new TypeError('Undefined message type');
 		}
 	}
+
+	public function getMessage() {
+		return $this->message;
+	}
 }
