@@ -7,6 +7,6 @@ abstract class BaseMessage {
 	protected $messageId;
 
 	public function __construct($data) {
-		$this->messageId = $data['message_id'];
+		//$this->messageId = @$data['message_id'];
 	}
 }
