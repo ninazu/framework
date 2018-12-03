@@ -3,10 +3,12 @@
 namespace vendor\ninazu\framework\Component\Telegram\v2;
 
 use TypeError;
+use vendor\ninazu\framework\Component\Telegram\v2\Message\BaseMessage;
 use vendor\ninazu\framework\Component\Telegram\v2\Message\DummyMessage;
 
 class Request {
 
+	/**@var BaseMessage $message */
 	private $message;
 
 	private $rawData;
@@ -15,7 +17,7 @@ class Request {
 		$this->rawData = $data;
 
 		if (!$data = json_decode($data, true)) {
-			$this->message = new DummyMessage($data);
+			$this->message = new DummyMessage();
 
 			return;
 		}
@@ -35,7 +37,9 @@ class Request {
 		foreach ($map as $key => $class) {
 			if (isset($data[$key])) {
 				$className = __NAMESPACE__ . "\Message\\{$class}";
-				$this->message = new $className($data[$key]);
+				$this->message = new $className();
+				$this->message->setData($data[$key]);
+
 				break;
 			}
 		}
