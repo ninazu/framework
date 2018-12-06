@@ -74,7 +74,17 @@ class Router extends BaseComponent {
 				continue;
 			}
 
+			$order = [];
+
 			foreach ($rules as $pattern => $target) {
+				$order[$pattern] = isset($target[2]) ? $target[2] : null;
+			}
+
+			arsort($order);
+
+			foreach (array_keys($order) as $pattern) {
+				$target = $rules[$pattern];
+
 				if (preg_match('/^\((.*?)\)/', $pattern, $matches)) {
 					$methods = explode("|", $matches[1]);
 
