@@ -11,13 +11,20 @@ class Response extends BaseConfigurator {
 
 	protected $key;
 
-	public function install() {
+	public function install(): array {
 		return $this->request('setWebhook', [
 			'url' => $this->webHookUrl,
 		]);
 	}
 
-	public function sendMessage($chatID, $message) {
+	public function sendGame(int $chatID, string $gameName): array {
+		return $this->request('sendMessage', [
+			'chat_id' => $chatID,
+			'game_short_name' => $gameName,
+		]);
+	}
+
+	public function sendMessage(int $chatID, string $message): array {
 		return $this->request('sendMessage', [
 			'chat_id' => $chatID,
 			'text' => $message,
@@ -25,7 +32,7 @@ class Response extends BaseConfigurator {
 		]);
 	}
 
-	public function answerCallbackQuery(string $queryId, string $data, bool $showAlert = false, int $cacheTime = 0) {
+	public function answerCallbackQuery(string $queryId, string $data, bool $showAlert = false, int $cacheTime = 0): array {
 		$params = [
 			'callback_query_id' => $queryId,
 			'show_alert' => $showAlert,
@@ -41,11 +48,11 @@ class Response extends BaseConfigurator {
 		return $this->request('answerCallbackQuery', $params);
 	}
 
-	private static function isURL(string $data) {
+	private static function isURL(string $data): bool {
 		return preg_match('/^(https?\:\/\/|tg\:\/\/)/', $data);
 	}
 
-	private function request(string $method, array $parameters = []) {
+	private function request(string $method, array $parameters = []): array {
 		if (!is_string($method)) {
 			throw new TypeError("Method name must be a string");
 		}
@@ -67,7 +74,7 @@ class Response extends BaseConfigurator {
 		return $this->checkResponse($handle, $parameters);
 	}
 
-	private function checkResponse($handle, array $parameters) {
+	private function checkResponse($handle, array $parameters): array {
 		if (!$response = curl_exec($handle)) {
 			$errorNumber = curl_errno($handle);
 			$errorText = curl_error($handle);
