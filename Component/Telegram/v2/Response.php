@@ -21,6 +21,8 @@ class Response extends BaseConfigurator {
 		return $this->request('sendMessage', [
 			'chat_id' => $chatID,
 			'game_short_name' => $gameName,
+			'text' => "Play",
+			'parse_mode' => 'HTML',
 		]);
 	}
 
