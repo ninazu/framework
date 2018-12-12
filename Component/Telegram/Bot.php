@@ -103,7 +103,6 @@ class Bot extends BaseComponent {
 	}
 
 	public function deleteMessage($chatId, $messageID) {
-
 		$response = $this
 			->setPredefinedButton([])
 			->updateMarkUp(
@@ -162,6 +161,7 @@ class Bot extends BaseComponent {
 				'message_id' => $messageID,
 				'parse_mode' => 'HTML',
 				'text' => "{$text}",
+				'disable_notification' => true,
 				'reply_markup' => [
 					'inline_keyboard' => $this->prepareQueryButtons($buttons, $inline),
 				],
