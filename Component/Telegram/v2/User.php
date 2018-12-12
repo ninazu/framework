@@ -3,7 +3,7 @@
 namespace vendor\ninazu\framework\Component\Telegram\v2;
 
 /**
- * @property int $user_id
+ * @property int $id
  * @property bool $is_bot
  * @property bool $first_name
  * @property bool $last_name
