@@ -77,6 +77,7 @@ class Bot extends BaseComponent {
 			'chat_id' => $chatID,
 			'text' => $message,
 			'parse_mode' => 'HTML',
+			'disable_notification' => true,
 			'reply_markup' => [
 				'inline_keyboard' => $this->prepareQueryButtons($buttons, $inline),
 			],
