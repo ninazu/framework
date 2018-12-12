@@ -38,4 +38,12 @@ abstract class BaseReader {
 
 		$this->attributes[$name] = $value;
 	}
+
+	public function load(array $data) {
+		foreach (array_keys($this->attributes) as $key) {
+			if (isset($data[$key])) {
+				$this->$key = $data[$key];
+			}
+		}
+	}
 }

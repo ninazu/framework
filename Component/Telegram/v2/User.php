@@ -1,6 +1,6 @@
 <?php
 
-use vendor\ninazu\framework\Component\Telegram\v2\BaseReader;
+namespace vendor\ninazu\framework\Component\Telegram\v2;
 
 /**
  * @property int $user_id
