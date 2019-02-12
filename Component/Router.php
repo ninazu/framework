@@ -7,6 +7,7 @@ use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Core\BaseComponent;
+use vendor\ninazu\framework\Helper\Formatter;
 
 /**
  * @inheritdoc
@@ -43,10 +44,6 @@ class Router extends BaseComponent {
 		$this->process($skipOnNotFound);
 		//TODO Unload handlers
 
-	}
-
-	public static function convertToCamelCase($string) {
-		return str_replace('-', '', ucwords($string, '-'));
 	}
 
 	/**
@@ -117,7 +114,7 @@ class Router extends BaseComponent {
 
 				$controllerName = str_replace($placeholders['search'], $placeholders['replace'], $controllerName);
 				$actionName = str_replace($placeholders['search'], $placeholders['replace'], $actionName);
-				$controllerName = $this->namespace . 'controllers\\' . self::convertToCamelCase($controllerName) . 'Controller';
+				$controllerName = $this->namespace . 'controllers\\' . Formatter::dashToCamelCase($controllerName) . 'Controller';
 
 				return $this->run($controllerName, $actionName, $params);
 			}
@@ -215,7 +212,7 @@ class Router extends BaseComponent {
 		 * @var BaseController $controller
 		 */
 		$controller = new $controllerName($this->getApplication(), []);
-		$actionMethodName = 'action' . self::convertToCamelCase($actionName);
+		$actionMethodName = 'action' . Formatter::dashToCamelCase($actionName);
 
 		if (!method_exists($controller, $actionMethodName)) {
 			$this->sendNotFound();
