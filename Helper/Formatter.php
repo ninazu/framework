@@ -81,4 +81,15 @@ class Formatter {
 
 		return $words;
 	}
+	
+	public static function camelCaseToDash($string) {
+		$words = preg_split('/(^[^A-Z]+|[A-Z][^A-Z]+)/', $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
+		$words = array_map('strtolower', $words);
+
+		return implode('-', $words);
+	}
+
+	public static function dashToCamelCase($string) {
+		return str_replace('-', '', ucwords($string, '-'));
+	}
 }
