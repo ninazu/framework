@@ -49,11 +49,11 @@ class Request {
 		}
 	}
 
-	public function getRawData() {
+	public function getRawData(): string {
 		return $this->rawData;
 	}
 
-	public function getMessage() {
+	public function getMessage(): array {
 		return $this->message;
 	}
 }
