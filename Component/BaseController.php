@@ -7,6 +7,7 @@ use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Core\BaseComponent;
+use vendor\ninazu\framework\Helper\Formatter;
 
 abstract class BaseController extends BaseComponent {
 
@@ -36,7 +37,7 @@ abstract class BaseController extends BaseComponent {
 		$this->checkAccess();
 
 		if ($this->beforeAction()) {
-			$response = call_user_func_array([$this, 'action' . Router::convertToCamelCase($action)], $methodParams);
+			$response = call_user_func_array([$this, 'action' . Formatter::dashToCamelCase($action)], $methodParams);
 			$this->afterAction($response);
 		} else {
 			$this->getApplication()->response->sendError(Response::STATUS_CODE_PRECONDITION_FAILED, null);
