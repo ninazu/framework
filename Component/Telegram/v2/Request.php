@@ -53,7 +53,7 @@ class Request {
 		return $this->rawData;
 	}
 
-	public function getMessage(): array {
+	public function getMessage(): BaseMessage {
 		return $this->message;
 	}
 }
