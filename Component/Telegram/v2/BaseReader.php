@@ -9,7 +9,7 @@ abstract class BaseReader {
 
 	protected $attributes = [];
 
-	//protected $attributesAlias = [];
+	protected $attributesAlias = [];
 
 	public function __construct() {
 		$reflect = new ReflectionClass(static::class);
@@ -18,11 +18,11 @@ abstract class BaseReader {
 		if (preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)\*?(\s+(\w+))?/', $phpDoc, $matches)) {
 			$this->attributes = array_fill_keys($matches[4], null);
 
-//			foreach ($matches[6] as $index => $value) {
-//				if (!empty($value)) {
-//					$this->attributesAlias[$matches[4][$index]] = $value;
-//				}
-//			}
+			foreach ($matches[6] as $index => $value) {
+				if (!empty($value)) {
+					$this->attributesAlias[$matches[4][$index]] = $value;
+				}
+			}
 		}
 
 		return;
