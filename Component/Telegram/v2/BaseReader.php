@@ -9,12 +9,31 @@ abstract class BaseReader {
 
 	protected $attributes = [];
 
+	protected $attributesAlias = [];
+
+//	protected $attributesIsArray = [];
+
 	public function __construct() {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
-		preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)/', $phpDoc, $matches);
 
-		$this->attributes = array_fill_keys($matches[4], null);
+		if (preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)\*?(\s+(\w+))?/', $phpDoc, $matches)) {
+			$this->attributes = array_fill_keys($matches[4], null);
+
+//			foreach ($matches[3] as $index => $value) {
+//				if (!empty($value)) {
+//					$this->attributesIsArray[$matches[4][$index]] = null;
+//				}
+//			}
+
+			foreach ($matches[6] as $index => $value) {
+				if (!empty($value)) {
+					$this->attributesAlias[$matches[4][$index]] = $value;
+				}
+			}
+		}
+
+		return;
 	}
 
 	public function getAttributes() {
@@ -26,6 +45,10 @@ abstract class BaseReader {
 			$class = static::class;
 			throw new Exception("Get attribute undefined '{$class}::{$name}'");
 		}
+
+//		if (array_key_exists($name, $this->attributesIsArray) && is_null($this->attributes[$name])) {
+//			$this->attributes[$name] = new ArrayObject();
+//		}
 
 		return $this->attributes[$name];
 	}
@@ -41,9 +64,12 @@ abstract class BaseReader {
 
 	public function load(array $data) {
 		foreach (array_keys($this->attributes) as $key) {
+			//TODO alias
 			if (isset($data[$key])) {
 				$this->$key = $data[$key];
 			}
 		}
+
+		return $this;
 	}
 }
