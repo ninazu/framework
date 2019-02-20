@@ -33,4 +33,14 @@ class Message extends BaseMessage {
 			}
 		}
 	}
+
+	public function getEntities() {
+		$list = [];
+
+		foreach ($this->entities as $index => $entity) {
+			$list[$index] = substr($this->text,$entity->offset, $entity->length);
+		}
+
+		return $list;
+	}
 }
