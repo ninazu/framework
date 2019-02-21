@@ -52,9 +52,10 @@ abstract class BaseReader {
 
 	public function load(array $data) {
 		foreach (array_keys($this->attributes) as $key) {
-			//TODO alias
 			if (isset($data[$key])) {
 				$this->$key = $data[$key];
+			} elseif (isset($this->attributesAlias[$key]) && isset($data[$this->attributesAlias[$key]])) {
+				$this->$key = $data[$this->attributesAlias[$key]];
 			}
 		}
 
