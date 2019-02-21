@@ -12,4 +12,17 @@ namespace vendor\ninazu\framework\Component\Telegram\v2;
  */
 class User extends BaseReader {
 
+	public function getSafeName() {
+		$name = trim("{$this->firstName} {$this->lastName}");
+
+		if (empty($name)) {
+			$name = $this->username;
+		}
+
+		if (empty($name)) {
+			$name = $this->id;
+		}
+
+		return $name;
+	}
 }
