@@ -45,7 +45,7 @@ class Message extends BaseMessage {
 	public function getEntities() {
 		$list = [];
 
-		if(!empty($this->entities)){
+		if (!empty($this->attributes['entities'])) {
 			foreach ($this->entities as $index => $entity) {
 				$list[$index] = substr($this->text, $entity->offset, $entity->length);
 			}

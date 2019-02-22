@@ -81,7 +81,7 @@ class Formatter {
 
 		return $words;
 	}
-	
+
 	public static function camelCaseToDash($string) {
 		$words = preg_split('/(^[^A-Z]+|[A-Z][^A-Z]+)/', $string, -1, PREG_SPLIT_NO_EMPTY | PREG_SPLIT_DELIM_CAPTURE);
 		$words = array_map('strtolower', $words);
@@ -91,5 +91,38 @@ class Formatter {
 
 	public static function dashToCamelCase($string) {
 		return str_replace('-', '', ucwords($string, '-'));
+	}
+
+	public static function strPad($value, $padLength, $padString = ' ', $padType = STR_PAD_RIGHT) {
+		$strLen = mb_strlen($value);
+		$padStrLen = mb_strlen($padString);
+
+		if (!$strLen && ($padType == STR_PAD_RIGHT || $padType == STR_PAD_LEFT)) {
+			$strLen = 1;
+		}
+
+		if (!$padLength || !$padStrLen || $padLength <= $strLen) {
+			return $value;
+		}
+
+		$result = null;
+
+		if ($padType == STR_PAD_BOTH) {
+			$length = ($padLength - $strLen) / 2;
+			$repeat = ceil($length / $padStrLen);
+			$result = mb_substr(str_repeat($padString, $repeat), 0, floor($length)) . $value . mb_substr(str_repeat($padString, $repeat), 0, ceil($length));
+		} else {
+			$repeat = ceil($strLen - $padStrLen + $padLength);
+
+			if ($padType == STR_PAD_RIGHT) {
+				$result = $value . str_repeat($padString, $repeat);
+				$result = mb_substr($result, 0, $padLength);
+			} else if ($padType == STR_PAD_LEFT) {
+				$result = str_repeat($padString, $repeat);
+				$result = mb_substr($result, 0, $padLength - (($strLen - $padStrLen) + $padStrLen)) . $value;
+			}
+		}
+
+		return $result;
 	}
 }
