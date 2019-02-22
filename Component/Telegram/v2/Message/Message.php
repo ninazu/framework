@@ -10,6 +10,7 @@ use vendor\ninazu\framework\Component\Telegram\v2\User;
  * @property User $from
  * @property Chat $chat
  * @property Message $reply reply_to_message
+ * @property User $forward forward_from*
  * @property string $text*
  * @property MessageEntity[] $entities*
  * @property MessageEntity[] $captionEntities* caption_entities
