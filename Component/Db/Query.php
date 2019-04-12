@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IBasicQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQuery;
 use vendor\ninazu\framework\Component\Db\Interfaces\IQueryPrepare;
@@ -37,11 +37,11 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->connection = $connection;
 	}
 
-	/**@internal
-	 *
-	 * @param string $query
+	/**@param string $query
 	 *
 	 * @return $this
+	 * @internal
+	 *
 	 */
 	public function setQuery($query) {
 		$this->query = $query;
@@ -234,17 +234,17 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	public static function checkColumnName($name) {
 		//TODO Database.Schema.Table.Column
 		if (!preg_match('/[0-9,a-z,A-Z_]/', $name)) {
-			throw new ErrorException('Unsupported character in columnName');
+			throw new RuntimeException('Unsupported character in columnName');
 		}
 	}
 
 	/**
-	 * @deprecated
-	 *
 	 * @param int $index
 	 * @param int $value
 	 * @param string $sql
 	 * @param array $placeholders
+	 * @deprecated
+	 *
 	 */
 	protected static function replaceIntegerPlaceholder($index, $value, &$sql, array &$placeholders) {
 		$value = (string)$value;
@@ -270,7 +270,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 	protected static function replacePlaceholder($placeholder, $value, &$sql, array &$placeholders) {
 		if (!array_key_exists($placeholder, $placeholders)) {
-			throw new ErrorException("Placeholder '{$placeholder}' missing in query");
+			throw new RuntimeException("Placeholder '{$placeholder}' missing in query");
 		}
 
 		$strValueLen = strlen($value);
@@ -303,7 +303,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		}
 
 		if (empty($placeholder)) {
-			throw new ErrorException('Empty string passed as placeholder');
+			throw new RuntimeException('Empty string passed as placeholder');
 		}
 
 		if ($placeholder[0] !== ':') {
@@ -313,16 +313,16 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$autoDelimiter = $autoPlaceholder ? '_' : '';
 
 		if (preg_match("/[^:a-z0-9{$autoDelimiter}]/i", $placeholder)) {
-			throw new ErrorException("Wrong placeholder name '{$placeholder}'");
+			throw new RuntimeException("Wrong placeholder name '{$placeholder}'");
 		}
 
 		if (!is_scalar($value)) {
 			if (is_array($value)) {
-				throw new ErrorException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
+				throw new RuntimeException("You try bind array as placeholder '{$placeholder}', if you sure to bind a list of values, use method bindArray(\$placeholder, \$arrayOfValues)");
 			} else if ($value instanceof \DateTime) {
 				$value = $value->format(Mysql::FORMAT_DATETIME);
 			} else {
-				throw new ErrorException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
+				throw new RuntimeException("Trying to bind not scalar nor DateTime as placeholder '{$placeholder}'");
 			}
 		}
 	}

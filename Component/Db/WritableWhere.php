@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 
 trait WritableWhere {
 
@@ -15,11 +15,11 @@ trait WritableWhere {
 	 *
 	 * @return $this
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function setWhere($condition) {
 		if (!is_string($condition)) {
-			throw new ErrorException('Wrong value of condition');
+			throw new RuntimeException('Wrong value of condition');
 		}
 
 		$condition = trim($condition);

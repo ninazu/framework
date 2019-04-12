@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Response;
 
-use ErrorException;
+use RuntimeException;
 use Exception;
 use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\HtmlSerializer;
@@ -138,7 +138,7 @@ class Response extends BaseComponent implements IResponse {
 	 */
 	protected function serializeBody() {
 		if (!array_key_exists($this->contentType, $this->serializers)) {
-			throw new ErrorException("Not implemented yet. Please set Serializer for '{$this->contentType}'");
+			throw new RuntimeException("Not implemented yet. Please set Serializer for '{$this->contentType}'");
 		}
 
 		$serializer = $this->serializers[$this->contentType];
@@ -150,7 +150,7 @@ class Response extends BaseComponent implements IResponse {
 		}
 
 		if (!Reflector::isInstanceOf($className, BaseSerializer::class)) {
-			throw new ErrorException("{$className} must be implemented of " . BaseSerializer::class);
+			throw new RuntimeException("{$className} must be implemented of " . BaseSerializer::class);
 		}
 
 		/**@var BaseSerializer $serializer */

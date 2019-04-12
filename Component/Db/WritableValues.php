@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 
 trait WritableValues {
 
@@ -16,11 +16,11 @@ trait WritableValues {
 	 *
 	 * @return $this
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function setValues($values, $validate) {
 		if (empty($values)) {
-			throw new ErrorException('Empty values');
+			throw new RuntimeException('Empty values');
 		}
 
 		if ($validate) {
@@ -30,7 +30,7 @@ trait WritableValues {
 		} elseif ($values instanceof Expression) {
 			$this->values = $values;
 		} else {
-			throw new ErrorException('Wrong values. Expected ArrayOfArray or Expression');
+			throw new RuntimeException('Wrong values. Expected ArrayOfArray or Expression');
 		}
 
 		return $this;

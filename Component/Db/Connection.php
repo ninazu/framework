@@ -3,7 +3,7 @@
 namespace vendor\ninazu\framework\Component\Db;
 
 use DateTime;
-use ErrorException;
+use RuntimeException;
 use PDO;
 use PDOException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IConnection;
@@ -313,18 +313,18 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	 *
 	 * @return $this
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 * @throws MySQLException
 	 */
 	public function connect() {
 		foreach (['hostname', 'username', 'schema'] as $property) {
 			if (empty($this->$property)) {
-				throw new ErrorException("Required connection parameter '{$property}' is not set or empty for database configuration: {$this->name}");
+				throw new RuntimeException("Required connection parameter '{$property}' is not set or empty for database configuration: {$this->name}");
 			}
 		}
 
 		if ($this->maxQueryLength < 1024) {
-			throw new ErrorException("Parameter 'maxQueryLength' is less than 1kb or wrong for database connection: {$this->name}");
+			throw new RuntimeException("Parameter 'maxQueryLength' is less than 1kb or wrong for database connection: {$this->name}");
 		}
 
 		//Overwrite params

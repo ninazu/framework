@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Form\Validator;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Form\BaseValidator;
 use vendor\ninazu\framework\Helper\Reflector;
 
@@ -20,14 +20,14 @@ class DateValidator extends BaseValidator {
 
 	public function init() {
 		if (isset($this->format) && !array_key_exists($this->format, Reflector::getConstantGroup(self::class, "FORMAT_")->getData())) {
-			throw new ErrorException('Invalid date format');
+			throw new RuntimeException('Invalid date format');
 		}
 
 		if ($this->min) {
 			$dateTime = date_create_from_format(self::FORMAT_DATETIME, $this->min);
 
 			if (!$dateTime) {
-				throw new ErrorException('Invalid min format');
+				throw new RuntimeException('Invalid min format');
 			}
 
 			$this->min = $dateTime->format($this->format);
@@ -37,7 +37,7 @@ class DateValidator extends BaseValidator {
 			$dateTime = date_create_from_format(self::FORMAT_DATETIME, $this->max);
 
 			if (!$dateTime) {
-				throw new ErrorException('Invalid max format');
+				throw new RuntimeException('Invalid max format');
 			}
 
 			$this->max = $dateTime->format($this->format);

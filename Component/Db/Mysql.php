@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
 use vendor\ninazu\framework\Core\BaseComponent;
 
@@ -29,7 +29,7 @@ class Mysql extends BaseComponent implements IMysql {
 	public function connect($name) {
 		if (!isset($this->connections[$name])) {
 			if (!isset($this->databases[$name])) {
-				throw new ErrorException("Database '{$name}' not configured");
+				throw new RuntimeException("Database '{$name}' not configured");
 			}
 
 			$connection = new Connection($name, $this);

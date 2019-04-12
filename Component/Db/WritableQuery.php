@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 
 abstract class WritableQuery extends Query {
 
@@ -20,11 +20,11 @@ abstract class WritableQuery extends Query {
 	 *
 	 * @return $this
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function setTable($tableName) {
 		if (!is_string($tableName)) {
-			throw new ErrorException('Wrong value of tableName');
+			throw new RuntimeException('Wrong value of tableName');
 		}
 
 		$this->table = " {$tableName}";

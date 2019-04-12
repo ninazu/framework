@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Form;
 
-use ErrorException;
+use RuntimeException;
 use ReflectionClass;
 use vendor\ninazu\framework\Helper\Reflector;
 
@@ -87,7 +87,7 @@ abstract class BaseForm {
 			list($fields, $class, $params) = array_pad($rule, 3, []);
 
 			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseValidator::class)) {
-				throw new ErrorException("Invalid class of validator '{$class}'");
+				throw new RuntimeException("Invalid class of validator '{$class}'");
 			}
 
 			foreach ($fields as $field) {
@@ -127,7 +127,7 @@ abstract class BaseForm {
 			list($fields, $class, $params) = array_pad($config, 3, []);
 
 			if (!is_string($class) || !Reflector::isInstanceOf($class, BaseProcessor::class)) {
-				throw new ErrorException("Invalid class of processor '{$class}'");
+				throw new RuntimeException("Invalid class of processor '{$class}'");
 			}
 
 			/**@var BaseProcessor $processor */

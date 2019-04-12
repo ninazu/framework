@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Form\Processor;
 
-use ErrorException;
+use RuntimeException;
 use ReflectionFunction;
 use vendor\ninazu\framework\Form\BaseProcessor;
 
@@ -18,7 +18,7 @@ class SetProcessor extends BaseProcessor {
 	public function init() {
 		if (isset($this->callback)) {
 			if (!is_callable($this->callback)) {
-				throw new ErrorException('Callback must be callable');
+				throw new RuntimeException('Callback must be callable');
 			}
 
 			//$f = new ReflectionFunction($this->callback);
@@ -37,7 +37,7 @@ class SetProcessor extends BaseProcessor {
 				$data[$field] = $this->value;
 			}
 		} else {
-			throw new ErrorException('SetProcessor without callback or value in params');
+			throw new RuntimeException('SetProcessor without callback or value in params');
 		}
 	}
 }

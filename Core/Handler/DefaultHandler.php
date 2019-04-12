@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Core\Handler;
 
-use ErrorException;
+use RuntimeException;
 use Exception;
 use Throwable;
 use vendor\ninazu\framework\Component\Response\Response;
@@ -35,11 +35,11 @@ class DefaultHandler implements IHandler {
 	 *
 	 * @return bool
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function handlerError($error_code, $message, $file = null, $line = null) {
 		if ($error_code) {
-			throw new ErrorException($message, $error_code, 0, $file, $line);
+			throw new RuntimeException($message, $error_code, 0, $file, $line);
 		}
 
 		return true;
@@ -52,7 +52,7 @@ class DefaultHandler implements IHandler {
 		$error = error_get_last();
 
 		if ($error) {
-			$this->handlerException(new ErrorException($error['message'], $error['type'], 0, $error['file'], $error['line']));
+			$this->handlerException(new RuntimeException($error['message'], $error['type'], 0, $error['file'], $error['line']));
 		}
 
 		exit(0);

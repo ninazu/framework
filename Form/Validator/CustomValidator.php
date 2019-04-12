@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Form\Validator;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Form\BaseValidator;
 
 class CustomValidator extends BaseValidator {
@@ -42,7 +42,7 @@ class CustomValidator extends BaseValidator {
 
 	protected function init() {
 		if (!is_callable($this->callback)) {
-			throw new ErrorException('Callback must be callable');
+			throw new RuntimeException('Callback must be callable');
 		}
 
 		$this->callback->bindTo($this);
