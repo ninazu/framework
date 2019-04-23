@@ -98,8 +98,8 @@ class Reflector {
 	 *
 	 * @return $this
 	 *
-	 * @throws RuntimeException
-	 * @throws ReflectionException
+	 *  RuntimeException
+
 	 */
 	public static function getConstantGroup($className, $needle) {
 		if (!isset(self::$constantGroup[$className][$needle])) {

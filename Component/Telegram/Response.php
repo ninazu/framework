@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Telegram\v2;
 
+use http\Exception\RuntimeException;
 use TypeError;
 use vendor\ninazu\framework\Core\BaseConfigurator;
 
@@ -54,11 +55,11 @@ class Response extends BaseConfigurator {
 
 	private function request(string $method, array $parameters = []): array {
 		if (!is_string($method)) {
-			throw new TypeError("Method name must be a string");
+			throw new RuntimeException("Method name must be a string");
 		}
 
 		if (!is_array($parameters)) {
-			throw new TypeError("Parameters must be an array");
+			throw new RuntimeException("Parameters must be an array");
 		}
 
 		$handle = curl_init("https://api.telegram.org/bot{$this->key}/" . $method);

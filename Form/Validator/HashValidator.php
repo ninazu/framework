@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Form\Validator;
 
 use Exception;
+use http\Exception\RuntimeException;
 
 class HashValidator extends StringValidator {
 
@@ -19,7 +20,7 @@ class HashValidator extends StringValidator {
 		];
 
 		if (!array_key_exists($this->hash, $hashLength)) {
-			throw new Exception("Hash '{$this->hash}' not implemented");
+			throw new RuntimeException("Hash '{$this->hash}' not implemented");
 		}
 
 		$this->min = $hashLength[$this->hash];

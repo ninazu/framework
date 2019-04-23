@@ -58,7 +58,7 @@ class Response extends BaseComponent implements IResponse {
 	 * @param array $extra
 	 *
 	 * @return bool
-	 * @throws Exception
+
 	 */
 	public function sendError($errorCode, $data, array $extra = []) {
 		$this->setStatusCode($errorCode);
@@ -74,7 +74,7 @@ class Response extends BaseComponent implements IResponse {
 	 * @param $data
 	 *
 	 * @return bool
-	 * @throws Exception
+
 	 */
 	public function sendOk($data) {
 		$this->setStatusCode(self::STATUS_CODE_OK);
@@ -94,7 +94,7 @@ class Response extends BaseComponent implements IResponse {
 	/**
 	 * @param $data
 	 *
-	 * @throws Exception
+
 	 */
 	public function setHeaders(array $data) {
 		foreach ($data as $key => $value) {
@@ -123,7 +123,7 @@ class Response extends BaseComponent implements IResponse {
 	}
 
 	/**
-	 * @throws Exception
+
 	 */
 	protected function render() {
 		$response = $this->serializeBody();
@@ -134,7 +134,7 @@ class Response extends BaseComponent implements IResponse {
 
 	/**
 	 * @return string
-	 * @throws Exception
+
 	 */
 	protected function serializeBody() {
 		if (!array_key_exists($this->contentType, $this->serializers)) {
@@ -162,7 +162,7 @@ class Response extends BaseComponent implements IResponse {
 	/**
 	 * @param $response
 	 *
-	 * @throws Exception
+
 	 */
 	protected function renderHeaders($response) {
 		if ($this->forceHttpStatus) {

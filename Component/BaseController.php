@@ -81,7 +81,7 @@ abstract class BaseController extends BaseComponent {
 	}
 
 	/**
-	 * @throws \Exception
+
 	 */
 	protected function checkAccess() {
 		$permissions = $this->access();
@@ -122,7 +122,7 @@ abstract class BaseController extends BaseComponent {
 	/**
 	 * @param $response
 	 *
-	 * @throws \Exception
+
 	 */
 	protected function afterAction($response) {
 		$this->getApplication()->response->sendOk($response);

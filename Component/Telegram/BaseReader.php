@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Component\Telegram\v2;
 
 use Exception;
+use http\Exception\RuntimeException;
 use ReflectionClass;
 
 abstract class BaseReader {
@@ -35,7 +36,7 @@ abstract class BaseReader {
 	public function &__get($name) {
 		if (!array_key_exists($name, $this->attributes)) {
 			$class = static::class;
-			throw new Exception("Get attribute undefined '{$class}::{$name}'");
+			throw new RuntimeException("Get attribute undefined '{$class}::{$name}'");
 		}
 
 		return $this->attributes[$name];
@@ -44,7 +45,7 @@ abstract class BaseReader {
 	public function __set($name, $value) {
 		if (!array_key_exists($name, $this->attributes)) {
 			$class = static::class;
-			throw new Exception("Set attribute undefined '{$class}::{$name}'");
+			throw new RuntimeException("Set attribute undefined '{$class}::{$name}'");
 		}
 
 		$this->attributes[$name] = $value;

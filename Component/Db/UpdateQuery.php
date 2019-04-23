@@ -59,7 +59,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @param array $values
 	 *
 	 * @return bool
-	 * @throws RuntimeException
+
 	 */
 	public function validateValues(array &$values) {
 		foreach ($values as $key => $value) {

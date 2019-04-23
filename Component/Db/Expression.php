@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
+use http\Exception\RuntimeException;
 use vendor\ninazu\framework\Helper\Formatter;
 
 class Expression {
@@ -10,7 +11,7 @@ class Expression {
 
 	public function __construct($expression) {
 		if (!is_string($expression)) {
-			throw new InvalidArgumentException('SQL Expression must be a string');
+			throw new RuntimeException('SQL Expression must be a string');
 		}
 
 		$this->expression = $expression;

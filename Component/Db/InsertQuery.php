@@ -24,7 +24,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 *
 	 * @return InsertQuery
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function setColumns(array $columns) {
 		$unique = [];
@@ -221,7 +221,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * Split a query
 	 *
 	 * @return array
-	 * @throws MySQLException
+
 	 */
 	protected function prepareSql() {
 		$onErrorIgnore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';

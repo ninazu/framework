@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Core\Handler;
 
 use Exception;
+use http\Exception\RuntimeException;
 
 class AutoLoader {
 
@@ -22,7 +23,7 @@ class AutoLoader {
 	 * @param string $namespace The prefix/namespace, with trailing '\\'
 	 * @param array|string $paths $paths The PSR-4 base directories
 	 *
-	 * @throws Exception
+	 
 	 */
 	public static function addSources($namespace, $paths) {
 		$length = strlen($namespace);

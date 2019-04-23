@@ -15,7 +15,7 @@ trait WritableWhere {
 	 *
 	 * @return $this
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function setWhere($condition) {
 		if (!is_string($condition)) {

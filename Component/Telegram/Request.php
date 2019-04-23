@@ -45,7 +45,7 @@ class Request {
 		}
 
 		if (!$this->message) {
-			throw new TypeError('Undefined message type');
+			throw new RuntimeException('Undefined message type');
 		}
 	}
 

@@ -9,8 +9,6 @@ abstract class BaseComponent extends BaseConfigurator {
 	/**
 	 * @param BaseApplication $application
 	 * @param array $config
-	 *
-	 * @throws \ReflectionException
 	 */
 	public function __construct(BaseApplication $application, array $config) {
 		$this->fillFromConfig($config);

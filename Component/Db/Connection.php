@@ -95,7 +95,7 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	 * @param string $query
 	 * @param array|null $binds
 	 *
-	 * @throws MySQLException
+
 	 */
 	public function error($message, $query = '', array $binds = null) {
 		$exception = new MySQLException($this->hostname, $this->name, $message, $query, $binds, $this->PDOOptions);
@@ -238,7 +238,7 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	 *
 	 * @return bool|null|\PDOStatement
 	 *
-	 * @throws MySQLException
+
 	 */
 	public function execute($instance, $query, array $binds, array $bindsInteger) {
 		try {
@@ -313,8 +313,8 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	 *
 	 * @return $this
 	 *
-	 * @throws RuntimeException
-	 * @throws MySQLException
+
+
 	 */
 	public function connect() {
 		foreach (['hostname', 'username', 'schema'] as $property) {

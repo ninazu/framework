@@ -20,7 +20,7 @@ abstract class WritableQuery extends Query {
 	 *
 	 * @return $this
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function setTable($tableName) {
 		if (!is_string($tableName)) {

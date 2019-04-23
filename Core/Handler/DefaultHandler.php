@@ -35,7 +35,7 @@ class DefaultHandler implements IHandler {
 	 *
 	 * @return bool
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function handlerError($error_code, $message, $file = null, $line = null) {
 		if ($error_code) {
@@ -46,7 +46,7 @@ class DefaultHandler implements IHandler {
 	}
 
 	/**
-	 * @throws Exception
+	 
 	 */
 	public function handlerShutdown() {
 		$error = error_get_last();
@@ -58,11 +58,6 @@ class DefaultHandler implements IHandler {
 		exit(0);
 	}
 
-	/**
-	 * @param Throwable $exception
-	 *
-	 * @throws Exception
-	 */
 	public function handlerException(Throwable $exception) {
 		if (ob_get_length()) {
 			ob_end_clean();
@@ -118,7 +113,7 @@ class DefaultHandler implements IHandler {
 	/**
 	 * @param $autoLoaders
 	 *
-	 * @throws Exception
+	 
 	 */
 	public function setAutoLoader($autoLoaders) {
 		foreach ($autoLoaders as $namespace => $paths) {

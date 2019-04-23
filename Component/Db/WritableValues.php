@@ -16,7 +16,7 @@ trait WritableValues {
 	 *
 	 * @return $this
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function setValues($values, $validate) {
 		if (empty($values)) {

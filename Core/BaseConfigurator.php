@@ -11,8 +11,6 @@ abstract class BaseConfigurator {
 
 	/**
 	 * @param array $config
-	 *
-	 * @throws \ReflectionException
 	 */
 	protected function fillFromConfig($config) {
 		$this->config = $config;

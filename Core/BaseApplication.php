@@ -45,7 +45,7 @@ abstract class BaseApplication {
 	 * @param array $autoLoaders
 	 * @param IHandler|null $handler
 	 *
-	 * @throws \Exception
+
 	 */
 	public function __construct(array $autoLoaders, IHandler $handler = null) {
 		//Prevent error printing
@@ -75,8 +75,8 @@ abstract class BaseApplication {
 	 *
 	 * @return null
 	 *
-	 * @throws RuntimeException
-	 * @throws ReflectionException
+
+
 	 */
 	public function __get($name) {
 		if (!isset($this->components[$name])) {
@@ -123,7 +123,7 @@ abstract class BaseApplication {
 	 *
 	 * @return Router
 	 *
-	 * @throws RuntimeException
+
 	 */
 	public function setup(callable $configCallback) {
 		if ($this->initialized) {

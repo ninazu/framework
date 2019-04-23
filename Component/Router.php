@@ -38,7 +38,7 @@ class Router extends BaseComponent {
 	/**
 	 * @param bool $skipOnNotFound Send 404 error
 	 *
-	 * @throws Exception
+	 
 	 */
 	public function execute($skipOnNotFound = false) {
 		$this->process($skipOnNotFound);
@@ -50,7 +50,7 @@ class Router extends BaseComponent {
 	 * @param $skipOnNotFound
 	 *
 	 * @return mixed|null
-	 * @throws Exception
+	 
 	 */
 	private function process($skipOnNotFound) {
 		$application = $this->getApplication();
@@ -199,7 +199,7 @@ class Router extends BaseComponent {
 	 *
 	 * @return mixed response
 	 *
-	 * @throws Exception
+	 
 	 */
 	private function run($controllerName, $actionName, $routeParams) {
 		if (!class_exists($controllerName)) {
@@ -253,7 +253,7 @@ class Router extends BaseComponent {
 	}
 
 	/**
-	 * @throws Exception
+	 
 	 */
 	private function sendNotFound() {
 		$this->getApplication()->response->sendError(Response::STATUS_CODE_NOT_FOUND, null);
