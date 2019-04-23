@@ -39,7 +39,7 @@ class DefaultHandler implements IHandler {
 	 */
 	public function handlerError($error_code, $message, $file = null, $line = null) {
 		if ($error_code) {
-			throw new RuntimeException($message, $error_code, 0, $file, $line);
+			throw new Exception($message, $error_code);
 		}
 
 		return true;
@@ -52,7 +52,7 @@ class DefaultHandler implements IHandler {
 		$error = error_get_last();
 
 		if ($error) {
-			$this->handlerException(new RuntimeException($error['message'], $error['type'], 0, $error['file'], $error['line']));
+			$this->handlerException(new RuntimeException($error['message'], $error['type']));
 		}
 
 		exit(0);
