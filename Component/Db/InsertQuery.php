@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IInsert;
 use vendor\ninazu\framework\Component\Db\Interfaces\IInsertResult;
 use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
@@ -24,14 +24,14 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 *
 	 * @return InsertQuery
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function setColumns(array $columns) {
 		$unique = [];
 
 		foreach ($columns as $index => $column) {
 			if (!is_string($column)) {
-				throw new ErrorException("Column {$index} must be string");
+				throw new RuntimeException("Column {$index} must be string");
 			}
 
 			self::checkColumnName($column);
@@ -109,18 +109,18 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 */
 	public function onDuplicate($scenario, $columnUpdate = []) {
 		if (!in_array($scenario, [self::ON_DUPLICATE_UPDATE, self::ON_DUPLICATE_IGNORE])) {
-			throw new ErrorException('Wrong value of onDuplicate. Please use InsertQuery::ON_DUPLICATE_* constants');
+			throw new RuntimeException('Wrong value of onDuplicate. Please use InsertQuery::ON_DUPLICATE_* constants');
 		}
 
 		$this->onError = $scenario;
 
 		if ($scenario === self::ON_DUPLICATE_UPDATE) {
 			if (empty($columnUpdate)) {
-				throw new ErrorException('Empty values for update');
+				throw new RuntimeException('Empty values for update');
 			}
 
 			if (!empty($this->columnsUpdate)) {
-				throw new ErrorException('Column for update already set');
+				throw new RuntimeException('Column for update already set');
 			}
 
 			$placeholders = [];
@@ -172,7 +172,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 */
 	public function priority($scenario) {
 		if (!in_array($scenario, [self::PRIORITY_DELAYED, self::PRIORITY_HIGH, self::PRIORITY_LOW])) {
-			throw new ErrorException('Wrong value of priority. Please use InsertQuery::PRIORITY_* constants');
+			throw new RuntimeException('Wrong value of priority. Please use InsertQuery::PRIORITY_* constants');
 		}
 
 		$this->priority = $scenario;
@@ -187,7 +187,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		$firstRow = reset($values);
 
 		if (!is_array($firstRow)) {
-			throw new ErrorException('Values is not arrays of array');
+			throw new RuntimeException('Values is not arrays of array');
 		}
 
 		$columnNames = array_keys($firstRow);
@@ -198,7 +198,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 		foreach ($values as $index => $row) {
 			if (array_diff($columnNames, array_keys($row))) {
-				throw new ErrorException("Keys of Values are different for index #{$index}");
+				throw new RuntimeException("Keys of Values are different for index #{$index}");
 			}
 
 			foreach ($columnNames as $column) {
@@ -209,7 +209,7 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 						continue;
 					}
 
-					throw new ErrorException("One of the rows does not contain value for the column '{$column}'.");
+					throw new RuntimeException("One of the rows does not contain value for the column '{$column}'.");
 				}
 			}
 		}

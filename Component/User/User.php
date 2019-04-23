@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\User;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Reflector;
 
@@ -15,11 +15,11 @@ class User extends BaseComponent implements IUser {
 
 	public function init() {
 		if (empty($this->modelClass)) {
-			throw new ErrorException("User component must be configure 'modelClass'");
+			throw new RuntimeException("User component must be configure 'modelClass'");
 		}
 
 		if (!Reflector::isInstanceOf($this->modelClass, IUserIdentity::class)) {
-			throw new ErrorException("UserModel must be implement IUserIdentity");
+			throw new RuntimeException("UserModel must be implement IUserIdentity");
 		}
 
 		$this->setIdentity(new $this->modelClass());

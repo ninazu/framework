@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Response\Serializer;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
 use vendor\ninazu\framework\Component\Response\BaseSerializer;
 
@@ -18,7 +18,7 @@ class DbSerializer extends BaseSerializer {
 
 	public function init() {
 		if (empty($this->db) || empty($this->connectionName) || empty($this->table) || empty($this->column)) {
-			throw new ErrorException('Invalid config');
+			throw new RuntimeException('Invalid config');
 		}
 	}
 

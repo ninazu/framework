@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Core;
 
-use ErrorException;
+use RuntimeException;
 use ReflectionClass;
 use ReflectionException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
@@ -75,7 +75,7 @@ abstract class BaseApplication {
 	 *
 	 * @return null
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 * @throws ReflectionException
 	 */
 	public function __get($name) {
@@ -88,7 +88,7 @@ abstract class BaseApplication {
 			$className = $this->components[$name]['class'];
 
 			if ((new ReflectionClass($className))->isAbstract()) {
-				throw new ErrorException("Component '{$name}' must be extend");
+				throw new RuntimeException("Component '{$name}' must be extend");
 			}
 
 			$this->$name = new $className($this, $this->components[$name]['config']);
@@ -123,11 +123,11 @@ abstract class BaseApplication {
 	 *
 	 * @return Router
 	 *
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function setup(callable $configCallback) {
 		if ($this->initialized) {
-			throw new ErrorException('Application already initialized');
+			throw new RuntimeException('Application already initialized');
 		}
 
 		$this->initialized = true;
@@ -151,7 +151,7 @@ abstract class BaseApplication {
 			$params = array_replace_recursive(isset($this->components[$name]) && is_array($this->components[$name]) ? $this->components[$name] : [], $params);
 
 			if (!array_key_exists('class', $params) || empty($params['class']) || !is_string($params['class'])) {
-				throw new ErrorException("Missing 'class' of component '{$name}'");
+				throw new RuntimeException("Missing 'class' of component '{$name}'");
 			}
 
 			//Delayed component loader

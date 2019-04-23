@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 
 trait OrderAndLimit {
 
@@ -16,7 +16,7 @@ trait OrderAndLimit {
 	public function orderBy(array $sequence) {
 		foreach ($sequence as $expression) {
 			if (!$expression instanceof Expression) {
-				throw new ErrorException('Order by must be array of expressions');
+				throw new RuntimeException('Order by must be array of expressions');
 			}
 		}
 
@@ -30,7 +30,7 @@ trait OrderAndLimit {
 	 */
 	public function limit($count) {
 		if (!is_int($count) && !is_numeric($count)) {
-			throw new ErrorException('Wrong value for limit');
+			throw new RuntimeException('Wrong value for limit');
 		}
 
 		$this->limit = "\nLIMIT {$count}";

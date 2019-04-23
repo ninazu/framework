@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IUpdate;
 use vendor\ninazu\framework\Component\Db\Interfaces\IUpdateResult;
 use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
@@ -47,7 +47,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 */
 	public function priority($scenario) {
 		if ($scenario != self::PRIORITY_LOW) {
-			throw new ErrorException('Wrong value of priority. Please use InsertQuery::PRIORITY_* constants');
+			throw new RuntimeException('Wrong value of priority. Please use InsertQuery::PRIORITY_* constants');
 		}
 
 		$this->priority = $scenario;
@@ -59,12 +59,12 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @param array $values
 	 *
 	 * @return bool
-	 * @throws ErrorException
+	 * @throws RuntimeException
 	 */
 	public function validateValues(array &$values) {
 		foreach ($values as $key => $value) {
 			if (is_numeric($key)) {
-				throw new ErrorException('Values must be a associative array');
+				throw new RuntimeException('Values must be a associative array');
 			}
 
 			self::checkColumnName($key);
@@ -76,7 +76,7 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 					continue;
 				}
 
-				throw new ErrorException('Value must be a scalar');
+				throw new RuntimeException('Value must be a scalar');
 			}
 		}
 

@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use PDO;
 use ReflectionFunction;
 use vendor\ninazu\framework\Component\Db\Interfaces\ISelect;
@@ -102,7 +102,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		$this->callBackParamsCount = (new ReflectionFunction($callback))->getNumberOfParameters();
 
 		if ($this->callBackParamsCount < 1 || $this->callBackParamsCount > 3) {
-			throw new ErrorException('Invalid number of params for handler callback. Expected number of params 1-3');
+			throw new RuntimeException('Invalid number of params for handler callback. Expected number of params 1-3');
 		}
 
 		$this->callBack = $callback;
@@ -119,7 +119,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	 */
 	public function queryAll() {
 		if (is_null($this->statement)) {
-			throw new ErrorException('The execute() method must be called before fetchAll()');
+			throw new RuntimeException('The execute() method must be called before fetchAll()');
 		}
 
 		$result = $this->statement->fetchAll(PDO::FETCH_ASSOC);
@@ -139,7 +139,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		}
 
 		if (!is_null($this->columnName) && !empty($result) && !isset($result[0][$this->columnName])) {
-			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");
+			throw new RuntimeException("Column '{$this->columnName}' does not exist in result set.");
 		}
 
 		$keyedResult = $this->processRows($result, $callBack);
@@ -220,7 +220,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 		$callBack = $this->callBack;
 
 		if (!is_null($this->columnName) && !empty($result) && !isset($result[0][$this->columnName])) {
-			throw new ErrorException("Column '{$this->columnName}' does not exist in result set.");
+			throw new RuntimeException("Column '{$this->columnName}' does not exist in result set.");
 		}
 
 		$keyedResult = $this->processRows($result, $callBack);

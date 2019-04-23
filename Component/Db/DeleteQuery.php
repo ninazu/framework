@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use ErrorException;
+use RuntimeException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IDelete;
 use vendor\ninazu\framework\Component\Db\Interfaces\IDeleteResult;
 use vendor\ninazu\framework\Helper\Formatter;
@@ -39,7 +39,7 @@ class DeleteQuery extends WritableQuery implements IDelete, IDeleteResult {
 
 	public function priority($scenario) {
 		if (!in_array($scenario, [self::PRIORITY_LOW])) {
-			throw new ErrorException('Wrong value of priority. Please use DeleteQuery::PRIORITY_* constants');
+			throw new RuntimeException('Wrong value of priority. Please use DeleteQuery::PRIORITY_* constants');
 		}
 
 		$this->priority = $scenario;
