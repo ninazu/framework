@@ -10,7 +10,7 @@ class Expression {
 
 	public function __construct($expression) {
 		if (!is_string($expression)) {
-			throw new \InvalidArgumentException('SQL Expression must be a string');
+			throw new InvalidArgumentException('SQL Expression must be a string');
 		}
 
 		$this->expression = $expression;

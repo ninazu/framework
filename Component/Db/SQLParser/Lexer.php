@@ -3,12 +3,13 @@
 namespace vendor\ninazu\framework\Component\Db\SQLParser;
 
 use Exception;
+use http\Exception\RuntimeException;
 
 class Lexer {
 
 	public static function parse($sql) {
 		if (!is_string($sql)) {
-			throw new Exception($sql);
+			throw new RuntimeException($sql);
 		}
 
 		$tokens = [];
