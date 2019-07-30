@@ -75,8 +75,7 @@ abstract class BaseApplication {
 	 *
 	 * @return null
 	 *
-
-
+	 * @throws ReflectionException
 	 */
 	public function __get($name) {
 		if (!isset($this->components[$name])) {
@@ -123,7 +122,7 @@ abstract class BaseApplication {
 	 *
 	 * @return Router
 	 *
-
+	 * @throws \Exception
 	 */
 	public function setup(callable $configCallback) {
 		if ($this->initialized) {
@@ -132,6 +131,10 @@ abstract class BaseApplication {
 
 		$this->initialized = true;
 		$config = $configCallback();
+
+		if (isset($config['environments']) && Environment::isInitialized() && array_key_exists(Environment::getEnvironment(), $config['environments'])) {
+			$config = array_replace_recursive($config, $config['environments'][Environment::getEnvironment()]);
+		}
 
 		if (isset($config['adminEmail'])) {
 			$this->adminEmail = $config['adminEmail'];

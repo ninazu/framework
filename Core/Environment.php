@@ -3,7 +3,6 @@
 namespace vendor\ninazu\framework\Core;
 
 use Exception;
-use http\Exception\RuntimeException;
 
 class Environment {
 
@@ -79,7 +78,7 @@ class Environment {
 	 *
 	 * @return string
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function getEnvironment() {
 		self::checkInitialize();
@@ -92,7 +91,7 @@ class Environment {
 	 *
 	 * @param $value
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function setEnvironment($value) {
 		switch ($value) {
@@ -102,7 +101,7 @@ class Environment {
 			case self::ENVIRONMENT_LOCAL:
 				break;
 			default:
-				throw new RuntimeException('Wrong environment allowed Environment::ENVIRONMENT_* const');
+				throw new Exception('Wrong environment allowed Environment::ENVIRONMENT_* const');
 		}
 
 		self::$environment = $value;
@@ -118,7 +117,7 @@ class Environment {
 	/**
 	 * @return bool
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function isProduction() {
 		self::checkInitialize();
@@ -129,7 +128,7 @@ class Environment {
 	/**
 	 * @return bool
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function isLocal() {
 		self::checkInitialize();
@@ -140,7 +139,7 @@ class Environment {
 	/**
 	 * @return bool
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function isDevelopment() {
 		self::checkInitialize();
@@ -151,7 +150,7 @@ class Environment {
 	/**
 	 * @return bool
 	 *
-	 
+	 * @throws Exception
 	 */
 	public static function isStaging() {
 		self::checkInitialize();
@@ -241,11 +240,11 @@ class Environment {
 	}
 
 	/**
-	 
+	 * @throws Exception
 	 */
 	private static function checkInitialize() {
 		if (!self::isInitialized()) {
-			throw new RuntimeException('Environment not initialized, call Environment::setEnvironment(Environment::ENVIRONMENT_*)');
+			throw new Exception('Environment not initialized, call Environment::setEnvironment(Environment::ENVIRONMENT_*)');
 		}
 	}
 }
