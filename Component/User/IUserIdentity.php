@@ -4,21 +4,27 @@ namespace vendor\ninazu\framework\Component\User;
 
 interface IUserIdentity {
 
-	public function getRole();
+	/**
+	 * @return int
+	 */
+	public function getRole(): ?int;
 
 	/**
 	 * @param int $role
 	 *
 	 * @return $this
 	 */
-	public function setRole($role);
+	public function setRole(int $role): IUserIdentity;
 
-	public function getId();
+	/**
+	 * @return int
+	 */
+	public function getId(): int;
 
 	/**
 	 * @param int $id
 	 *
 	 * @return $this
 	 */
-	public function setId($id);
+	public function setId(int $id): IUserIdentity;
 }
