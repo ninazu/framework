@@ -3,6 +3,7 @@
 namespace vendor\ninazu\framework\Component;
 
 use Exception;
+use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
@@ -199,7 +200,7 @@ class Router extends BaseComponent {
 	 *
 	 * @return mixed response
 	 *
-	 
+	 * @throws ReflectionException
 	 */
 	private function run($controllerName, $actionName, $routeParams) {
 		if (!class_exists($controllerName)) {
