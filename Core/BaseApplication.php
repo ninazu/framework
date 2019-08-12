@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Core;
 
+use Exception;
 use RuntimeException;
 use ReflectionClass;
 use ReflectionException;
@@ -45,7 +46,7 @@ abstract class BaseApplication {
 	 * @param array $autoLoaders
 	 * @param IHandler|null $handler
 	 *
-
+	 * @throws Exception
 	 */
 	public function __construct(array $autoLoaders, IHandler $handler = null) {
 		//Prevent error printing
@@ -68,6 +69,12 @@ abstract class BaseApplication {
 		$this::$app = $this;
 	}
 
+	public function __destruct() {
+//TODO
+//		restore_exception_handler();
+//		restore_error_handler();
+	}
+
 	/**
 	 * Delayed loader of component
 	 *
@@ -77,7 +84,7 @@ abstract class BaseApplication {
 	 *
 	 * @throws ReflectionException
 	 */
-	public function __get($name) {
+	public function __get(string $name) {
 		if (!isset($this->components[$name])) {
 			return null;
 		}
@@ -96,6 +103,14 @@ abstract class BaseApplication {
 
 		return $this->$name;
 	}
+//
+//	public function getComponentConfig(string $name): array {
+//		if (!Environment::isTest()) {
+//			throw new RuntimeException('getComponentConfig allow only for Environment::TEST');
+//		}
+//
+//		return $this->components[$name]['config'];
+//	}
 
 	/**
 	 * Getter of basePath
@@ -130,9 +145,13 @@ abstract class BaseApplication {
 		}
 
 		$this->initialized = true;
-		$config = $configCallback();
+		$config = $configCallback($this);
 
 		if (isset($config['environments']) && Environment::isInitialized() && array_key_exists(Environment::getEnvironment(), $config['environments'])) {
+			if (Environment::isTest()) {
+				Environment::set("previousConfigState", $config);
+			}
+
 			$config = array_replace_recursive($config, $config['environments'][Environment::getEnvironment()]);
 		}
 

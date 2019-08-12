@@ -8,11 +8,13 @@ class Environment {
 
 	const ENVIRONMENT_PRODUCTION = 'prod';
 
-	const ENVIRONMENT_STAGING = 'test';
+	const ENVIRONMENT_STAGING = 'staging';
 
 	const ENVIRONMENT_DEVELOPMENT = 'dev';
 
 	const ENVIRONMENT_LOCAL = 'local';
+
+	const ENVIRONMENT_TEST = 'auto_test';
 
 	private static $environment;
 
@@ -99,6 +101,7 @@ class Environment {
 			case self::ENVIRONMENT_PRODUCTION:
 			case self::ENVIRONMENT_STAGING:
 			case self::ENVIRONMENT_LOCAL:
+			case self::ENVIRONMENT_TEST:
 				break;
 			default:
 				throw new Exception('Wrong environment allowed Environment::ENVIRONMENT_* const');
@@ -156,6 +159,17 @@ class Environment {
 		self::checkInitialize();
 
 		return self::ENVIRONMENT_STAGING == self::$environment;
+	}
+
+	/**
+	 * @return bool
+	 *
+	 * @throws Exception
+	 */
+	public static function isTest() {
+		self::checkInitialize();
+
+		return self::ENVIRONMENT_TEST == self::$environment;
 	}
 
 	/**

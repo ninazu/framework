@@ -2,7 +2,6 @@
 
 namespace vendor\ninazu\framework\Component;
 
-use Exception;
 use ReflectionException;
 use ReflectionFunctionAbstract;
 use ReflectionMethod;
@@ -39,19 +38,17 @@ class Router extends BaseComponent {
 	/**
 	 * @param bool $skipOnNotFound Send 404 error
 	 *
-	 
+	 * @throws ReflectionException
 	 */
 	public function execute($skipOnNotFound = false) {
 		$this->process($skipOnNotFound);
-		//TODO Unload handlers
-
 	}
 
 	/**
 	 * @param $skipOnNotFound
 	 *
 	 * @return mixed|null
-	 
+	 * @throws ReflectionException
 	 */
 	private function process($skipOnNotFound) {
 		$application = $this->getApplication();
@@ -237,6 +234,7 @@ class Router extends BaseComponent {
 	 * @param ReflectionFunctionAbstract $reflection
 	 *
 	 * @return array
+	 * @throws ReflectionException
 	 */
 	private static function prepareParams($params, ReflectionFunctionAbstract $reflection) {
 		$closureParams = [];
@@ -268,7 +266,7 @@ class Router extends BaseComponent {
 	 * @return string
 	 */
 	private static function compileRoute($route) {
-		if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER)) {
+		if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?](\?|)`', $route, $matches, PREG_SET_ORDER)) {
 			$matchTypes = self::$matchTypes;
 
 			foreach ($matches as $match) {

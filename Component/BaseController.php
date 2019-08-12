@@ -6,6 +6,7 @@ use ReflectionClass;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\User\IUser;
+use vendor\ninazu\framework\Component\User\IUserIdentity;
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Formatter;
 
@@ -99,7 +100,7 @@ abstract class BaseController extends BaseComponent {
 		}
 
 		if (is_null($userRole)) {
-			$userRole = IUser::ROLE_GUEST;
+			$userRole = IUserIdentity::ROLE_GUEST;
 		}
 
 		$actionList = [];
@@ -130,11 +131,11 @@ abstract class BaseController extends BaseComponent {
 
 	private function getPermissionErrorCode($userRole, $actionList, $permissions) {
 		$customRole = !in_array($userRole, [
-			IUser::ROLE_GUEST,
-			IUser::ROLE_AUTHORIZED,
+			IUserIdentity::ROLE_GUEST,
+			IUserIdentity::ROLE_AUTHORIZED,
 		]);
 
-		$allowedForAuthorised = isset($permissions[IUser::ROLE_AUTHORIZED]);
+		$allowedForAuthorised = isset($permissions[IUserIdentity::ROLE_AUTHORIZED]);
 
 		if ($allowedForAuthorised && $customRole) {
 			return null;
@@ -158,7 +159,7 @@ abstract class BaseController extends BaseComponent {
 		if (!array_key_exists($this->action, $actionList)) {
 			$statusCode = Response::STATUS_CODE_NOT_FOUND;
 		} else {
-			if (is_null($userRole) || $userRole == IUser::ROLE_GUEST) {
+			if (is_null($userRole) || $userRole == IUserIdentity::ROLE_GUEST) {
 				$statusCode = Response::STATUS_CODE_LOGOUT;
 			} else {
 				$statusCode = Response::STATUS_CODE_FORBIDDEN;

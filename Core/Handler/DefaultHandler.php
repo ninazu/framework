@@ -35,7 +35,7 @@ class DefaultHandler implements IHandler {
 	 *
 	 * @return bool
 	 *
-
+	 * @throws Exception
 	 */
 	public function handlerError($error_code, $message, $file = null, $line = null) {
 		if ($error_code) {
@@ -74,7 +74,7 @@ class DefaultHandler implements IHandler {
 		if (isset($data)) {
 			//EnvironmentException
 		} else {
-			$args = [];
+//			$args = [];
 
 			foreach ($exception->getTrace() as $row) {
 				if (isset($row['file'], $row['line'])) {
@@ -113,7 +113,7 @@ class DefaultHandler implements IHandler {
 	/**
 	 * @param $autoLoaders
 	 *
-	 
+	 * @throws Exception
 	 */
 	public function setAutoLoader($autoLoaders) {
 		foreach ($autoLoaders as $namespace => $paths) {
