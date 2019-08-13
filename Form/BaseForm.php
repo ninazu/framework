@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Form;
 
+use Form\IBaseModel;
 use RuntimeException;
 use ReflectionClass;
 use vendor\ninazu\framework\Helper\Reflector;

@@ -117,12 +117,16 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function queryAll() {
+	public function queryAll(): array {
 		if (is_null($this->statement)) {
 			throw new RuntimeException('The execute() method must be called before fetchAll()');
 		}
 
 		$result = $this->statement->fetchAll(PDO::FETCH_ASSOC);
+
+		if ($result === false) {
+			$result = [];
+		}
 
 		if (empty($result)) {
 			$this->reset();
@@ -207,8 +211,12 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function queryOne() {
+	public function queryOne(): array {
 		$result = $this->statement->fetch(PDO::FETCH_ASSOC);
+
+		if ($result === false) {
+			$result = [];
+		}
 
 		if (empty($result) || (is_null($this->columnName) && is_null($this->callBack) && $this->autoConvertMeta === false)) {
 			$this->reset();

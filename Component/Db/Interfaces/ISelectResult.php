@@ -26,12 +26,12 @@ interface ISelectResult extends IQueryResult {
 	/**
 	 * @return array
 	 */
-	public function queryAll();
+	public function queryAll(): array;
 
 	/**
 	 * @return array
 	 */
-	public function queryOne();
+	public function queryOne(): array;
 
 	/**
 	 * @param string $name
