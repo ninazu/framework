@@ -11,7 +11,7 @@ use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
 use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
 use vendor\ninazu\framework\Helper\Formatter;
 
-class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
+abstract class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 	/**@var string $query */
 	protected $query = '';
@@ -33,7 +33,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 	protected $skipQuery = false;
 
-	public function __construct($connection) {
+	public function __construct(Connection $connection) {
 		$this->connection = $connection;
 	}
 
@@ -43,7 +43,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	 * @internal
 	 *
 	 */
-	public function setQuery($query) {
+	public function setQuery(string $query) {
 		$this->query = $query;
 
 		return $this;
@@ -66,7 +66,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function columnMeta($columnIndex) {
+	public function columnMeta(int $columnIndex) {
 		return $this->statement->getColumnMeta($columnIndex);
 	}
 

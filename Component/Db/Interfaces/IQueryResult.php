@@ -19,5 +19,5 @@ interface IQueryResult {
 	 *
 	 * @return array|false
 	 */
-	public function columnMeta($columnIndex);
+	public function columnMeta(int $columnIndex);
 }

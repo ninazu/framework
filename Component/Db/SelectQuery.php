@@ -28,6 +28,13 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 	/**
 	 * @inheritdoc
 	 */
+	public function updateQuery(string $query) {
+		return $this->setQuery($query);
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function indexBy($columnName) {
 		$this->columnName = $columnName;
 
