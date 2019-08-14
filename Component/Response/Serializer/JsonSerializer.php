@@ -75,7 +75,9 @@ class JsonSerializer extends BaseSerializer {
 				];
 		}
 
-		if (!$response->forceHttpStatus()) {
+		if ($response->forceHttpStatus()) {
+			unset($result['status']);
+		} else {
 			$result['httpStatus'] = $response->getStatusCode();
 		}
 
