@@ -148,10 +148,6 @@ abstract class BaseApplication {
 		$config = $configCallback($this);
 
 		if (isset($config['environments']) && Environment::isInitialized() && array_key_exists(Environment::getEnvironment(), $config['environments'])) {
-			if (Environment::isTest()) {
-				Environment::set("previousConfigState", $config);
-			}
-
 			$config = array_replace_recursive($config, $config['environments'][Environment::getEnvironment()]);
 		}
 

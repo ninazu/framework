@@ -56,7 +56,7 @@ class Request extends BaseComponent {
 			global $argv;
 
 			if (isset($argv[1])) {
-				$this->URL = $argv[1];
+				$this->URL = "/{$argv[1]}";
 			} else {
 				$this->URL = '/';
 			}

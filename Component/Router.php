@@ -7,6 +7,7 @@ use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Core\BaseComponent;
+use vendor\ninazu\framework\Core\Environment;
 use vendor\ninazu\framework\Helper\Formatter;
 
 /**
@@ -16,7 +17,7 @@ class Router extends BaseComponent {
 
 	protected $rules = [];
 
-	protected $namespace;
+	protected $namespace = 'controllers\\';
 
 	protected $trailingSlash = true;
 
@@ -65,7 +66,7 @@ class Router extends BaseComponent {
 		$this->URL = $url;
 
 		foreach ($this->rules as $prefix => $rules) {
-			if (strpos($url, $prefix) !== 0) {
+			if (!empty($prefix) && strpos($url, $prefix) !== 0) {
 				continue;
 			}
 
@@ -81,10 +82,12 @@ class Router extends BaseComponent {
 				$target = $rules[$pattern];
 
 				if (preg_match('/^\((.*?)\)/', $pattern, $matches)) {
-					$methods = explode("|", $matches[1]);
+					if (!Environment::isCLI()) {
+						$methods = explode("|", $matches[1]);
 
-					if (!in_array($application->request->getMethod(), $methods)) {
-						continue;
+						if (!in_array($application->request->getMethod(), $methods)) {
+							continue;
+						}
 					}
 
 					$pattern = str_replace($matches[0], '', $pattern);
@@ -112,7 +115,7 @@ class Router extends BaseComponent {
 
 				$controllerName = str_replace($placeholders['search'], $placeholders['replace'], $controllerName);
 				$actionName = str_replace($placeholders['search'], $placeholders['replace'], $actionName);
-				$controllerName = $this->namespace . 'controllers\\' . Formatter::dashToCamelCase($controllerName) . 'Controller';
+				$controllerName = $this->namespace . Formatter::dashToCamelCase($controllerName) . 'Controller';
 
 				return $this->run($controllerName, $actionName, $params);
 			}
@@ -252,7 +255,6 @@ class Router extends BaseComponent {
 	}
 
 	/**
-	 
 	 */
 	private function sendNotFound() {
 		$this->getApplication()->response->sendError(Response::STATUS_CODE_NOT_FOUND, null);
