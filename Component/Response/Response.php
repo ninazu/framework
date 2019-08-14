@@ -8,6 +8,7 @@ use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\HtmlSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\JsonSerializer;
 use vendor\ninazu\framework\Core\BaseComponent;
+use vendor\ninazu\framework\Core\Environment;
 use vendor\ninazu\framework\Helper\Reflector;
 
 class Response extends BaseComponent implements IResponse {
@@ -40,6 +41,14 @@ class Response extends BaseComponent implements IResponse {
 
 	private $extra = [];
 
+	public function init() {
+		parent::init();
+
+		if (Environment::isCLI()) {
+			$this->forceHttpStatus = false;
+		}
+	}
+
 	public function addExtra(array $extra) {
 		$this->extra[] = array_merge($this->extra, $extra);
 	}
@@ -58,7 +67,6 @@ class Response extends BaseComponent implements IResponse {
 	 * @param array $extra
 	 *
 	 * @return bool
-
 	 */
 	public function sendError($errorCode, $data, array $extra = []) {
 		$this->setStatusCode($errorCode);
@@ -74,7 +82,6 @@ class Response extends BaseComponent implements IResponse {
 	 * @param $data
 	 *
 	 * @return bool
-
 	 */
 	public function sendOk($data) {
 		$this->setStatusCode(self::STATUS_CODE_OK);
@@ -123,7 +130,6 @@ class Response extends BaseComponent implements IResponse {
 	}
 
 	/**
-
 	 */
 	protected function render() {
 		$response = $this->serializeBody();
@@ -134,7 +140,6 @@ class Response extends BaseComponent implements IResponse {
 
 	/**
 	 * @return string
-
 	 */
 	protected function serializeBody() {
 		if (!array_key_exists($this->contentType, $this->serializers)) {
@@ -165,7 +170,7 @@ class Response extends BaseComponent implements IResponse {
 
 	 */
 	protected function renderHeaders($response) {
-		if ($this->forceHttpStatus) {
+		if (!$this->forceHttpStatus && !Environment::isCLI()) {
 			$protocol = (isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0');
 			header("{$protocol} {$this->statusCode}");
 		}
@@ -175,8 +180,10 @@ class Response extends BaseComponent implements IResponse {
 			'Content-Length' => strlen($response),
 		]);
 
-		foreach ($this->headers as $header => $value) {
-			header("{$header}: {$value}");
+		if (!Environment::isCLI()) {
+			foreach ($this->headers as $header => $value) {
+				header("{$header}: {$value}");
+			}
 		}
 	}
 
