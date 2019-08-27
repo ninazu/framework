@@ -18,13 +18,12 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	private $columns;
 
 	/**
-	 * @internal
-	 *
 	 * @param string[] $columns
 	 *
 	 * @return InsertQuery
 	 *
-
+	 * @internal
+	 *
 	 */
 	public function setColumns(array $columns) {
 		$unique = [];
@@ -107,10 +106,11 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	/**
 	 * @inheritdoc
 	 */
-	public function onDuplicate($scenario, $columnUpdate = []) {
-		if (!in_array($scenario, [self::ON_DUPLICATE_UPDATE, self::ON_DUPLICATE_IGNORE])) {
-			throw new RuntimeException('Wrong value of onDuplicate. Please use InsertQuery::ON_DUPLICATE_* constants');
-		}
+	public function onDuplicateUpdate(array $columnUpdate) {
+		$scenario = self::ON_DUPLICATE_UPDATE;
+//		if (!in_array($scenario, [self::ON_DUPLICATE_UPDATE, self::ON_DUPLICATE_IGNORE])) {
+//			throw new RuntimeException('Wrong value of onDuplicate. Please use InsertQuery::ON_DUPLICATE_* constants');
+//		}
 
 		$this->onError = $scenario;
 
@@ -221,10 +221,10 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * Split a query
 	 *
 	 * @return array
-
+	 * @throws MySQLException
 	 */
 	protected function prepareSql() {
-		$onErrorIgnore = ($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
+		$onErrorIgnore = ''; //($this->onError == self::ON_DUPLICATE_IGNORE) ? self::ON_DUPLICATE_IGNORE : '';
 		$onDuplicateUpdate = '';
 		$priority = ($this->priority) ? $this->priority : '';
 		$bindsString = $this->bindsString;

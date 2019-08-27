@@ -39,12 +39,6 @@ class JsonSerializer extends BaseSerializer {
 				break;
 
 			case IResponse::STATUS_CODE_BAD_REQUEST:
-				$result = [
-					'status' => false,
-					'fields' => $response->getData(),
-				];
-				break;
-
 			case IResponse::STATUS_CODE_VALIDATION:
 				$result = [
 					'status' => false,
@@ -78,7 +72,7 @@ class JsonSerializer extends BaseSerializer {
 		if ($response->forceHttpStatus()) {
 			unset($result['status']);
 		} else {
-			$result['httpStatus'] = $response->getStatusCode();
+			$result['code'] = $response->getStatusCode();
 		}
 
 		if ($notifications = $response->getNotifications()) {

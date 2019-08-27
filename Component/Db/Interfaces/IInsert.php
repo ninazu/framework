@@ -4,7 +4,7 @@ namespace vendor\ninazu\framework\Component\Db\Interfaces;
 
 interface IInsert extends IBasicQuery {
 
-	const ON_DUPLICATE_IGNORE = ' IGNORE';
+	//const ON_DUPLICATE_IGNORE = ' IGNORE';
 
 	const ON_DUPLICATE_UPDATE = 'ON DUPLICATE KEY UPDATE';
 
@@ -15,12 +15,11 @@ interface IInsert extends IBasicQuery {
 	const PRIORITY_DELAYED = ' DELAYED';
 
 	/**
-	 * @param string $scenario
 	 * @param array $columnUpdate
 	 *
 	 * @return $this
 	 */
-	public function onDuplicate($scenario, $columnUpdate = []);
+	public function onDuplicateUpdate(array $columnUpdate);
 
 	/**
 	 * @param string $scenario

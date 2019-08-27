@@ -2,7 +2,7 @@
 
 namespace vendor\ninazu\framework\Component\Db;
 
-use http\Exception\RuntimeException;
+use RuntimeException;
 use vendor\ninazu\framework\Helper\Formatter;
 
 class Expression {

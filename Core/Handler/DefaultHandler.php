@@ -46,7 +46,6 @@ class DefaultHandler implements IHandler {
 	}
 
 	/**
-	 
 	 */
 	public function handlerShutdown() {
 		$error = error_get_last();
@@ -106,8 +105,10 @@ class DefaultHandler implements IHandler {
 		}
 
 		if (!headers_sent()) {
-			$this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data, $extra);
+			return $this->application->response->sendError(Response::STATUS_CODE_SERVER_ERROR, $data, $extra);
 		}
+
+		return true;
 	}
 
 	/**

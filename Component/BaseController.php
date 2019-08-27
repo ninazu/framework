@@ -5,7 +5,6 @@ namespace vendor\ninazu\framework\Component;
 use ReflectionClass;
 use vendor\ninazu\framework\Component\Response\IResponse;
 use vendor\ninazu\framework\Component\Response\Response;
-use vendor\ninazu\framework\Component\User\IUser;
 use vendor\ninazu\framework\Component\User\IUserIdentity;
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Helper\Formatter;
@@ -41,8 +40,10 @@ abstract class BaseController extends BaseComponent {
 			$response = call_user_func_array([$this, 'action' . Formatter::dashToCamelCase($action)], $methodParams);
 			$this->afterAction($response);
 		} else {
-			$this->getApplication()->response->sendError(Response::STATUS_CODE_PRECONDITION_FAILED, null);
+			return $this->getApplication()->response->sendError(Response::STATUS_CODE_PRECONDITION_FAILED, null);
 		}
+
+		return true;
 	}
 
 	protected function layoutParams($view, array $params) {
@@ -82,7 +83,6 @@ abstract class BaseController extends BaseComponent {
 	}
 
 	/**
-
 	 */
 	protected function checkAccess() {
 		$permissions = $this->access();
@@ -112,8 +112,10 @@ abstract class BaseController extends BaseComponent {
 		}
 
 		if ($errorCode = $this->getPermissionErrorCode($userRole, $actionList, $permissions)) {
-			$this->getApplication()->response->sendError($errorCode, null);
+			return $this->getApplication()->response->sendError($errorCode, null);
 		}
+
+		return true;
 	}
 
 	protected function beforeAction() {

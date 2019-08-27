@@ -11,7 +11,7 @@ use vendor\ninazu\framework\Component\Db\SQLParser\Lexer;
 use vendor\ninazu\framework\Component\Db\SQLParser\Processor;
 use vendor\ninazu\framework\Helper\Formatter;
 
-abstract class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
+class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 
 	/**@var string $query */
 	protected $query = '';

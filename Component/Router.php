@@ -257,7 +257,7 @@ class Router extends BaseComponent {
 	/**
 	 */
 	private function sendNotFound() {
-		$this->getApplication()->response->sendError(Response::STATUS_CODE_NOT_FOUND, null);
+		return $this->getApplication()->response->sendError(Response::STATUS_CODE_NOT_FOUND, null);
 	}
 
 	/**
