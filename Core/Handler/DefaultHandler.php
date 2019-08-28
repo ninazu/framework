@@ -51,7 +51,7 @@ class DefaultHandler implements IHandler {
 		$error = error_get_last();
 
 		if ($error) {
-			$this->handlerException(new RuntimeException($error['message'], $error['type']));
+			$this->handlerException(new Exception($error['message'], $error['type']));
 		}
 
 		exit(0);
