@@ -2,6 +2,7 @@
 
 namespace vendor\ninazu\framework\Core\Handler;
 
+use Error;
 use RuntimeException;
 use Exception;
 use Throwable;
@@ -51,7 +52,7 @@ class DefaultHandler implements IHandler {
 		$error = error_get_last();
 
 		if ($error) {
-			$this->handlerException(new \Error($error['message'], $error['type']));
+			$this->handlerException(new Error($error['message'], $error['type']));
 		}
 
 		exit(0);
