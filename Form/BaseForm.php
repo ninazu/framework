@@ -62,6 +62,16 @@ abstract class BaseForm {
 		}
 	}
 
+	public function __isset($name) {
+		return array_key_exists($name, $this->attributes);
+	}
+
+	public function __unset($name) {
+		if (array_key_exists($name, $this->attributes)) {
+			$this->attributes[$name] = null;
+		}
+	}
+
 	public function getAttributes() {
 		return $this->attributes;
 	}
