@@ -9,18 +9,17 @@ trait WritableValues {
 	protected $values;
 
 	/**
-	 * @internal
-	 *
 	 * @param array $values
 	 * @param $validate
 	 *
 	 * @return $this
 	 *
-
+	 * @internal
+	 *
 	 */
 	public function setValues($values, $validate) {
 		if (empty($values)) {
-			throw new RuntimeException('Empty values');
+			return $this;
 		}
 
 		if ($validate) {

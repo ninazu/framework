@@ -80,6 +80,10 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	 * @inheritdoc
 	 */
 	public function execute() {
+		if (empty($this->values)) {
+			return $this;
+		}
+
 		$parts = $this->prepareSql();
 
 		$transaction = $this->connection->beginTransaction();
