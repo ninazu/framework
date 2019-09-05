@@ -2,6 +2,13 @@
   "name": "ninazu/framework",
   "version": "0.0.1",
   "require": {
+	"ext-pdo": "*",
+	"ext-json": "*",
+	"ext-curl": "*",
+	"ext-openssl": "*",
+	"ext-mbstring": "*",
+	"ext-mongodb": "*",
+	"ext-apache": "*",
 	"swiftmailer/swiftmailer": "v6.1.3"
   }
 }

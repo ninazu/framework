@@ -52,6 +52,8 @@ class Request extends BaseComponent {
 	}
 
 	protected function init() {
+		$queryParams = [];
+
 		if (Environment::isCli()) {
 			global $argv;
 
@@ -59,6 +61,11 @@ class Request extends BaseComponent {
 				$this->URL = "/{$argv[1]}";
 			} else {
 				$this->URL = '/';
+			}
+
+			foreach (array_slice($argv, 2) as $row) {
+				parse_str($row, $param);
+				$queryParams = array_replace_recursive($queryParams, $param);
 			}
 		} else {
 			$this->URL = $_SERVER['REQUEST_URI'];
@@ -92,7 +99,9 @@ class Request extends BaseComponent {
 		$this->path = isset($URLParts['path']) ? $URLParts['path'] : '';
 
 		if (isset($URLParts['query'])) {
-			parse_str($URLParts['query'], $this->params);
+			parse_str($URLParts['query'], $queryParams);
 		}
+
+		$this->params = $queryParams;
 	}
 }
