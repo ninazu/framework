@@ -5,6 +5,7 @@ namespace vendor\ninazu\framework\Component\Db\Interfaces;
 interface ISelect extends IBasicQuery {
 
 	/**
+	 * @param string $query
 	 * @return $this
 	 */
 	public function updateQuery(string $query);
