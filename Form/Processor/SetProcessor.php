@@ -2,14 +2,14 @@
 
 namespace vendor\ninazu\framework\Form\Processor;
 
+use Closure;
 use RuntimeException;
-use ReflectionFunction;
 use vendor\ninazu\framework\Form\BaseProcessor;
 
 class SetProcessor extends BaseProcessor {
 
 	/**
-	 * @var \Closure $callback
+	 * @var Closure $callback
 	 */
 	protected $callback;
 

@@ -30,15 +30,17 @@ abstract class BaseApplication {
 
 	public static $app;
 
-	protected string $basePath;
+	protected $basePath;
 
-	protected string $encoding = 'UTF-8';
+	protected $encoding = 'UTF-8';
 
-	protected string $adminEmail;
+	protected $adminEmail;
 
-	protected array $components = [];
+	protected $name = 'Application';
 
-	protected bool $initialized = false;
+	protected $components = [];
+
+	protected $initialized = false;
 
 	/**
 	 * Core constructor.
@@ -112,21 +114,15 @@ abstract class BaseApplication {
 //		return $this->components[$name]['config'];
 //	}
 
-	/**
-	 * Getter of basePath
-	 *
-	 * @return string
-	 */
-	public function getBasePath() {
+	public function getName(): string {
+		return $this->name;
+	}
+
+	public function getBasePath(): string {
 		return $this->basePath;
 	}
 
-	/**
-	 * Getter of basePath
-	 *
-	 * @return string
-	 */
-	public function getAdminEmail() {
+	public function getAdminEmail(): string {
 		return $this->adminEmail;
 	}
 
@@ -153,6 +149,10 @@ abstract class BaseApplication {
 
 		if (isset($config['adminEmail'])) {
 			$this->adminEmail = $config['adminEmail'];
+		}
+
+		if (isset($config['name'])) {
+			$this->adminEmail = $config['name'];
 		}
 
 		if (isset($config['basePath'])) {

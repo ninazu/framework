@@ -2,13 +2,14 @@
 
 namespace vendor\ninazu\framework\Form\Validator;
 
+use Closure;
 use RuntimeException;
 use vendor\ninazu\framework\Form\BaseValidator;
 
 class CustomValidator extends BaseValidator {
 
 	/**
-	 * @var \Closure $callback
+	 * @var Closure $callback
 	 */
 	protected $callback;
 
@@ -32,7 +33,7 @@ class CustomValidator extends BaseValidator {
 		$this->value = $value;
 	}
 
-	public function getMessage() {
+	public function getMessage(): string {
 		if ($this->message) {
 			return $this->message;
 		}

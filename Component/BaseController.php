@@ -15,7 +15,7 @@ abstract class BaseController extends BaseComponent {
 
 	protected $action;
 
-	protected IResponse $response;
+	protected $response;
 
 	protected $basePath;
 
@@ -87,12 +87,12 @@ abstract class BaseController extends BaseComponent {
 
 	/**
 	 */
-	protected function checkAccess() {
+	protected function checkAccess(): bool {
 		$permissions = $this->access();
 
 		//Allow from All if permissions not set
 		if (empty($permissions)) {
-			return;
+			return false;
 		}
 
 		$user = $this->getApplication()->user->getIdentity();
@@ -121,7 +121,7 @@ abstract class BaseController extends BaseComponent {
 		return true;
 	}
 
-	protected function beforeAction() {
+	protected function beforeAction(): bool {
 		return true;
 	}
 

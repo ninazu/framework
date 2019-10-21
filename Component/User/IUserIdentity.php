@@ -4,9 +4,9 @@ namespace vendor\ninazu\framework\Component\User;
 
 interface IUserIdentity {
 
-	const ROLE_AUTHORIZED = '@';
+	const ROLE_AUTHORIZED = -1;
 
-	const ROLE_GUEST = '?';
+	const ROLE_GUEST = -2;
 
 	/**
 	 * @return int
