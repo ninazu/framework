@@ -15,8 +15,7 @@ abstract class BaseController extends BaseComponent {
 
 	protected $action;
 
-	/**@var IResponse $response */
-	protected $response;
+	protected IResponse $response;
 
 	protected $basePath;
 

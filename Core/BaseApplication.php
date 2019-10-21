@@ -30,15 +30,15 @@ abstract class BaseApplication {
 
 	public static $app;
 
-	private $basePath;
+	protected string $basePath;
 
-	private $encoding = 'UTF-8';
+	protected string $encoding = 'UTF-8';
 
-	private $adminEmail;
+	protected string $adminEmail;
 
-	private $components = [];
+	protected array $components = [];
 
-	private $initialized = false;
+	protected bool $initialized = false;
 
 	/**
 	 * Core constructor.
