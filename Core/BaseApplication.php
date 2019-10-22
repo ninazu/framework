@@ -16,6 +16,7 @@ use vendor\ninazu\framework\Component\Translate;
 use vendor\ninazu\framework\Component\User\User;
 use vendor\ninazu\framework\Core\Handler\DefaultHandler;
 use vendor\ninazu\framework\Core\Handler\IHandler;
+use vendor\ninazu\framework\Component\Encoder\Encoder;
 
 /**
  * @property Request $request
@@ -25,6 +26,7 @@ use vendor\ninazu\framework\Core\Handler\IHandler;
  * @property IMysql $db
  * @property Translate $lang
  * @property Mail $mail
+ * @property Encoder $encoder
  * */
 abstract class BaseApplication {
 
@@ -192,6 +194,7 @@ abstract class BaseApplication {
 			'db' => Mysql::class,
 			'lang' => Translate::class,
 			'mail' => Mail::class,
+			'encoder' => Encoder::class,
 		];
 
 		foreach ($components as $name => $class) {

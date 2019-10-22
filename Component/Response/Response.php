@@ -3,12 +3,12 @@
 namespace vendor\ninazu\framework\Component\Response;
 
 use RuntimeException;
-use Exception;
 use vendor\ninazu\framework\Component\Response\Serializer\CsvSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\HtmlSerializer;
 use vendor\ninazu\framework\Component\Response\Serializer\JsonSerializer;
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Core\Environment;
+use vendor\ninazu\framework\Component\Encoder\IEncoder;
 use vendor\ninazu\framework\Helper\Reflector;
 
 class Response extends BaseComponent implements IResponse {
@@ -31,6 +31,9 @@ class Response extends BaseComponent implements IResponse {
 		],
 	];
 
+	/**@var IEncoder */
+	protected $extraEncoder;
+
 	private $statusCode;
 
 	private $headers = [];
@@ -46,6 +49,12 @@ class Response extends BaseComponent implements IResponse {
 
 		if (Environment::isCLI()) {
 			$this->forceHttpStatus = false;
+		}
+
+		if ($this->extraEncoder) {
+			$className = $this->extraEncoder['class'];
+			$config = $this->extraEncoder['config'];
+			$this->extraEncoder = new $className($this->getApplication(), $config);
 		}
 	}
 
@@ -71,6 +80,14 @@ class Response extends BaseComponent implements IResponse {
 	public function sendError($errorCode, $data, array $extra = []) {
 		$this->setStatusCode($errorCode);
 		$this->setData($data);
+		$encoder = $this->getApplication()->encoder;
+
+		if ($this->extraEncoder && $extra && $encoder->hasKey()) {
+			$extra = [
+				'info' => $this->getApplication()->encoder->encode(print_r($extra, true)),
+			];
+		}
+
 		$this->addExtra($extra);
 		$this->render();
 		$this->end(self::EXIT_CODE_WITH_ERROR);

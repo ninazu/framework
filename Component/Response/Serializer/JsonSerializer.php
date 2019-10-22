@@ -48,7 +48,7 @@ class JsonSerializer extends BaseSerializer {
 
 			case IResponse::STATUS_CODE_SERVER_ERROR:
 			case IResponse::STATUS_CODE_VARIANT_ALSO_NEGOTIATES:
-				if (!Environment::isInitialized() || Environment::isProduction()) {
+				if (!Environment::isInitialized()) {
 					$result = [
 						'status' => false,
 						'message' => $response->getData(),

@@ -40,6 +40,8 @@ interface IResponse {
 
 	const CONTENT_HTML = 'text/html';
 
+	const CONTENT_PLAIN = 'text/plain';
+
 	const AUTH_BASIC = 'Basic';
 
 	const AUTH_BEARER = 'Bearer';
