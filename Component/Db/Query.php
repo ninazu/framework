@@ -229,6 +229,7 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 		$this->bindsArray = [];
 		$this->bindsInteger = [];
 		$this->statement = null;
+		$this->affectedRows = 0;
 	}
 
 	public static function checkColumnName($name) {

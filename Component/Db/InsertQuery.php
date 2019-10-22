@@ -155,7 +155,6 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 
 	protected function reset() {
 		parent::reset();
-		$this->affectedRows = 0;
 		$this->priority = null;
 		$this->values = null;
 		$this->table = null;

@@ -50,12 +50,6 @@ class Response extends BaseComponent implements IResponse {
 		if (Environment::isCLI()) {
 			$this->forceHttpStatus = false;
 		}
-
-		if ($this->extraEncoder) {
-			$className = $this->extraEncoder['class'];
-			$config = $this->extraEncoder['config'];
-			$this->extraEncoder = new $className($this->getApplication(), $config);
-		}
 	}
 
 	public function addExtra(array $extra) {

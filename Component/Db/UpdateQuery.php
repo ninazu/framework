@@ -59,7 +59,6 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 	 * @param array $values
 	 *
 	 * @return bool
-
 	 */
 	public function validateValues(array &$values) {
 		foreach ($values as $key => $value) {
@@ -105,6 +104,14 @@ class UpdateQuery extends WritableQuery implements IUpdate, IUpdateResult {
 			'bindsString' => $this->bindsString,
 			'query' => $this->query,
 		];
+
+		return $result;
+	}
+
+	public function execute() {
+		$result = parent::execute();
+
+		$this->affectedRows += $this->statement->rowCount();
 
 		return $result;
 	}
