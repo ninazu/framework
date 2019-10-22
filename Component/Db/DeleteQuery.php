@@ -18,7 +18,15 @@ class DeleteQuery extends WritableQuery implements IDelete, IDeleteResult {
 	 * @inheritdoc
 	 */
 	public function count() {
-		// TODO: Implement count() method.
+		return $this->affectedRows;
+	}
+
+	public function execute() {
+		$result = parent::execute();
+
+		$this->affectedRows += $this->statement->rowCount();
+
+		return $result;
 	}
 
 	/**

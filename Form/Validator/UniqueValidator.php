@@ -8,7 +8,7 @@ namespace vendor\ninazu\framework\Form\Validator;
  */
 class UniqueValidator extends CustomValidator {
 
-	public function getMessage() {
+	public function getMessage(): string {
 		if ($this->message) {
 			return $this->message;
 		}

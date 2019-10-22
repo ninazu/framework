@@ -83,7 +83,7 @@ class DateValidator extends BaseValidator {
 
 		$map = [
 			self::FORMAT_DATE => 'date',
-			self::FORMAT_DATE => 'dateTime',
+			self::FORMAT_DATETIME => 'dateTime',
 		];
 
 		return "Field '{$this->field}' is not a valid {$map[$this->format]} format expected '{$this->format}'";
