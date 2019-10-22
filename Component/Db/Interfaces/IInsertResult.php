@@ -8,9 +8,4 @@ interface IInsertResult {
 	 * @return int
 	 */
 	public function affectedRows();
-
-	/**
-	 * @return int
-	 */
-	public function lastInsertedId();
 }

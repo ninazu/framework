@@ -153,13 +153,6 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 		return $this;
 	}
 
-	/**
-	 * @inheritdoc
-	 */
-	public function lastInsertedId() {
-		return $this->connection->lastInsertedId();
-	}
-
 	protected function reset() {
 		parent::reset();
 		$this->affectedRows = 0;
