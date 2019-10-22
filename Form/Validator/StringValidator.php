@@ -16,7 +16,14 @@ class StringValidator extends BaseValidator {
 
 	protected $allowEmpty = false;
 
-	public function validate(&$value) {
+	protected $trim = true;
+
+	public function validate($value, &$newValue) {
+		if ($this->trim) {
+			$newValue = trim($value);
+			$value = $newValue;
+		}
+
 		if (empty($value) && $this->allowEmpty) {
 			return true;
 		}

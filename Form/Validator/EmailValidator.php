@@ -8,7 +8,7 @@ class EmailValidator extends StringValidator {
 
 	protected $max = 254;
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		if ($this->allowEmpty && empty($value)) {
 			return true;
 		}

@@ -6,7 +6,7 @@ use vendor\ninazu\framework\Form\BaseValidator;
 
 class IntValidator extends BaseValidator {
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		return (int)($value) === $value;
 	}
 

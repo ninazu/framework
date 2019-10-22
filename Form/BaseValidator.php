@@ -42,7 +42,7 @@ abstract class BaseValidator extends BaseConfigurator {
 		return $this->field;
 	}
 
-	abstract public function validate(&$value);
+	abstract public function validate($value, &$newValue);
 
 	abstract public function getMessage();
 }

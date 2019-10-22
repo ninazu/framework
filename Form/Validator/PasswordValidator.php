@@ -5,7 +5,6 @@ namespace vendor\ninazu\framework\Form\Validator;
 /**
  * int $min - minimum Length
  */
-
 class PasswordValidator extends StringValidator {
 
 	protected $allowEmpty = false;
@@ -16,8 +15,8 @@ class PasswordValidator extends StringValidator {
 		$this->min = 8;
 	}
 
-	public function validate(&$value) {
-		if (!$parent = parent::validate($value)) {
+	public function validate($value, &$newValue) {
+		if (!$parent = parent::validate($value, $newValue)) {
 			return false;
 		}
 

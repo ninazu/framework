@@ -19,7 +19,7 @@ class InRangeValidator extends BaseValidator {
 
 	protected $max;
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		if ($this->range) {
 			return array_key_exists($value, $this->range);
 		} else {

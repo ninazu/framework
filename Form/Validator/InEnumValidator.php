@@ -19,7 +19,7 @@ class InEnumValidator extends BaseValidator {
 
 	private $constGroup;
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		$this->constGroup = Reflector::getConstantGroup($this->class, $this->prefix)->getData();
 
 		return array_key_exists($value, $this->constGroup);

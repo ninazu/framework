@@ -47,7 +47,7 @@ abstract class BaseForm {
 		array_fill_keys(array_keys($this->attributes), null);
 	}
 
-	public function __get($name) {
+	public function &__get($name) {
 		if (array_key_exists($name, $this->attributes)) {
 			return $this->attributes[$name];
 		}
@@ -107,11 +107,13 @@ abstract class BaseForm {
 
 				/**@var BaseValidator $validator */
 				$validator = new $class($field, $params);
-				$value = $this->$field;
+				$newValue = $this->$field;
 
-				if (!$validator->validate($value)) {
+				if (!$validator->validate($this->$field, $newValue)) {
 					$this->addError($field, $validator->getMessage(), $validator->getExtra());
 				}
+
+				$this->$field = $newValue;
 			}
 		}
 

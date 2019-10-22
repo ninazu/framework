@@ -46,7 +46,7 @@ class DateValidator extends BaseValidator {
 		return parent::init();
 	}
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		if (!preg_match('/^([0-9]{2,4})-([0-1][0-9])-([0-3][0-9])(?:( [0-2][0-9]):([0-5][0-9]):([0-5][0-9]))?$/', $value)) {
 			return false;
 		}
@@ -55,7 +55,8 @@ class DateValidator extends BaseValidator {
 			return false;
 		}
 
-		$value = $dateTime->format($this->format);
+		$newValue = $dateTime->format($this->format);
+		$value = $newValue;
 
 		if ($this->min && $this->min > $value) {
 			if (!$this->message) {

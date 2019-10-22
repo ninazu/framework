@@ -15,7 +15,7 @@ class CustomValidator extends BaseValidator {
 
 	protected $value;
 
-	public function validate(&$value) {
+	public function validate($value, &$newValue) {
 		$callback = $this->callback;
 		$this->setValue($value);
 
