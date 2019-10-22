@@ -28,16 +28,18 @@ abstract class BaseController extends BaseComponent {
 		$this->basePath = dirname(dirname($reflection->getFileName()));
 		preg_match('/(.*?)Controller$/', $reflection->getShortName(), $matches);
 		$this->name = lcfirst($matches[1]);
+		$this->params = (array)json_decode(file_get_contents('php://input'), true);
 	}
 
 	public function runAction($action, $routeParams, $methodParams) {
 		$this->action = $action;
+		$this->checkAccess();
+
 		$this->params = array_replace_recursive(
 			$this->getApplication()->request->getParams(),
-			(array)json_decode(file_get_contents('php://input'), true),
+			$this->params,
 			$routeParams
 		);
-		$this->checkAccess();
 
 		if ($this->beforeAction()) {
 			$response = call_user_func_array([$this, 'action' . Formatter::dashToCamelCase($action)], $methodParams);
