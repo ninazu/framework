@@ -47,6 +47,7 @@ class JsonSerializer extends BaseSerializer {
 				break;
 
 			case IResponse::STATUS_CODE_SERVER_ERROR:
+			case IResponse::STATUS_CODE_VARIANT_ALSO_NEGOTIATES:
 				if (!Environment::isInitialized() || Environment::isProduction()) {
 					$result = [
 						'status' => false,
