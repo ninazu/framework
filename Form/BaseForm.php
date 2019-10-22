@@ -2,7 +2,6 @@
 
 namespace vendor\ninazu\framework\Form;
 
-use Form\IBaseModel;
 use RuntimeException;
 use ReflectionClass;
 use vendor\ninazu\framework\Helper\Reflector;
@@ -22,7 +21,7 @@ abstract class BaseForm {
 	public function getDeclaredAttributes() {
 		$reflect = new ReflectionClass(static::class);
 		$phpDoc = $reflect->getDocComment();
-		preg_match_all('/\@property\s+((\w+)|(\w+)\[\])\s+\$(\w+)/', $phpDoc, $matches);
+		preg_match_all('/@property\s+((\w+)|(\w+)\[])\s+\$(\w+)/', $phpDoc, $matches);
 		$this->attributeTypes = array_combine($matches[4], $matches[1]);
 
 		return $this->attributeTypes;
