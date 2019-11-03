@@ -65,6 +65,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 						case 'LONG':
 						case 'INT24':
 						case 'SET':
+						case 'LONGLONG':
 							return is_null($value) ? null : (int)$value;
 
 						case 'DECIMAL':
@@ -81,7 +82,6 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 
 						default:
 							/**
-							 * MYSQL_TYPE_LONGLONG
 							 * MYSQL_TYPE_TIMESTAMP
 							 * MYSQL_TYPE_DATE
 							 * MYSQL_TYPE_TIME
@@ -90,7 +90,7 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 							 * MYSQL_TYPE_STRING
 							 * MYSQL_TYPE_VAR_STRING
 							 * MYSQL_TYPE_BLOB
-							 * MYSQL_TYPE_ENUM    ENUM
+							 * MYSQL_TYPE_ENUM
 							 * MYSQL_TYPE_GEOMETRY
 							 */
 							return $value;

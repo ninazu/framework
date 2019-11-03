@@ -6,8 +6,6 @@ use vendor\ninazu\framework\Core\BaseComponent;
 
 class Translate extends BaseComponent {
 
-	protected $defaultLang = 'en';
-
 	protected $lang;
 
 	public function getLang() {
@@ -15,7 +13,10 @@ class Translate extends BaseComponent {
 	}
 
 	public function setLang($lang) {
-		//TODO Sanitize lang
 		$this->lang = $lang;
+	}
+
+	public function translate(string $text) {
+		return $text;
 	}
 }
