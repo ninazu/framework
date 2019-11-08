@@ -13,6 +13,8 @@ abstract class BaseController extends BaseComponent {
 
 	protected $params;
 
+	protected $files = [];
+
 	protected $action;
 
 	protected $response;
@@ -28,7 +30,24 @@ abstract class BaseController extends BaseComponent {
 		$this->basePath = dirname(dirname($reflection->getFileName()));
 		preg_match('/(.*?)Controller$/', $reflection->getShortName(), $matches);
 		$this->name = lcfirst($matches[1]);
-		$this->params = (array)json_decode(file_get_contents('php://input'), true);
+
+		//TODO abstract
+		$request = file_get_contents('php://input');
+//
+//		$jsonPosition = strpos($request, "{");
+//		$rawPosition = +substr($request, 0, $jsonPosition);
+//		$request = substr($request, $jsonPosition, $rawPosition);
+//		$rawData = substr($request, $rawPosition + $jsonPosition);
+//		$offset = 0;
+//
+//		foreach ($rawData as $file) {
+//			$this->files[] = substr($rawData, $offset, $file['length']);
+//			$offset += $file['length'];
+//		}
+
+		$this->params = (array)json_decode($request, true);
+
+		return;
 	}
 
 	public function runAction($action, $routeParams, $methodParams) {

@@ -9,7 +9,7 @@ use ReflectionException;
 use vendor\ninazu\framework\Component\Db\Interfaces\IMysql;
 use vendor\ninazu\framework\Component\Db\Mysql;
 use vendor\ninazu\framework\Component\Mail\Mail;
-use vendor\ninazu\framework\Component\Request;
+use vendor\ninazu\framework\Component\Request\Request;
 use vendor\ninazu\framework\Component\Response\Response;
 use vendor\ninazu\framework\Component\Router;
 use vendor\ninazu\framework\Component\Translate;

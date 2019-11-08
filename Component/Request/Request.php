@@ -1,6 +1,6 @@
 <?php
 
-namespace vendor\ninazu\framework\Component;
+namespace vendor\ninazu\framework\Component\Request;
 
 use vendor\ninazu\framework\Core\BaseComponent;
 use vendor\ninazu\framework\Core\Environment;
