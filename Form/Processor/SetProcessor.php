@@ -32,12 +32,10 @@ class SetProcessor extends BaseProcessor {
 		if (isset($this->callback)) {
 			$callback = $this->callback;
 			$callback($data, $this->fields);
-		} elseif (isset($this->value)) {
+		} else {
 			foreach ($this->fields as $field) {
 				$data[$field] = $this->value;
 			}
-		} else {
-			throw new RuntimeException('SetProcessor without callback or value in params');
 		}
 	}
 }

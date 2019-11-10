@@ -59,10 +59,10 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	#region Interface
 
 	/**
-	 * @internal
-	 *
 	 * @param string $name
 	 * @param Mysql $parentClass
+	 * @internal
+	 *
 	 */
 	public function __construct($name, $parentClass) {
 		$this->connectionStack = $parentClass;
@@ -89,13 +89,12 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	}
 
 	/**
-	 * @internal
-	 *
 	 * @param string $message
 	 * @param string $query
 	 * @param array|null $binds
 	 *
-
+	 * @internal
+	 *
 	 */
 	public function error($message, $query = '', array $binds = null) {
 		$exception = new MySQLException($this->hostname, $this->name, $message, $query, $binds, $this->PDOOptions);
@@ -230,7 +229,6 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	}
 
 	/**
-	 * @internal
 	 * @param string $instance
 	 * @param string $query
 	 * @param array $binds
@@ -238,7 +236,7 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	 *
 	 * @return bool|null|\PDOStatement
 	 *
-
+	 * @internal
 	 */
 	public function execute($instance, $query, array $binds, array $bindsInteger) {
 		try {
@@ -291,11 +289,11 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	}
 
 	/**
-	 * @internal
-	 *
 	 * @param string $value
 	 *
 	 * @return string
+	 * @internal
+	 *
 	 */
 	public function quote($value) {
 		return $this->adapter->quote($value);
@@ -309,14 +307,16 @@ class Connection extends BaseConfigurator implements IConnection, ITransaction {
 	}
 
 	/**
-	 * @internal
-	 *
 	 * @return $this
 	 *
-
-
+	 * @internal
+	 *
 	 */
 	public function connect() {
+		if ($this->adapter) {
+			return $this;
+		}
+
 		foreach (['hostname', 'username', 'schema'] as $property) {
 			if (empty($this->$property)) {
 				throw new RuntimeException("Required connection parameter '{$property}' is not set or empty for database configuration: {$this->name}");
