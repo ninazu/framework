@@ -79,6 +79,13 @@ class InsertQuery extends WritableQuery implements IInsert, IInsertResult {
 	/**
 	 * @inheritdoc
 	 */
+	public function lastInsertedId() {
+		return $this->connection->lastInsertedId();
+	}
+
+	/**
+	 * @inheritdoc
+	 */
 	public function execute() {
 		if (empty($this->values)) {
 			return $this;

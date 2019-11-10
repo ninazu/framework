@@ -36,12 +36,12 @@ interface IInsert extends IBasicQuery {
 	/**
 	 * USE ONLY FOR DEBUG. Сan contain SQL injection or wrong replaced value
 	 *
-	 * @internal
-	 *
 	 * @param string $sql
 	 * @param bool $withPlaceholders
 	 *
 	 * @return IInsertPrepare
+	 * @internal
+	 *
 	 */
 	public function getSQL(&$sql, $withPlaceholders);
 }
