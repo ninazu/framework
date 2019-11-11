@@ -206,11 +206,11 @@ class SelectQuery extends Query implements ISelect, ISelectResult {
 			return null;
 		}
 
-		$data = reset($data);
-
 		if (!is_null($name) && array_key_exists($name, $data)) {
 			return $data[$name];
 		}
+
+		$data = reset($data);
 
 		return $data;
 	}
