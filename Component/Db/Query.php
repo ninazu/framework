@@ -307,6 +307,10 @@ class Query implements IBasicQuery, IQuery, IQueryPrepare, IQueryResult {
 			throw new RuntimeException('Empty string passed as placeholder');
 		}
 
+		if (is_numeric($placeholder)) {
+			throw new RuntimeException('Index passed as placeholder, name expected');
+		}
+
 		if ($placeholder[0] !== ':') {
 			$placeholder = ':' . $placeholder;
 		}
